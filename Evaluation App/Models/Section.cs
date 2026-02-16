@@ -6,42 +6,33 @@ public class Section
     public bool ManagerOnly { get; set; } = false;
     public bool TeamLeaderOnly { get; set; } = false;
     public bool Include { get; set; } = true;
+    public string? Formula { get; set; }
+    public string? CombinedFormula { get; set; }
     public List<Question> Questions { get; set; } = new List<Question>();
     public double TotalScore { get; private set; }
 
-    public void SetTotalScore(NormalizationOptions? normalization = null)
-    {
-        TotalScore = CalculateTotalScore(normalization ?? new NormalizationOptions());
-    }
-
-    private double CalculateTotalScore(NormalizationOptions normalization)
+    public void SetTotalScore(ScoringFormulaContext context)
     {
         var activeQuestions = Questions.Where(q => q.Include && !q.TeamLeaderOnly).ToList();
-        double sumWeights = activeQuestions.Sum(q => q.Weight);
+        var questionScores = activeQuestions.Select(q => q.Score).ToList();
+        var questionWeights = activeQuestions.Select(q => q.Weight).ToList();
 
-        if (sumWeights <= 0)
-            return 0;
+        double defaultScore = 0;
+        double sumWeights = questionWeights.Sum();
+        if (sumWeights > 0)
+            defaultScore = activeQuestions.Sum(q => q.Score * q.Weight) / sumWeights;
 
-        double weightedSum = activeQuestions.Sum(q => NormalizeQuestionScore(q, normalization) * q.Weight);
-        return weightedSum / sumWeights;
-    }
+        string? formula = context.UseCombinedFormulas ? (CombinedFormula ?? context.Scoring.CombinedSectionFormula ?? Formula ?? context.Scoring.SectionFormula)
+                                                     : (Formula ?? context.Scoring.SectionFormula);
 
-    private static double NormalizeQuestionScore(Question question, NormalizationOptions normalization)
-    {
-        double range = question.Max - question.Min;
-        if (range <= 0)
-            return 0;
-
-        double normalized = (question.Score - question.Min) / range;
-        if (!normalization.HigherIsBetter)
-            normalized = 1.0 - normalized;
-
-        double scaleMin = normalization.ScaleMin;
-        double scaleMax = normalization.ScaleMax;
-        if (scaleMax < scaleMin)
-            (scaleMin, scaleMax) = (scaleMax, scaleMin);
-
-        double scaled = scaleMin + (Math.Clamp(normalized, 0, 1) * (scaleMax - scaleMin));
-        return Math.Clamp(scaled, scaleMin, scaleMax);
+        TotalScore = FormulaEngine.EvaluateToScalar(formula,
+            new Dictionary<string, FormulaEngine.Value>
+            {
+                ["QuestionScore"] = new FormulaEngine.Value(questionScores),
+                ["QuestionWeight"] = new FormulaEngine.Value(questionWeights),
+                ["QuestionCount"] = new FormulaEngine.Value(questionScores.Count),
+                ["SectionWeight"] = new FormulaEngine.Value(Weight)
+            },
+            defaultScore);
     }
 }

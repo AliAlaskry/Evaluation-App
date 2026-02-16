@@ -23,7 +23,8 @@ public static class ConfigLoader
         return new SystemOptions
         {
             IssuesToResolve = options.IssuesToResolve,
-            Normalization = options.Normalization
+            Normalization = options.Normalization,
+            Scoring = options.Scoring
         };
     }
 
@@ -34,7 +35,8 @@ public static class ConfigLoader
         {
             AskPreferTeamLeaderAssistant = options.AskPreferTeamLeaderAssistant,
             Normalization = options.Normalization,
-            IssuesToResolve = options.IssuesToResolve
+            IssuesToResolve = options.IssuesToResolve,
+            Scoring = options.Scoring
         };
     }
 
@@ -128,18 +130,32 @@ public class EvaluationOptions
     public List<string> IssuesToResolve { get; set; } = new();
     public bool AskPreferTeamLeaderAssistant { get; set; } = false;
     public NormalizationOptions Normalization { get; set; } = new();
+    public ScoringOptions Scoring { get; set; } = new();
 }
 
 public class SystemOptions
 {
     public List<string> IssuesToResolve { get; set; } = new();
     public NormalizationOptions Normalization { get; set; } = new();
+    public ScoringOptions Scoring { get; set; } = new();
 }
 
 public class EmployeeOptions : SystemOptions
 {
     public bool AskPreferTeamLeaderAssistant { get; set; } = false;
 }
+
+public class ScoringOptions
+{
+    public string DefaultQuestionFormula { get; set; } = "QuestionScore = Value";
+    public string DefaultCombinedQuestionFormula { get; set; } = "QuestionScore = median(Scores)";
+    public string SectionFormula { get; set; } = "SectionScore = sum(QuestionScore * QuestionWeight) / sum(QuestionWeight)";
+    public string CombinedSectionFormula { get; set; } = "SectionScore = sum(QuestionScore * QuestionWeight) / sum(QuestionWeight)";
+    public string TotalFormula { get; set; } = "TotalScore = sum(SectionScore * SectionWeight) / sum(SectionWeight)";
+    public string CombinedTotalFormula { get; set; } = "TotalScore = sum(SectionScore * SectionWeight) / sum(SectionWeight)";
+}
+
+public readonly record struct ScoringFormulaContext(ScoringOptions Scoring, bool UseCombinedFormulas);
 
 public class NormalizationOptions
 {

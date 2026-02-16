@@ -3,8 +3,12 @@
     "AskPreferTeamLeaderAssistant": true,
     "Normalization": { "ScaleMin": 0, "ScaleMax": 100, "HigherIsBetter": true },
     "Scoring": {
+      "DefaultQuestionFormula": "QuestionScore = Value",
+      "DefaultCombinedQuestionFormula": "QuestionScore = median(Scores)",
       "SectionFormula": "SectionScore = sum(QuestionScore * QuestionWeight) / sum(QuestionWeight)",
+      "CombinedSectionFormula": "SectionScore = sum(QuestionScore * QuestionWeight) / sum(QuestionWeight)",
       "TotalFormula": "TotalScore = sum(SectionScore * SectionWeight) / sum(SectionWeight)",
+      "CombinedTotalFormula": "TotalScore = sum(SectionScore * SectionWeight) / sum(SectionWeight)"
     }
   },
   "Sections": [

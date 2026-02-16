@@ -9,8 +9,12 @@
     ],
     "Normalization": { "ScaleMin": 0, "ScaleMax": 100, "HigherIsBetter": true },
     "Scoring": {
+      "DefaultQuestionFormula": "QuestionScore = Value",
+      "DefaultCombinedQuestionFormula": "QuestionScore = median(Scores)",
       "SectionFormula": "SectionScore = sum(QuestionScore * QuestionWeight where Include=true) / sum(QuestionWeight where Include=true)",
-      "TotalFormula": "TotalScore = sum(SectionScore * SectionWeight) / sum(SectionWeight)"
+      "CombinedSectionFormula": "SectionScore = sum(QuestionScore * QuestionWeight) / sum(QuestionWeight)",
+      "TotalFormula": "TotalScore = sum(SectionScore * SectionWeight) / sum(SectionWeight)",
+      "CombinedTotalFormula": "TotalScore = sum(SectionScore * SectionWeight) / sum(SectionWeight)"
     }
   },
   "Sections": [
