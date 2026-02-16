@@ -4,14 +4,9 @@ using static Constants;
 
 public static class ExcelExportService
 {
-    public static void ExportTeamMembers()
+    public static bool ExportTeamMembers()
     {
-        var employees = EmployeeService.LoadEmployees()
-            .Where(e => e.Code != AuthService.CurrentUser.Code && e.Include)
-            .ToList();
-
-        if (!employees.Any())
-            return;
+        var employees = EmployeeService.LoadEmployees();
 
         string fileName = Path.Combine(DesktopPath, "Team Members Report.xlsx");
         using var workbook = new XLWorkbook();
@@ -19,42 +14,70 @@ public static class ExcelExportService
         foreach (var emp in employees)
             ExportEvaluation(workbook, emp.Code, $"Employee Evaluation - {emp.Name}");
 
+        if (workbook.Worksheets.Count != employees.Count - 1)
+        {
+            MessageBox.Show("لم يتم تقييم جميع الموظفين .", "خطأ", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            return false;
+        }
+
         workbook.SaveAs(fileName);
+        return true;
     }
 
-    public static void ExportTeamMember(Employee emp)
+    public static bool ExportTeamMember(Employee emp)
     {
         string fileName = Path.Combine(DesktopPath, $"{emp.Name} Report.xlsx");
         using var workbook = new XLWorkbook();
 
         ExportEvaluation(workbook, emp.Code, $"Employee Evaluation - {emp.Name}");
+
+        if (workbook.Worksheets.Count != 1)
+        {
+            MessageBox.Show("لم يتم تقييم الموظف.", "خطأ", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            return false;
+        }
+
         workbook.SaveAs(fileName);
+        return true;
     }
 
-    public static void ExportSystemEvaluation()
+    public static bool ExportSystemEvaluation()
     {
         string fileName = Path.Combine(DesktopPath, "System Evaluation.xlsx");
         using var workbook = new XLWorkbook();
 
         ExportEvaluation(workbook, SYSTEM_EVALUATION_CODE, "System Evaluation");
+
+        if (workbook.Worksheets.Count != 1)
+        {
+            MessageBox.Show("لم يتم تقييم النظام.", "خطأ", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            return false;
+        }
+
         workbook.SaveAs(fileName);
+        return true;
     }
 
-    public static void ExportFullReport()
+    public static bool TryExportFullReport()
     {
         string fileName = Path.Combine(DesktopPath, "Full Report.xlsx");
         using var workbook = new XLWorkbook();
 
         ExportEvaluation(workbook, SYSTEM_EVALUATION_CODE, "System Evaluation");
 
-        var employees = EmployeeService.LoadEmployees()
-            .Where(e => e.Code != AuthService.CurrentUser.Code && e.Include)
-            .ToList();
+        var employees = EmployeeService.LoadEmployees();
 
         foreach (var emp in employees)
             ExportEvaluation(workbook, emp.Code, $"Employee Evaluation - {emp.Name}");
 
+        if (workbook.Worksheets.Count != employees.Count)
+        {
+            MessageBox.Show("لم يتم تقييم النظام والموظفين.", "خطأ", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            return false;
+        }
+
         workbook.SaveAs(fileName);
+        return true;
     }
 
     public static bool TryLoadEvaluationFromExcel(string excelPath, string evalCode, EvaluationResult destination)

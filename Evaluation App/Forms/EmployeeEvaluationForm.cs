@@ -9,7 +9,7 @@ namespace Evaluation_App.Forms
         private readonly Dictionary<string, TrackBar> _inputControls = new();
         private readonly Dictionary<string, Label> _valueLabels = new();
         private EvaluationResult _evaluationResult;
-        private readonly EmployeeEvaluationOptions _employeeOptions;
+        private readonly EmployeeOptions _employeeOptions;
 
         public EmployeeEvaluationForm(Employee employee)
         {
@@ -243,9 +243,9 @@ namespace Evaluation_App.Forms
         private void btnGenerateExcel_Click(object sender, EventArgs e)
         {
             ApplyInputsToModel();
-            EvaluationService.Save(_evaluationResult);
-            ExcelExportService.ExportTeamMember(_employee);
-            MessageBox.Show("تم إنشاء تقرير Excel على سطح المكتب.");
+
+            if (ExcelExportService.ExportTeamMember(_employee))
+                MessageBox.Show("تم إنشاء تقرير Excel على سطح المكتب.");
         }
 
         private void btnBack_Click(object sender, EventArgs e)

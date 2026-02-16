@@ -31,9 +31,7 @@ namespace Evaluation_App.Forms
 
         private void LoadEmployees()
         {
-            allEmployees = EmployeeService.LoadEmployees()
-                .Where(e => e.Code != AuthService.CurrentUser.Code && e.Include)
-                .ToList();
+            allEmployees = EmployeeService.LoadEmployees().Where(e => e.Code != AuthService.CurrentUser.Code).ToList();
 
             lstEmployees.DataSource = allEmployees;
             lstEmployees.DisplayMember = "Name";
@@ -65,6 +63,12 @@ namespace Evaluation_App.Forms
             surveyForm.Show();
             _isNavigating = true;
             Close();
+        }
+
+        private void exportExcel_Click(object sender, EventArgs e)
+        {
+            if (ExcelExportService.ExportTeamMembers())
+                MessageBox.Show("تم إنشاء تقرير Excel على سطح المكتب.");
         }
     }
 }

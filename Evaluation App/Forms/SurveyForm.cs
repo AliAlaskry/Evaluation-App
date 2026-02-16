@@ -10,7 +10,8 @@ namespace Evaluation_App.Forms
         {
             InitializeComponent();
             FormClosing += SurveyForm_FormClosing;
-            Text = $"التقييمات - {AuthService.CurrentUser.Name} ({AuthService.CurrentUser.Code})";
+            Text = $"الإستبيان - {AuthService.CurrentUser.Name} ({AuthService.CurrentUser.Code})";
+            EvaluationService.ResetAll();
         }
 
         private void SurveyForm_FormClosing(object? sender, FormClosingEventArgs e)
@@ -45,8 +46,8 @@ namespace Evaluation_App.Forms
 
         private void BtnGenerateExcel_Click(object sender, EventArgs e)
         {
-            ExcelExportService.ExportFullReport();
-            MessageBox.Show("تم إنشاء التقرير الكامل على سطح المكتب.");
+            if (ExcelExportService.TryExportFullReport())
+                MessageBox.Show("تم إنشاء التقرير الكامل على سطح المكتب.");
         }
 
         private void BtnBack_Click(object sender, EventArgs e)

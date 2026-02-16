@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Evaluation_App.Services;
+using Newtonsoft.Json;
 using static Constants;
 
 public static class EmployeeService
@@ -15,16 +16,16 @@ public static class EmployeeService
             if (!File.Exists(EMPLOYEE_FILE))
             {
                 MessageBox.Show("ملف الموظفين غير موجود:\n" + EMPLOYEE_FILE, "خطأ", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return new List<Employee>();
+                return new();
             }
 
             string json = File.ReadAllText(EMPLOYEE_FILE);
             employees = JsonConvert.DeserializeObject<List<Employee>>(json);
 
             if (employees == null)
-                employees = new List<Employee>();
+                employees = new();
 
-            return employees;
+            return employees.Where(e => e.Include).ToList();
         }
         catch (Exception ex)
         {
@@ -35,6 +36,6 @@ public static class EmployeeService
 
     public static Employee GetEmployeeByCode(string code)
     {
-        return LoadEmployees().FirstOrDefault(e => e.Code == code && e.Include);
+        return LoadEmployees().FirstOrDefault(e => e.Code == code);
     }
 }

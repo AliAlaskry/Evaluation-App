@@ -9,7 +9,8 @@ namespace Evaluation_App.Forms
         private readonly Dictionary<string, TrackBar> _inputControls = new();
         private readonly Dictionary<string, Label> _valueLabels = new();
         private EvaluationResult _evaluationResult;
-        private EmployeeEvaluationOptions _employeeOptions;
+        private SystemOptions _systemOptions;
+        private EmployeeOptions _employeeOptions;
 
         public SystemEvaluationForm()
         {
@@ -17,11 +18,13 @@ namespace Evaluation_App.Forms
             FormClosing += SystemEvaluationForm_FormClosing;
             Text = $"تقييم النظام - {AuthService.CurrentUser.Name} ({AuthService.CurrentUser.Code})";
 
+            _systemOptions = ConfigLoader.LoadSystemOptions();
             _employeeOptions = ConfigLoader.LoadEmployeeOptions();
             _evaluationResult = EvaluationService.LoadEvaluation(SYSTEM_EVALUATION_CODE)
                 ?? new EvaluationResult(SYSTEM_EVALUATION_CODE, false, ConfigLoader.LoadSystemSections());
 
-            chkTeamLeadAssistant.Visible = _employeeOptions.AskPreferTeamLeaderAssistant;
+            chkTeamLeadAssistant.Visible = _employeeOptions.AskPreferTeamLeaderAssistant 
+                && !AuthService.CurrentUser.IsTeamLead;
             LoadSections();
             LoadPreviousAnswers();
             LoadIssues();
@@ -157,10 +160,13 @@ namespace Evaluation_App.Forms
         {
             lstIssues.Items.Clear();
 
-            if (_employeeOptions.IssuesToResolve == null || !_employeeOptions.IssuesToResolve.Any())
+            if (_systemOptions.IssuesToResolve == null || !_systemOptions.IssuesToResolve.Any())
             {
                 lblIssues.Visible = false;
                 lstIssues.Visible = false;
+
+                lblSuggestions.Location = new Point(12, 369);
+                flowLayoutPanel1.Size = new Size(736, 401);
                 return;
             }
 
@@ -168,7 +174,7 @@ namespace Evaluation_App.Forms
             lstIssues.Visible = true;
 
             int i = 1;
-            foreach (var issue in _employeeOptions.IssuesToResolve)
+            foreach (var issue in _systemOptions.IssuesToResolve)
             {
                 lstIssues.Items.Add($"{i}. {issue}");
                 i++;
@@ -259,9 +265,9 @@ namespace Evaluation_App.Forms
         private void btnGenerateExcel_Click(object sender, EventArgs e)
         {
             ApplyInputsToModel();
-            EvaluationService.Save(_evaluationResult);
-            ExcelExportService.ExportSystemEvaluation();
-            MessageBox.Show("تم إنشاء تقرير Excel على سطح المكتب.");
+
+            if (ExcelExportService.ExportSystemEvaluation())
+                MessageBox.Show("تم إنشاء تقرير Excel على سطح المكتب.");
         }
 
         private void btnBack_Click(object sender, EventArgs e)

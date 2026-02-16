@@ -1,7 +1,7 @@
 {
-  "Options": {
-    "AskPreferTeamLeaderAssistant": true,
-    "IssuesToResolve": []
+  "Options": 
+  {
+    "AskPreferTeamLeaderAssistant": true
   },
   "Sections": [
     {

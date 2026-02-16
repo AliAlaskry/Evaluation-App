@@ -1,6 +1,5 @@
 {
   "Options": {
-    "AskPreferTeamLeaderAssistant": true,
     "IssuesToResolve": [
       "توحيد دقة تقدير السبرنت بين أعضاء الفريق.",
       "تسريع زمن مراجعة طلبات الدمج (Pull Request).",

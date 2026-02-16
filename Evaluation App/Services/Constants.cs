@@ -1,7 +1,7 @@
 ﻿public static class Constants
 {
-    public static readonly string BasePath = 
-        Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "Evaluations");
+    public static readonly string EvaluationPath = 
+        Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Evaluations");
 
     public static readonly string EMPLOYEE_FILE = 
         Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "employees.json");

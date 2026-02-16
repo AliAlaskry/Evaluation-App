@@ -6,15 +6,4 @@
 
     // التحكم في المشاركة داخل عملية التقييم من ملف JSON بسهولة
     public bool Include { get; set; } = true;
-
-    public Employee()
-    {
-    }
-
-    public Employee(string code, string name, bool isTeamLead)
-    {
-        Code = code;
-        Name = name;
-        IsTeamLead = isTeamLead;
-    }
 }

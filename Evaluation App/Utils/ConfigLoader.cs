@@ -9,40 +9,65 @@ public static class ConfigLoader
 
     public static List<Section> LoadEmployeeSections(Employee? targetEmployee = null)
     {
-        return LoadConfigFromFile(EmployeeEvaluationPath, true, targetEmployee).Sections;
+        return LoadSectionsFromFile(EmployeeEvaluationPath, true, targetEmployee).Sections;
     }
 
     public static List<Section> LoadSystemSections()
     {
-        return LoadConfigFromFile(SystemConfigPath, false, null).Sections;
+        return LoadSectionsFromFile(SystemConfigPath, false, null).Sections;
     }
 
-    public static EmployeeEvaluationOptions LoadEmployeeOptions()
+    public static SystemOptions LoadSystemOptions()
     {
-        return LoadConfigFromFile(EmployeeEvaluationPath, true, null).Options;
+        return LoadOptionsFromFile(SystemConfigPath).SystemOptions;
     }
 
-    private static EvaluationConfig LoadConfigFromFile(string path, bool isEmployeeEvaluation, Employee? targetEmployee)
+    public static EmployeeOptions LoadEmployeeOptions()
+    {
+        return LoadOptionsFromFile(EmployeeEvaluationPath).EmployeeOptions;
+    }
+
+    private static EvaluationConfig LoadSectionsFromFile(string path, bool isEmployeeEvaluation, Employee? targetEmployee)
     {
         try
         {
             if (!File.Exists(path))
             {
                 MessageBox.Show($"ملف الإعدادات غير موجود:\n{path}", "خطأ", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return new EvaluationConfig();
+                return new();
             }
 
             var json = File.ReadAllText(path);
-            var config = JsonConvert.DeserializeObject<EvaluationConfig>(json) ?? new EvaluationConfig();
-            config.Sections ??= new List<Section>();
-            config.Options ??= new EmployeeEvaluationOptions();
+            var config = JsonConvert.DeserializeObject<EvaluationConfig>(json) ?? new();
 
             return FilterSections(config, isEmployeeEvaluation, targetEmployee);
         }
         catch (Exception ex)
         {
             MessageBox.Show("حدث خطأ أثناء تحميل ملف التقييم:\n" + ex.Message, "خطأ", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            return new EvaluationConfig();
+            return new();
+        }
+    }
+
+    private static EvaluationConfig LoadOptionsFromFile(string path)
+    {
+        try
+        {
+            if (!File.Exists(path))
+            {
+                MessageBox.Show($"ملف الإعدادات غير موجود:\n{path}", "خطأ", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return new();
+            }
+
+            var json = File.ReadAllText(path);
+            var options = JsonConvert.DeserializeObject<EvaluationConfig>(json) ?? new();
+
+            return options;
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show("حدث خطأ أثناء تحميل ملف التقييم:\n" + ex.Message, "خطأ", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            return new();
         }
     }
 
@@ -84,11 +109,16 @@ public static class ConfigLoader
 public class EvaluationConfig
 {
     public List<Section> Sections { get; set; } = new();
-    public EmployeeEvaluationOptions Options { get; set; } = new();
+    public SystemOptions SystemOptions { get; set; } = new();
+    public EmployeeOptions EmployeeOptions { get; set; } = new();
 }
 
-public class EmployeeEvaluationOptions
+public class SystemOptions
+{
+    public List<string> IssuesToResolve { get; set; } = new();
+}
+
+public class EmployeeOptions
 {
     public bool AskPreferTeamLeaderAssistant { get; set; } = false;
-    public List<string> IssuesToResolve { get; set; } = new();
 }

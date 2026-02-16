@@ -5,16 +5,16 @@ public static class EvaluationService
 {
     public static void Save(EvaluationResult eval)
     {
-        if (!Directory.Exists(BasePath))
-            Directory.CreateDirectory(BasePath);
+        if (!Directory.Exists(EvaluationPath))
+            Directory.CreateDirectory(EvaluationPath);
 
-        string file = Path.Combine(BasePath, $"{eval.Code}.json");
+        string file = Path.Combine(EvaluationPath, $"{eval.Code}.json");
         File.WriteAllText(file, JsonConvert.SerializeObject(eval, Formatting.Indented));
     }
 
     public static EvaluationResult LoadEvaluation(string employeeCode)
     {
-        string file = Path.Combine(BasePath, $"{employeeCode}.json");
+        string file = Path.Combine(EvaluationPath, $"{employeeCode}.json");
         if (!File.Exists(file)) return null;
 
         return JsonConvert.DeserializeObject<EvaluationResult>(File.ReadAllText(file));
@@ -22,20 +22,20 @@ public static class EvaluationService
 
     public static bool HasSavedEvaluation(string employeeCode)
     {
-        string file = Path.Combine(BasePath, $"{employeeCode}.json");
+        string file = Path.Combine(EvaluationPath, $"{employeeCode}.json");
         return File.Exists(file);
     }
 
     public static void Reset(string employeeCode)
     {
-        string file = Path.Combine(BasePath, $"{employeeCode}.json");
+        string file = Path.Combine(EvaluationPath, $"{employeeCode}.json");
         if (File.Exists(file))
             File.Delete(file);
     }
 
     public static void ResetAll()
     {
-        if(Directory.Exists(BasePath)) 
-            Directory.Delete(BasePath, true);
+        if(Directory.Exists(EvaluationPath)) 
+            Directory.Delete(EvaluationPath, true);
     }
 }
