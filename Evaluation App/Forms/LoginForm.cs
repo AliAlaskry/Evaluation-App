@@ -1,0 +1,45 @@
+﻿using Evaluation_App.Services;
+
+namespace Evaluation_App.Forms
+{
+    public partial class LoginForm : Form
+    {
+        public LoginForm()
+        {
+            EvaluationService.ResetAll();
+            InitializeComponent();
+        }
+
+        private void btnLogin_Click(object sender, EventArgs e)
+        {
+            string code = txtCode.Text.Trim();
+            var user = EmployeeService.GetEmployeeByCode(code);
+
+            if (user == null)
+            {
+                MessageBox.Show("كود الموظف غير صحيح");
+                return;
+            }
+
+            if (user.IsTeamLead)
+            {
+                // طلب كلمة المرور للمدير
+                string password = Prompt.ShowDialog("أدخل كلمة المرور للمدير", "تسجيل دخول المدير");
+                if (password != "@#159357@#") // ضع هنا كلمة المرور الحقيقية للمدير
+                {
+                    MessageBox.Show("كلمة المرور غير صحيحة");
+                    return;
+                }
+            }
+
+            // تسجيل الدخول
+            AuthService.Login(user);
+
+            // فتح تقييم النظام أولًا
+            var systemForm = new SystemEvaluationForm();
+            systemForm.Show();
+            this.Hide();
+        }
+
+    }
+}
