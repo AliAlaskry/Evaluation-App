@@ -26,38 +26,38 @@
             // lblCodeTitle
             // 
             lblCodeTitle.AutoSize = true;
-            lblCodeTitle.Location = new Point(180, 17);
+            lblCodeTitle.Location = new Point(50, 17);
             lblCodeTitle.Name = "lblCodeTitle";
-            lblCodeTitle.Size = new Size(70, 15);
+            lblCodeTitle.Size = new Size(88, 15);
             lblCodeTitle.TabIndex = 0;
-            lblCodeTitle.Text = "كود الموظف";
+            lblCodeTitle.Text = "Employee code";
             // 
             // txtCode
             // 
-            txtCode.Location = new Point(50, 35);
+            txtCode.Location = new Point(50, 48);
             txtCode.Name = "txtCode";
-            txtCode.PlaceholderText = "ادخل كود الموظف";
-            txtCode.RightToLeft = RightToLeft.Yes;
+            txtCode.PlaceholderText = "Enter employee code ...";
+            txtCode.RightToLeft = RightToLeft.No;
             txtCode.Size = new Size(200, 23);
             txtCode.TabIndex = 1;
             // 
             // chkKeepLogged
             // 
             chkKeepLogged.AutoSize = true;
-            chkKeepLogged.Location = new Point(163, 64);
+            chkKeepLogged.Location = new Point(50, 88);
             chkKeepLogged.Name = "chkKeepLogged";
-            chkKeepLogged.Size = new Size(87, 19);
+            chkKeepLogged.Size = new Size(105, 19);
             chkKeepLogged.TabIndex = 2;
-            chkKeepLogged.Text = "أبقنى مسجلا";
+            chkKeepLogged.Text = "Keep logged in";
             chkKeepLogged.UseVisualStyleBackColor = true;
             // 
             // btnLogin
             // 
-            btnLogin.Location = new Point(95, 90);
+            btnLogin.Location = new Point(94, 113);
             btnLogin.Name = "btnLogin";
             btnLogin.Size = new Size(112, 32);
             btnLogin.TabIndex = 3;
-            btnLogin.Text = "تسجيل الدخول";
+            btnLogin.Text = "Login";
             btnLogin.Click += btnLogin_Click;
             // 
             // LoginForm
@@ -70,7 +70,7 @@
             MinimumSize = new Size(360, 210);
             Name = "LoginForm";
             StartPosition = FormStartPosition.CenterScreen;
-            Text = "تسجيل الدخول";
+            Text = "Login Page";
             ResumeLayout(false);
             PerformLayout();
         }

@@ -22,97 +22,97 @@ namespace Evaluation_App.Forms
 
         private void InitializeComponent()
         {
-            this.lblTitle = new System.Windows.Forms.Label();
-            this.btnModifyConfig = new System.Windows.Forms.Button();
-            this.btnSurvey = new System.Windows.Forms.Button();
-            this.btnCreateReport = new System.Windows.Forms.Button();
-            this.btnLogout = new System.Windows.Forms.Button();
-            this.btnExit = new System.Windows.Forms.Button();
-            this.SuspendLayout();
-            // 
-            // lblTitle
-            // 
-            this.lblTitle.Dock = System.Windows.Forms.DockStyle.Top;
-            this.lblTitle.Font = new System.Drawing.Font("Segoe UI", 16F, System.Drawing.FontStyle.Bold);
-            this.lblTitle.Location = new System.Drawing.Point(0, 0);
-            this.lblTitle.Name = "lblTitle";
-            this.lblTitle.Size = new System.Drawing.Size(420, 70);
-            this.lblTitle.TabIndex = 0;
-            this.lblTitle.Text = "Main Menu";
-            this.lblTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            btnModifyConfig = new Button();
+            btnSurvey = new Button();
+            btnCreateReport = new Button();
+            btnLogout = new Button();
+            btnExit = new Button();
+            lblTitle = new Label();
+            SuspendLayout();
             // 
             // btnModifyConfig
             // 
-            this.btnModifyConfig.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btnModifyConfig.Location = new System.Drawing.Point(100, 90);
-            this.btnModifyConfig.Name = "btnModifyConfig";
-            this.btnModifyConfig.Size = new System.Drawing.Size(220, 36);
-            this.btnModifyConfig.TabIndex = 1;
-            this.btnModifyConfig.Text = "Modify Config Files";
-            this.btnModifyConfig.UseVisualStyleBackColor = true;
-            this.btnModifyConfig.Click += new System.EventHandler(this.BtnModifyConfig_Click);
+            btnModifyConfig.Font = new Font("Segoe UI", 10F);
+            btnModifyConfig.Location = new Point(100, 90);
+            btnModifyConfig.Name = "btnModifyConfig";
+            btnModifyConfig.Size = new Size(220, 36);
+            btnModifyConfig.TabIndex = 1;
+            btnModifyConfig.Text = "Modify Config Files";
+            btnModifyConfig.UseVisualStyleBackColor = true;
+            btnModifyConfig.Click += BtnModifyConfig_Click;
             // 
             // btnSurvey
             // 
-            this.btnSurvey.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btnSurvey.Location = new System.Drawing.Point(100, 140);
-            this.btnSurvey.Name = "btnSurvey";
-            this.btnSurvey.Size = new System.Drawing.Size(220, 36);
-            this.btnSurvey.TabIndex = 2;
-            this.btnSurvey.Text = "Survey";
-            this.btnSurvey.UseVisualStyleBackColor = true;
-            this.btnSurvey.Click += new System.EventHandler(this.BtnSurvey_Click);
+            btnSurvey.Font = new Font("Segoe UI", 10F);
+            btnSurvey.Location = new Point(100, 140);
+            btnSurvey.Name = "btnSurvey";
+            btnSurvey.Size = new Size(220, 36);
+            btnSurvey.TabIndex = 2;
+            btnSurvey.Text = "Survey";
+            btnSurvey.UseVisualStyleBackColor = true;
+            btnSurvey.Click += BtnSurvey_Click;
             // 
             // btnCreateReport
             // 
-            this.btnCreateReport.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btnCreateReport.Location = new System.Drawing.Point(100, 190);
-            this.btnCreateReport.Name = "btnCreateReport";
-            this.btnCreateReport.Size = new System.Drawing.Size(220, 36);
-            this.btnCreateReport.TabIndex = 3;
-            this.btnCreateReport.Text = "Create A Report";
-            this.btnCreateReport.UseVisualStyleBackColor = true;
-            this.btnCreateReport.Click += new System.EventHandler(this.BtnCreateReport_Click);
+            btnCreateReport.Font = new Font("Segoe UI", 10F);
+            btnCreateReport.Location = new Point(100, 190);
+            btnCreateReport.Name = "btnCreateReport";
+            btnCreateReport.Size = new Size(220, 36);
+            btnCreateReport.TabIndex = 3;
+            btnCreateReport.Text = "Create A Report";
+            btnCreateReport.UseVisualStyleBackColor = true;
+            btnCreateReport.Click += BtnCreateReport_Click;
             // 
             // btnLogout
             // 
-            this.btnLogout.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btnLogout.Location = new System.Drawing.Point(100, 240);
-            this.btnLogout.Name = "btnLogout";
-            this.btnLogout.Size = new System.Drawing.Size(220, 36);
-            this.btnLogout.TabIndex = 4;
-            this.btnLogout.Text = "Log Out";
-            this.btnLogout.UseVisualStyleBackColor = true;
-            this.btnLogout.Click += new System.EventHandler(this.BtnLogout_Click);
+            btnLogout.Font = new Font("Segoe UI", 10F);
+            btnLogout.Location = new Point(100, 240);
+            btnLogout.Name = "btnLogout";
+            btnLogout.Size = new Size(220, 36);
+            btnLogout.TabIndex = 4;
+            btnLogout.Text = "Log Out";
+            btnLogout.UseVisualStyleBackColor = true;
+            btnLogout.Click += BtnLogout_Click;
             // 
             // btnExit
             // 
-            this.btnExit.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btnExit.Location = new System.Drawing.Point(100, 290);
-            this.btnExit.Name = "btnExit";
-            this.btnExit.Size = new System.Drawing.Size(220, 36);
-            this.btnExit.TabIndex = 5;
-            this.btnExit.Text = "Exit";
-            this.btnExit.UseVisualStyleBackColor = true;
-            this.btnExit.Click += new System.EventHandler(this.BtnExit_Click);
+            btnExit.Font = new Font("Segoe UI", 10F);
+            btnExit.Location = new Point(100, 290);
+            btnExit.Name = "btnExit";
+            btnExit.Size = new Size(220, 36);
+            btnExit.TabIndex = 5;
+            btnExit.Text = "Exit";
+            btnExit.UseVisualStyleBackColor = true;
+            btnExit.Click += BtnExit_Click;
+            // 
+            // lblTitle
+            // 
+            lblTitle.Dock = DockStyle.Top;
+            lblTitle.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
+            lblTitle.Location = new Point(0, 0);
+            lblTitle.Name = "lblTitle";
+            lblTitle.Size = new Size(420, 70);
+            lblTitle.TabIndex = 0;
+            lblTitle.Text = "Main Menu";
+            lblTitle.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // MainMenuForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(420, 340);
-            this.Controls.Add(this.btnExit);
-            this.Controls.Add(this.btnLogout);
-            this.Controls.Add(this.btnCreateReport);
-            this.Controls.Add(this.btnSurvey);
-            this.Controls.Add(this.btnModifyConfig);
-            this.Controls.Add(this.lblTitle);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-            this.MaximizeBox = false;
-            this.Name = "MainMenuForm";
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Main Menu";
-            this.ResumeLayout(false);
+            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleMode = AutoScaleMode.Font;
+            ClientSize = new Size(420, 340);
+            Controls.Add(btnExit);
+            Controls.Add(btnLogout);
+            Controls.Add(btnCreateReport);
+            Controls.Add(btnSurvey);
+            Controls.Add(btnModifyConfig);
+            Controls.Add(lblTitle);
+            FormBorderStyle = FormBorderStyle.FixedDialog;
+            MaximizeBox = false;
+            Name = "MainMenuForm";
+            StartPosition = FormStartPosition.CenterScreen;
+            Text = "Main Menu";
+            ResumeLayout(false);
         }
     }
 }

@@ -15,8 +15,8 @@ namespace Evaluation_App.Forms
             _employee = employee;
             _employeeOptions = ConfigLoader.LoadEmployeeOptions();
 
-            Text = $"Employee Evaluation - {AuthService.CurrentUser.Name} ({AuthService.CurrentUser.Code})";
-            lblTitle.Text = $"{Text} | Rated: {employee.Name} ({employee.Code})";
+            Text = $"Employee Evaluation - {AuthService.CurrentUser.Name} [{AuthService.CurrentUser.Code}]";
+            lblTitle.Text = $"Rating: {employee.Name} [{employee.Code}]";
 
             _evaluationResult = EvaluationService.LoadEvaluation(_employee.Code)
                 ?? new EvaluationResult(_employee.Code, true, ConfigLoader.LoadEmployeeSections());
@@ -24,10 +24,10 @@ namespace Evaluation_App.Forms
             LoadSections();
             LoadPreviousAnswers();
 
-            chkTeamLead.Visible = _employeeOptions.AskPreferTeamLeaderAssistant && _employee.IsTeamLead;
+            chkTeamLead.Visible = _employeeOptions.AskPreferTeamLeaderAssistant && !_employee.IsTeamLead;
             chkTeamLead.Checked = _evaluationResult.RecommendAsTeamLead;
 
-            lblFinalNote.Text = AuthService.CurrentUser.IsTeamLead ? "Leader notes" : "Letter to your teammate";
+            lblFinalNote.Text = AuthService.CurrentUser.IsTeamLead ? "Leader notes" : "Leave a message";
             txtFinalNote.Text = _evaluationResult.FinalNote;
         }
 

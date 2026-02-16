@@ -8,8 +8,8 @@ namespace Evaluation_App.Forms
         public MainMenuForm()
         {
             InitializeComponent();
-            Text = $"Main Menu - {AuthService.CurrentUser.Name} ({AuthService.CurrentUser.Code})";
-            lblTitle.Text = Text;
+            Text = $"Main Menu";
+            lblTitle.Text = $"Welcome - {AuthService.CurrentUser.Name} [{AuthService.CurrentUser.Code}]";
             ConfigureMenu();
         }
 
@@ -63,8 +63,7 @@ namespace Evaluation_App.Forms
 
         private void BtnCreateReport_Click(object? sender, EventArgs e)
         {
-            ExcelExportService.ExportFullReport();
-            MessageBox.Show("Full report has been created on Desktop.");
+            
         }
 
         private void BtnLogout_Click(object? sender, EventArgs e)
