@@ -5,12 +5,21 @@ namespace Evaluation_App.Forms
 {
     public partial class MainMenuForm : Form
     {
+        private bool _isNavigating;
+
         public MainMenuForm()
         {
             InitializeComponent();
-            Text = $"Main Menu";
-            lblTitle.Text = $"Welcome - {AuthService.CurrentUser.Name} [{AuthService.CurrentUser.Code}]";
+            FormClosing += MainMenuForm_FormClosing;
+            Text = $"القائمة الرئيسية";
+            lblTitle.Text = $"مرحباً {AuthService.CurrentUser.Name} [{AuthService.CurrentUser.Code}]";
             ConfigureMenu();
+        }
+
+        private void MainMenuForm_FormClosing(object? sender, FormClosingEventArgs e)
+        {
+            if (!_isNavigating && e.CloseReason == CloseReason.UserClosing)
+                Application.Exit();
         }
 
         private void ConfigureMenu()
@@ -35,14 +44,14 @@ namespace Evaluation_App.Forms
         {
             if (!AuthService.CurrentUser.IsTeamLead)
             {
-                MessageBox.Show("This option is only available for team leaders.");
+                MessageBox.Show("هذا الخيار متاح لقادة الفريق فقط.");
                 return;
             }
 
             string dataFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data");
             if (!Directory.Exists(dataFolder))
             {
-                MessageBox.Show("Config folder was not found.");
+                MessageBox.Show("لم يتم العثور على مجلد الإعدادات.");
                 return;
             }
 
@@ -58,6 +67,7 @@ namespace Evaluation_App.Forms
             var surveyForm = new SurveyForm();
             surveyForm.FormClosed += (_, _) => Show();
             surveyForm.Show();
+            _isNavigating = true;
             Hide();
         }
 
@@ -68,6 +78,7 @@ namespace Evaluation_App.Forms
 
         private void BtnLogout_Click(object? sender, EventArgs e)
         {
+            _isNavigating = true;
             Hide();
             AuthService.Logout();
             var loginForm = new LoginForm();

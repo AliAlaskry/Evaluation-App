@@ -45,7 +45,7 @@
             lblTitle.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
             lblTitle.Location = new Point(0, 0);
             lblTitle.Size = new Size(760, 48);
-            lblTitle.Text = "System Evaluation";
+            lblTitle.Text = "تقييم النظام";
             lblTitle.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // chkTeamLeadAssistant
@@ -54,7 +54,7 @@
             chkTeamLeadAssistant.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             chkTeamLeadAssistant.Location = new Point(12, 55);
             chkTeamLeadAssistant.Size = new Size(365, 19);
-            chkTeamLeadAssistant.Text = "Do you prefer to be next team leader assistant";
+            chkTeamLeadAssistant.Text = "أرشّح نفسي كمساعد قائد فريق";
             // 
             // flowLayoutPanel1
             // 
@@ -69,7 +69,7 @@
             lblIssues.AutoSize = true;
             lblIssues.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             lblIssues.Location = new Point(12, 367);
-            lblIssues.Text = "Issues";
+            lblIssues.Text = "قضايا بحاجة لمعالجة";
             // 
             // lstIssues
             // 
@@ -82,7 +82,7 @@
             lblSuggestions.AutoSize = true;
             lblSuggestions.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             lblSuggestions.Location = new Point(12, 490);
-            lblSuggestions.Text = "Notes / Suggestions";
+            lblSuggestions.Text = "ملاحظات / اقتراحات";
             // 
             // txtSuggestions
             // 
@@ -95,35 +95,35 @@
             // 
             btnSave.Location = new Point(12, 612);
             btnSave.Size = new Size(100, 32);
-            btnSave.Text = "Save";
+            btnSave.Text = "حفظ";
             btnSave.Click += btnSave_Click;
             // 
             // btnReset
             // 
             btnReset.Location = new Point(120, 612);
             btnReset.Size = new Size(100, 32);
-            btnReset.Text = "Reset";
+            btnReset.Text = "إعادة ضبط";
             btnReset.Click += btnReset_Click;
             // 
             // btnLoad
             // 
             btnLoad.Location = new Point(228, 612);
             btnLoad.Size = new Size(100, 32);
-            btnLoad.Text = "Load";
+            btnLoad.Text = "تحميل";
             btnLoad.Click += btnLoad_Click;
             // 
             // btnGenerateExcel
             // 
             btnGenerateExcel.Location = new Point(540, 612);
             btnGenerateExcel.Size = new Size(100, 32);
-            btnGenerateExcel.Text = "Generate Excel";
+            btnGenerateExcel.Text = "توليد Excel";
             btnGenerateExcel.Click += btnGenerateExcel_Click;
             // 
             // btnBack
             // 
             btnBack.Location = new Point(648, 612);
             btnBack.Size = new Size(100, 32);
-            btnBack.Text = "Back";
+            btnBack.Text = "رجوع";
             btnBack.Click += btnBack_Click;
             // 
             // SystemEvaluationForm
@@ -145,9 +145,11 @@
             Controls.Add(lblTitle);
             FormBorderStyle = FormBorderStyle.FixedSingle;
             MaximizeBox = false;
+            RightToLeft = RightToLeft.Yes;
+            RightToLeftLayout = true;
             Name = "SystemEvaluationForm";
             StartPosition = FormStartPosition.CenterScreen;
-            Text = "System Evaluation";
+            Text = "تقييم النظام";
             ResumeLayout(false);
             PerformLayout();
         }

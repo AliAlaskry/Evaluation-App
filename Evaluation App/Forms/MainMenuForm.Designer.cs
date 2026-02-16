@@ -37,7 +37,7 @@ namespace Evaluation_App.Forms
             btnModifyConfig.Name = "btnModifyConfig";
             btnModifyConfig.Size = new Size(220, 36);
             btnModifyConfig.TabIndex = 1;
-            btnModifyConfig.Text = "Modify Config Files";
+            btnModifyConfig.Text = "تعديل ملفات الإعدادات";
             btnModifyConfig.UseVisualStyleBackColor = true;
             btnModifyConfig.Click += BtnModifyConfig_Click;
             // 
@@ -48,7 +48,7 @@ namespace Evaluation_App.Forms
             btnSurvey.Name = "btnSurvey";
             btnSurvey.Size = new Size(220, 36);
             btnSurvey.TabIndex = 2;
-            btnSurvey.Text = "Survey";
+            btnSurvey.Text = "التقييمات";
             btnSurvey.UseVisualStyleBackColor = true;
             btnSurvey.Click += BtnSurvey_Click;
             // 
@@ -59,7 +59,7 @@ namespace Evaluation_App.Forms
             btnCreateReport.Name = "btnCreateReport";
             btnCreateReport.Size = new Size(220, 36);
             btnCreateReport.TabIndex = 3;
-            btnCreateReport.Text = "Create A Report";
+            btnCreateReport.Text = "إنشاء تقرير";
             btnCreateReport.UseVisualStyleBackColor = true;
             btnCreateReport.Click += BtnCreateReport_Click;
             // 
@@ -70,7 +70,7 @@ namespace Evaluation_App.Forms
             btnLogout.Name = "btnLogout";
             btnLogout.Size = new Size(220, 36);
             btnLogout.TabIndex = 4;
-            btnLogout.Text = "Log Out";
+            btnLogout.Text = "تسجيل الخروج";
             btnLogout.UseVisualStyleBackColor = true;
             btnLogout.Click += BtnLogout_Click;
             // 
@@ -81,7 +81,7 @@ namespace Evaluation_App.Forms
             btnExit.Name = "btnExit";
             btnExit.Size = new Size(220, 36);
             btnExit.TabIndex = 5;
-            btnExit.Text = "Exit";
+            btnExit.Text = "خروج";
             btnExit.UseVisualStyleBackColor = true;
             btnExit.Click += BtnExit_Click;
             // 
@@ -93,7 +93,7 @@ namespace Evaluation_App.Forms
             lblTitle.Name = "lblTitle";
             lblTitle.Size = new Size(420, 70);
             lblTitle.TabIndex = 0;
-            lblTitle.Text = "Main Menu";
+            lblTitle.Text = "القائمة الرئيسية";
             lblTitle.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // MainMenuForm
@@ -109,9 +109,11 @@ namespace Evaluation_App.Forms
             Controls.Add(lblTitle);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
+            RightToLeft = RightToLeft.Yes;
+            RightToLeftLayout = true;
             Name = "MainMenuForm";
             StartPosition = FormStartPosition.CenterScreen;
-            Text = "Main Menu";
+            Text = "القائمة الرئيسية";
             ResumeLayout(false);
         }
     }

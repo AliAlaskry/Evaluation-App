@@ -4,9 +4,18 @@ namespace Evaluation_App.Forms
 {
     public partial class LoginForm : Form
     {
+        private bool _isNavigating;
+
         public LoginForm()
         {
             InitializeComponent();
+            FormClosing += LoginForm_FormClosing;
+        }
+
+        private void LoginForm_FormClosing(object? sender, FormClosingEventArgs e)
+        {
+            if (!_isNavigating && e.CloseReason == CloseReason.UserClosing)
+                Application.Exit();
         }
 
         private void btnLogin_Click(object sender, EventArgs e)
@@ -37,6 +46,7 @@ namespace Evaluation_App.Forms
             // فتح القائمة الرئيسية بعد تسجيل الدخول
             var mainMenuForm = new MainMenuForm();
             mainMenuForm.Show();
+            _isNavigating = true;
             this.Hide();
         }
     }
