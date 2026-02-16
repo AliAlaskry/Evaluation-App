@@ -50,6 +50,25 @@ namespace Evaluation_App.Forms
                 MessageBox.Show("تم إنشاء التقرير الكامل على سطح المكتب.");
         }
 
+        private void BtnMergeExcel_Click(object sender, EventArgs e)
+        {
+            using var folderDialog = new FolderBrowserDialog
+            {
+                Description = "اختر مجلد يحتوي ملفات Full Servey المراد دمجها"
+            };
+
+            if (folderDialog.ShowDialog() != DialogResult.OK)
+                return;
+
+            if (!ExcelExportService.TryExportCombinedFullSurvey(folderDialog.SelectedPath))
+            {
+                MessageBox.Show("تعذر دمج الملفات. تأكد أن كل ملفات Excel لها نفس الصفحات ونفس العمود الأول.");
+                return;
+            }
+
+            MessageBox.Show("تم إنشاء ملف Sprint Full Survey على سطح المكتب.");
+        }
+
         private void BtnBack_Click(object sender, EventArgs e)
         {
             var menuForm = new MainMenuForm();

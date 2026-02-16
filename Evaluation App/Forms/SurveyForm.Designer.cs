@@ -6,6 +6,7 @@ namespace Evaluation_App.Forms
         private Button btnRateSystem;
         private Button btnRateTeammates;
         private Button btnGenerateExcel;
+        private Button btnMergeExcel;
         private Button btnBack;
 
         protected override void Dispose(bool disposing)
@@ -23,6 +24,7 @@ namespace Evaluation_App.Forms
             btnRateSystem = new Button();
             btnRateTeammates = new Button();
             btnGenerateExcel = new Button();
+            btnMergeExcel = new Button();
             btnBack = new Button();
             lblTitle = new Label();
             SuspendLayout();
@@ -56,17 +58,28 @@ namespace Evaluation_App.Forms
             btnGenerateExcel.Name = "btnGenerateExcel";
             btnGenerateExcel.Size = new Size(220, 38);
             btnGenerateExcel.TabIndex = 3;
-            btnGenerateExcel.Text = "تصدير Excel شامل";
+            btnGenerateExcel.Text = "تصدير excel شامل";
             btnGenerateExcel.UseVisualStyleBackColor = true;
             btnGenerateExcel.Click += BtnGenerateExcel_Click;
+            // 
+            // btnMergeExcel
+            // 
+            btnMergeExcel.Font = new Font("Segoe UI", 10F);
+            btnMergeExcel.Location = new Point(100, 246);
+            btnMergeExcel.Name = "btnMergeExcel";
+            btnMergeExcel.Size = new Size(220, 38);
+            btnMergeExcel.TabIndex = 4;
+            btnMergeExcel.Text = "تصدير excel مجمع";
+            btnMergeExcel.UseVisualStyleBackColor = true;
+            btnMergeExcel.Click += BtnMergeExcel_Click;
             // 
             // btnBack
             // 
             btnBack.Font = new Font("Segoe UI", 10F);
-            btnBack.Location = new Point(100, 246);
+            btnBack.Location = new Point(100, 298);
             btnBack.Name = "btnBack";
             btnBack.Size = new Size(220, 38);
-            btnBack.TabIndex = 4;
+            btnBack.TabIndex = 5;
             btnBack.Text = "رجوع";
             btnBack.UseVisualStyleBackColor = true;
             btnBack.Click += BtnBack_Click;
@@ -86,8 +99,9 @@ namespace Evaluation_App.Forms
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(420, 320);
+            ClientSize = new Size(420, 365);
             Controls.Add(btnBack);
+            Controls.Add(btnMergeExcel);
             Controls.Add(btnGenerateExcel);
             Controls.Add(btnRateTeammates);
             Controls.Add(btnRateSystem);

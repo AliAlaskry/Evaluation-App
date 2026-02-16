@@ -8,7 +8,7 @@ namespace Evaluation_App.Forms
         private bool _isNavigating;
         private readonly Dictionary<string, TrackBar> _inputControls = new();
         private readonly Dictionary<string, Label> _valueLabels = new();
-        private EvaluationResult _evaluationResult;
+        private SystemEvaluationrResult _evaluationResult;
         private SystemOptions _systemOptions;
         private EmployeeOptions _employeeOptions;
 
@@ -20,8 +20,8 @@ namespace Evaluation_App.Forms
 
             _systemOptions = ConfigLoader.LoadSystemOptions();
             _employeeOptions = ConfigLoader.LoadEmployeeOptions();
-            _evaluationResult = EvaluationService.LoadEvaluation(SYSTEM_EVALUATION_CODE)
-                ?? new EvaluationResult(SYSTEM_EVALUATION_CODE, false, ConfigLoader.LoadSystemSections());
+            _evaluationResult = EvaluationService.LoadSystemEvaluation()
+                ?? new SystemEvaluationrResult(SYSTEM_EVALUATION_CODE, ConfigLoader.LoadSystemSections());
 
             chkTeamLeadAssistant.Visible = _employeeOptions.AskPreferTeamLeaderAssistant 
                 && !AuthService.CurrentUser.IsTeamLead;
