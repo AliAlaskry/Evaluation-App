@@ -106,7 +106,7 @@
             this.btnSignOut.Name = "btnSignOut";
             this.btnSignOut.Size = new System.Drawing.Size(100, 30);
             this.btnSignOut.TabIndex = 4;
-            this.btnSignOut.Text = "تسجيل الخروج";
+            this.btnSignOut.Text = "رجوع";
             this.btnSignOut.UseVisualStyleBackColor = true;
             this.btnSignOut.Click += new System.EventHandler(this.btnSignOut_Click);
             // 
