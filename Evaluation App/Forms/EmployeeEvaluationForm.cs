@@ -13,6 +13,7 @@ namespace Evaluation_App.Forms
         public EmployeeEvaluationForm(Employee employee)
         {
             InitializeComponent();
+            FormClosing += EmployeeEvaluationForm_FormClosing;
             _employee = employee;
             _employeeOptions = ConfigLoader.LoadEmployeeOptions();
 
@@ -30,6 +31,12 @@ namespace Evaluation_App.Forms
 
             lblFinalNote.Text = AuthService.CurrentUser.IsTeamLead ? "ملاحظات قائد الفريق" : "ملاحظة ختامية";
             txtFinalNote.Text = _evaluationResult.FinalNote;
+        }
+
+        private void EmployeeEvaluationForm_FormClosing(object? sender, FormClosingEventArgs e)
+        {
+            if (!_isNavigating && e.CloseReason == CloseReason.UserClosing)
+                Application.Exit();
         }
 
         private void LoadSections()
@@ -218,6 +225,7 @@ namespace Evaluation_App.Forms
         {
             var list = new EmployeeListForm();
             list.Show();
+            _isNavigating = true;
             Hide();
         }
     }

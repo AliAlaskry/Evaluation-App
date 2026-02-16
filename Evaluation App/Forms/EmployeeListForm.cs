@@ -5,12 +5,19 @@ namespace Evaluation_App.Forms
     public partial class EmployeeListForm : Form
     {
         private List<Employee> allEmployees = new();
+        private bool _isNavigating;
 
         public EmployeeListForm()
         {
             InitializeComponent();
             Text = $"قائمة الموظفين - {AuthService.CurrentUser.Name} [{AuthService.CurrentUser.Code}]";
             LoadEmployees();
+        }
+
+        private void EmployeeListForm_FormClosing(object? sender, FormClosingEventArgs e)
+        {
+            if (!_isNavigating && e.CloseReason == CloseReason.UserClosing)
+                Application.Exit();
         }
 
         private void LoadEmployees()
@@ -34,6 +41,7 @@ namespace Evaluation_App.Forms
 
             var evalForm = new EmployeeEvaluationForm(emp);
             evalForm.Show();
+            _isNavigating = true;
             Hide();
         }
 
@@ -46,6 +54,7 @@ namespace Evaluation_App.Forms
         {
             var surveyForm = new SurveyForm();
             surveyForm.Show();
+            _isNavigating = true;
             Close();
         }
     }

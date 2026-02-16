@@ -4,6 +4,8 @@ namespace Evaluation_App.Forms
 {
     public partial class SurveyForm : Form
     {
+        private bool _isNavigating;
+
         public SurveyForm()
         {
             InitializeComponent();
@@ -11,11 +13,18 @@ namespace Evaluation_App.Forms
             lblTitle.Text = Text;
         }
 
+        private void SurveyForm_FormClosing(object? sender, FormClosingEventArgs e)
+        {
+            if (!_isNavigating && e.CloseReason == CloseReason.UserClosing)
+                Application.Exit();
+        }
+
         private void BtnRateSystem_Click(object sender, EventArgs e)
         {
             var form = new SystemEvaluationForm();
             form.FormClosed += (_, _) => Show();
             form.Show();
+            _isNavigating = true;
             Hide();
         }
 
@@ -24,6 +33,7 @@ namespace Evaluation_App.Forms
             var form = new EmployeeListForm();
             form.FormClosed += (_, _) => Show();
             form.Show();
+            _isNavigating = true;
             Hide();
         }
 
@@ -37,6 +47,7 @@ namespace Evaluation_App.Forms
         {
             var menuForm = new MainMenuForm();
             menuForm.Show();
+            _isNavigating = true;
             Close();
         }
     }

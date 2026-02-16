@@ -5,12 +5,20 @@ namespace Evaluation_App.Forms
 {
     public partial class MainMenuForm : Form
     {
+        private bool _isNavigating;
+
         public MainMenuForm()
         {
             InitializeComponent();
             Text = $"القائمة الرئيسية";
             lblTitle.Text = $"مرحباً {AuthService.CurrentUser.Name} [{AuthService.CurrentUser.Code}]";
             ConfigureMenu();
+        }
+
+        private void MainMenuForm_FormClosing(object? sender, FormClosingEventArgs e)
+        {
+            if (!_isNavigating && e.CloseReason == CloseReason.UserClosing)
+                Application.Exit();
         }
 
         private void ConfigureMenu()
@@ -58,6 +66,7 @@ namespace Evaluation_App.Forms
             var surveyForm = new SurveyForm();
             surveyForm.FormClosed += (_, _) => Show();
             surveyForm.Show();
+            _isNavigating = true;
             Hide();
         }
 
@@ -68,6 +77,7 @@ namespace Evaluation_App.Forms
 
         private void BtnLogout_Click(object? sender, EventArgs e)
         {
+            _isNavigating = true;
             Hide();
             AuthService.Logout();
             var loginForm = new LoginForm();

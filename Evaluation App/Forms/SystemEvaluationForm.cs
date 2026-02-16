@@ -29,6 +29,12 @@ namespace Evaluation_App.Forms
             chkTeamLeadAssistant.Checked = _evaluationResult.RecommendAsTeamLead;
         }
 
+        private void SystemEvaluationForm_FormClosing(object? sender, FormClosingEventArgs e)
+        {
+            if (!_isNavigating && e.CloseReason == CloseReason.UserClosing)
+                Application.Exit();
+        }
+
         private void LoadSections()
         {
             flowLayoutPanel1.Controls.Clear();
@@ -236,6 +242,7 @@ namespace Evaluation_App.Forms
         {
             var surveyForm = new SurveyForm();
             surveyForm.Show();
+            _isNavigating = true;
             Hide();
         }
     }
