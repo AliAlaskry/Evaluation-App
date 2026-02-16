@@ -5,6 +5,13 @@ namespace Evaluation_App.Forms
 {
     public class MainMenuForm : Form
     {
+        private readonly Label _titleLabel;
+        private readonly Button _btnModifyConfig;
+        private readonly Button _btnSurvey;
+        private readonly Button _btnCreateReport;
+        private readonly Button _btnLogout;
+        private readonly Button _btnExit;
+
         public MainMenuForm()
         {
             Text = "Main Menu";
@@ -13,7 +20,7 @@ namespace Evaluation_App.Forms
             MaximizeBox = false;
             FormBorderStyle = FormBorderStyle.FixedDialog;
 
-            var title = new Label
+            _titleLabel = new Label
             {
                 Text = "Main Menu",
                 Font = new Font("Segoe UI", 16, FontStyle.Bold),
@@ -23,38 +30,50 @@ namespace Evaluation_App.Forms
                 Height = 70
             };
 
-            List<Button> controllers = new();
+            _btnModifyConfig = CreateButton("Modify Config Files");
+            _btnModifyConfig.Click += BtnModifyConfig_Click;
 
-            int top = 90;
-            if (AuthService.CurrentUser.IsTeamLead) 
-            {
-                var btnModifyConfig = CreateButton("Modify Config Files", top);
-                btnModifyConfig.Click += BtnModifyConfig_Click;
-                controllers.Add(btnModifyConfig);
-                top += 50;
-            }
+            _btnSurvey = CreateButton("Survey");
+            _btnSurvey.Click += BtnSurvey_Click;
 
-            var btnSurvey = CreateButton("Survey", top);
-            btnSurvey.Click += BtnSurvey_Click;
-            controllers.Add(btnSurvey);
-            top += 50;
+            _btnCreateReport = CreateButton("Create A Report");
+            _btnCreateReport.Click += BtnCreateReport_Click;
 
-            var btnCreateReport = CreateButton("Create A Report", top);
-            btnCreateReport.Click += BtnCreateReport_Click;
-            controllers.Add(btnCreateReport);
-            top += 50;
+            _btnLogout = CreateButton("Log Out");
+            _btnLogout.Click += BtnLogout_Click;
 
-            var btnExit = CreateButton("Exit", top);
-            btnExit.Click += (_, _) => Application.Exit();
-            controllers.Add(btnExit);
+            _btnExit = CreateButton("Exit");
+            _btnExit.Click += (_, _) => Application.Exit();
 
-            Controls.Add(title);
+            Controls.Add(_titleLabel);
+            Controls.Add(_btnModifyConfig);
+            Controls.Add(_btnSurvey);
+            Controls.Add(_btnCreateReport);
+            Controls.Add(_btnLogout);
+            Controls.Add(_btnExit);
 
-            foreach (var control in controllers)
-                Controls.Add(control);
+            ConfigureMenu();
         }
 
-        private Button CreateButton(string text, int top)
+        private void ConfigureMenu()
+        {
+            _btnModifyConfig.Visible = AuthService.CurrentUser.IsTeamLead;
+
+            const int startTop = 90;
+            const int spacing = 50;
+
+            int currentTop = startTop;
+            foreach (var button in new[] { _btnModifyConfig, _btnSurvey, _btnCreateReport, _btnLogout, _btnExit })
+            {
+                if (!button.Visible)
+                    continue;
+
+                button.Top = currentTop;
+                currentTop += spacing;
+            }
+        }
+
+        private Button CreateButton(string text)
         {
             return new Button
             {
@@ -62,7 +81,6 @@ namespace Evaluation_App.Forms
                 Width = 220,
                 Height = 36,
                 Left = (ClientSize.Width - 220) / 2,
-                Top = top,
                 Font = new Font("Segoe UI", 10, FontStyle.Regular)
             };
         }
@@ -101,6 +119,14 @@ namespace Evaluation_App.Forms
         {
             ExcelExportService.ExportFullReport();
             MessageBox.Show("Full report has been created on Desktop.");
+        }
+
+        private void BtnLogout_Click(object? sender, EventArgs e)
+        {
+            Hide();
+            AuthService.Logout();
+            var loginForm = new LoginForm();
+            loginForm.Show();
         }
     }
 }
