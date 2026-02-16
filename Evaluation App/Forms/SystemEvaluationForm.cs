@@ -155,10 +155,9 @@ namespace Evaluation_App.Forms
 
         private void btnSignOut_Click(object sender, EventArgs e)
         {
-            this.Hide();
-            AuthService.Logout();
-            var login = new LoginForm();
-            login.Show();
+            var mainMenuForm = new MainMenuForm();
+            mainMenuForm.Show();
+            Hide();
         }
     }
 }
