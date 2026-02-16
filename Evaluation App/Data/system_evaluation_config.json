@@ -1,135 +1,140 @@
 {
   "Options": {
-    "IssuesToResolve": [
+     "IssuesToResolve": [
       "توحيد دقة تقدير السبرنت بين أعضاء الفريق.",
       "تسريع زمن مراجعة طلبات الدمج (Pull Request).",
       "إزالة العوائق في التواصل بين الفرق.",
       "تحسين جودة التوثيق ومشاركة المعرفة.",
       "رفع تغطية الاختبارات في الوحدات الحرجة."
-    ]
+    ],
+    "Normalization": { "ScaleMin": 0, "ScaleMax": 100, "HigherIsBetter": true },
+    "Scoring": {
+      "SectionFormula": "SectionScore = sum(QuestionScore * QuestionWeight where Include=true) / sum(QuestionWeight where Include=true)",
+      "TotalFormula": "TotalScore = sum(SectionScore * SectionWeight) / sum(SectionWeight)"
+    }
   },
   "Sections": [
     {
-      "Name": "كفاءة سير العمل",
+      "Name": "أداء القواعد الحالية (System Rules Fitness)",
       "Weight": 50,
       "Include": true,
+      "ManagerOnly": false,
       "Questions": [
         {
-          "Id": "wf1",
-          "Text": "وضوح خطوات سير العمل وتحديد المسؤوليات",
+          "Id": "sys1",
+          "Text": "وضوح القواعد وسهولة فهمها بدون اختلاف تفسير",
           "Weight": 20,
           "Include": true,
           "Min": 0,
           "Max": 100,
           "Default": 0,
-          "MinMeaning": "سير العمل غير واضح والمسؤوليات متداخلة",
-          "MaxMeaning": "سير العمل واضح ومنظم والمسؤوليات محددة"
+          "Formula": "QuestionScore = median(Scores)",
+          "MinMeaning": "القواعد تسبب لَبس واختلافات تفسير",
+          "MaxMeaning": "القواعد واضحة ومفهومة للجميع"
         },
         {
-          "Id": "wf2",
-          "Text": "سرعة الاعتمادات واتخاذ القرار",
+          "Id": "sys2",
+          "Text": "سهولة تطبيق القواعد عملياً يومياً بدون عبء زائد",
           "Weight": 20,
           "Include": true,
           "Min": 0,
           "Max": 100,
           "Default": 0,
-          "MinMeaning": "تأخير كبير في الاعتمادات يعيق التنفيذ",
-          "MaxMeaning": "قرارات واعتمادات سريعة تدعم التسليم"
+          "Formula": "QuestionScore = median(Scores)",
+          "MinMeaning": "تطبيقها مرهق ويضيع وقت",
+          "MaxMeaning": "تطبيقها سهل وطبيعي ضمن الروتين"
         },
         {
-          "Id": "wf3",
-          "Text": "فعالية التخطيط وتحديد الأولويات",
+          "Id": "sys3",
+          "Text": "عدالة القواعد وتوازنها بين التخصصات",
           "Weight": 20,
           "Include": true,
           "Min": 0,
           "Max": 100,
           "Default": 0,
-          "MinMeaning": "التخطيط ضعيف وغير متوافق مع الأولويات",
-          "MaxMeaning": "التخطيط واقعي ومتوافق مع أهداف العمل"
+          "Formula": "QuestionScore = median(Scores)",
+          "MinMeaning": "بعض التخصصات متضررة",
+          "MaxMeaning": "القواعد عادلة للجميع"
         },
         {
-          "Id": "wf4",
-          "Text": "قابلية تطبيق السياسات في العمل اليومي",
+          "Id": "sys4",
+          "Text": "مرونة القواعد مع الحالات الاستثنائية بدون كسر النظام",
           "Weight": 20,
           "Include": true,
           "Min": 0,
           "Max": 100,
           "Default": 0,
-          "MinMeaning": "السياسات صعبة التطبيق وتسبب تعطلاً",
-          "MaxMeaning": "السياسات عملية وسهلة التطبيق بشكل مستمر"
+          "Formula": "QuestionScore = median(Scores)",
+          "MinMeaning": "القواعد جامدة وتمنع الحلول",
+          "MaxMeaning": "القواعد مرنة باستثناءات مضبوطة"
         },
         {
-          "Id": "wf5",
-          "Text": "أثر الإجراءات على التعاون بين الفرق",
+          "Id": "sys5",
+          "Text": "تأثير القواعد على روح الفريق والتعاون والثقة",
           "Weight": 20,
           "Include": true,
           "Min": 0,
           "Max": 100,
           "Default": 0,
-          "MinMeaning": "الإجراءات تسبب احتكاكاً وتؤخر التعاون",
-          "MaxMeaning": "الإجراءات تسهّل التعاون وتسرّع الإنجاز"
+          "Formula": "QuestionScore = median(Scores)",
+          "MinMeaning": "توتر واحتكاك داخل الفريق",
+          "MaxMeaning": "تعزيز قوي للتعاون والثقة"
         }
       ]
     },
     {
-      "Name": "التمكين الهندسي",
+      "Name": "تأثير النظام على الإنتاجية والجودة (Outcome Impact)",
       "Weight": 50,
       "Include": true,
+      "ManagerOnly": false,
       "Questions": [
         {
-          "Id": "en1",
-          "Text": "توفر الأدوات والموارد التقنية",
-          "Weight": 20,
+          "Id": "out1",
+          "Text": "تأثير القواعد على التركيز وإنهاء المهام (خصوصاً WIP=1)",
+          "Weight": 25,
           "Include": true,
           "Min": 0,
           "Max": 100,
           "Default": 0,
-          "MinMeaning": "نقص مستمر في الأدوات والموارد",
-          "MaxMeaning": "أدوات وموارد كافية وموثوقة"
+          "Formula": "QuestionScore = median(Scores)",
+          "MinMeaning": "تسبب تعطيل أو انتظار",
+          "MaxMeaning": "تحسن التركيز وتسريع الإغلاق"
         },
         {
-          "Id": "en2",
-          "Text": "جودة التوثيق وقاعدة المعرفة",
-          "Weight": 20,
+          "Id": "out2",
+          "Text": "تأثير حد 14 ساعة على جودة التقسيم وتقليل المفاجآت",
+          "Weight": 25,
           "Include": true,
           "Min": 0,
           "Max": 100,
           "Default": 0,
-          "MinMeaning": "توثيق قديم أو ناقص",
-          "MaxMeaning": "توثيق محدث وسهل الاستخدام"
+          "Formula": "QuestionScore = median(Scores)",
+          "MinMeaning": "عبء غير مفيد أو تقسيم سيئ",
+          "MaxMeaning": "تحسين واضح للتخطيط وتقليل المخاطر"
         },
         {
-          "Id": "en3",
-          "Text": "جودة وسرعة دعم العوائق الفنية",
-          "Weight": 20,
+          "Id": "out3",
+          "Text": "تأثير صرامة تعريف الإغلاق (DoD) على الجودة وتقليل إعادة العمل",
+          "Weight": 25,
           "Include": true,
           "Min": 0,
           "Max": 100,
           "Default": 0,
-          "MinMeaning": "تأخر في حل العوائق وضعف في الدعم",
-          "MaxMeaning": "حل سريع وعالي الجودة للعوائق"
+          "Formula": "QuestionScore = median(Scores)",
+          "MinMeaning": "بطء بدون فائدة",
+          "MaxMeaning": "جودة أعلى وإعادة عمل أقل"
         },
         {
-          "Id": "en4",
-          "Text": "أثر العمليات على جودة واستقرار الكود",
-          "Weight": 20,
-          "Include": true,
+          "Id": "out5",
+          "Text": "وضوح هدف السبرنت وتأثيره على تقليل التشتت",
+          "Weight": 25,
+          "Include": false,
           "Min": 0,
           "Max": 100,
           "Default": 0,
-          "MinMeaning": "العمليات تؤثر سلباً على الجودة",
-          "MaxMeaning": "العمليات تحسن الجودة والاستقرار بوضوح"
-        },
-        {
-          "Id": "en5",
-          "Text": "نسبة التغير في الإنتاجية مقارنة بالفترة السابقة",
-          "Weight": 20,
-          "Include": true,
-          "Min": -200,
-          "Max": 200,
-          "Default": -200,
-          "MinMeaning": "انخفاض 200% في الإنتاجية",
-          "MaxMeaning": "ارتفاع 200% في الإنتاجية"
+          "Formula": "QuestionScore = median(Scores)",
+          "MinMeaning": "هدف غير واضح يسبب تشتت",
+          "MaxMeaning": "هدف واضح يجمع الفريق"
         }
       ]
     }
