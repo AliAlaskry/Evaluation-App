@@ -16,7 +16,15 @@ namespace Evaluation_App.Forms
         private void SurveyForm_FormClosing(object? sender, FormClosingEventArgs e)
         {
             if (!_isNavigating && e.CloseReason == CloseReason.UserClosing)
+            {
+                if (!ExitConfirmationService.ConfirmExit())
+                {
+                    e.Cancel = true;
+                    return;
+                }
+
                 Application.Exit();
+            }
         }
 
         private void BtnRateSystem_Click(object sender, EventArgs e)
