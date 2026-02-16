@@ -34,9 +34,9 @@ namespace Evaluation_App.Forms
             // تسجيل الدخول
             AuthService.Login(user, chkKeepLogged.Checked);
 
-            // فتح تقييم النظام أولًا
-            var systemForm = new SystemEvaluationForm();
-            systemForm.Show();
+            // فتح القائمة الرئيسية بعد تسجيل الدخول
+            var mainMenuForm = new MainMenuForm();
+            mainMenuForm.Show();
             this.Hide();
         }
 

@@ -16,7 +16,7 @@ namespace Evaluation_App
 
             if (AuthService.TryAutoLogin())
             {
-                Application.Run(new SystemEvaluationForm());
+                Application.Run(new MainMenuForm());
                 return;
             }
 
