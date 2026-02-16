@@ -105,6 +105,9 @@
             this.Controls.Add(this.chkTeamLead);
             this.Controls.Add(this.lblFinalNote);
             this.Controls.Add(this.txtFinalNote);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.MaximizeBox = false;
+            this.MinimizeBox = true;
             this.Name = "EmployeeEvaluationForm";
             this.Text = "تقييم الموظف";
             this.ResumeLayout(false);

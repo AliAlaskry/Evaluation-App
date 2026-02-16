@@ -1,7 +1,14 @@
-﻿namespace Evaluation_App.Services
+﻿using Newtonsoft.Json;
+
+namespace Evaluation_App.Services
 {
     public static class AuthService
     {
+        private const string RememberedLoginFileName = "remembered_login.json";
+
+        private static readonly string RememberedLoginPath =
+            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", RememberedLoginFileName);
+
         private static Employee? currentUser;
         public static Employee CurrentUser => currentUser;
 

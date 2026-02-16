@@ -67,6 +67,9 @@
             this.Controls.Add(this.btnBack);
             this.Controls.Add(this.btnExportMembers);
             this.Controls.Add(this.btnExpertReport);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.MaximizeBox = false;
+            this.MinimizeBox = true;
             this.Name = "EmployeeListForm";
             this.Text = "قائمة الموظفين";
         }
