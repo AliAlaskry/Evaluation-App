@@ -1,20 +1,17 @@
 ﻿using Evaluation_App.Services;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Windows.Forms;
 
 namespace Evaluation_App.Forms
 {
     public partial class EmployeeListForm : Form
     {
-        private List<Employee> allEmployees;
+        private List<Employee> allEmployees = new();
 
         public EmployeeListForm()
         {
             InitializeComponent();
+            Text = $"Employee List - {AuthService.CurrentUser.Name} ({AuthService.CurrentUser.Code})";
+            lblTitle.Text = Text;
             LoadEmployees();
-            UpdateExportButtonState();
         }
 
         private void LoadEmployees()
@@ -28,47 +25,29 @@ namespace Evaluation_App.Forms
             lstEmployees.ValueMember = "Code";
         }
 
-        private void btnEvaluate_Click(object sender, EventArgs e)
+        private void OpenSelectedEmployeeEvaluation()
         {
-            if (lstEmployees.SelectedItem is Employee emp)
-            {
-                var evalForm = new EmployeeEvaluationForm(emp);
-                evalForm.FormClosed += (s, args) => UpdateExportButtonState(); // تحديث حالة الأزرار بعد إغلاق النموذج
-                evalForm.Show();
-
-                this.Hide();
-            }
-            else
+            if (lstEmployees.SelectedItem is not Employee emp)
             {
                 MessageBox.Show("اختر موظف لتقييمه");
+                return;
             }
+
+            var evalForm = new EmployeeEvaluationForm(emp);
+            evalForm.Show();
+            Hide();
+        }
+
+        private void lstEmployees_DoubleClick(object sender, EventArgs e)
+        {
+            OpenSelectedEmployeeEvaluation();
         }
 
         private void btnBack_Click(object sender, EventArgs e)
         {
-            var menuForm = new MainMenuForm();
-            menuForm.Show();
-            this.Close();
-        }
-
-        private void btnExportMembers_Click(object sender, EventArgs e)
-        {
-            ExcelExportService.ExportTeamMembers();
-            MessageBox.Show("تم تصدير تقييم الموظفين فقط إلى ملف Excel.");
-        }
-
-        private void btnExpertReport_Click(object sender, EventArgs e)
-        {
-            ExcelExportService.ExportFullReport();
-            MessageBox.Show("تم تصدير جميع التقييمات إلى ملف Excel.");
-        }
-
-        private void UpdateExportButtonState()
-        {
-            bool allRated = allEmployees.All(emp => EvaluationService.HasSavedEvaluation(emp.Code));
-
-            btnExportMembers.Enabled = allRated;  // تصدير الموظفين فقط إذا قيم كل الموظفين
-            btnExpertReport.Enabled = allRated;   // التقرير الشامل أيضًا
+            var surveyForm = new SurveyForm();
+            surveyForm.Show();
+            Close();
         }
     }
 }

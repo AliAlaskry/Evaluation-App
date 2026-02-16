@@ -1,31 +1,33 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Windows.Forms;
+﻿using Evaluation_App.Services;
 
 namespace Evaluation_App.Forms
 {
     public partial class EmployeeEvaluationForm : Form
     {
-        private Employee _employee;
-        private Dictionary<string, NumericUpDown> _inputControls;
+        private readonly Employee _employee;
+        private readonly Dictionary<string, NumericUpDown> _inputControls = new();
         private EvaluationResult _evaluationResult;
+        private readonly EmployeeEvaluationOptions _employeeOptions;
 
         public EmployeeEvaluationForm(Employee employee)
         {
             InitializeComponent();
             _employee = employee;
-            lblEmployee.Text = $"{employee.Name} ({employee.Code})";
+            _employeeOptions = ConfigLoader.LoadEmployeeOptions();
 
-            _inputControls = new();
+            Text = $"Employee Evaluation - {AuthService.CurrentUser.Name} ({AuthService.CurrentUser.Code})";
+            lblTitle.Text = $"{Text} | Rated: {employee.Name} ({employee.Code})";
 
-            _evaluationResult = EvaluationService.LoadEvaluation(_employee.Code);
-            _evaluationResult ??= new(_employee.Code, true, ConfigLoader.LoadEmployeeSections());
+            _evaluationResult = EvaluationService.LoadEvaluation(_employee.Code)
+                ?? new EvaluationResult(_employee.Code, true, ConfigLoader.LoadEmployeeSections());
 
             LoadSections();
             LoadPreviousAnswers();
 
+            chkTeamLead.Visible = _employeeOptions.AskPreferTeamLeaderAssistant && _employee.IsTeamLead;
             chkTeamLead.Checked = _evaluationResult.RecommendAsTeamLead;
+
+            lblFinalNote.Text = AuthService.CurrentUser.IsTeamLead ? "Leader notes" : "Letter to your teammate";
             txtFinalNote.Text = _evaluationResult.FinalNote;
         }
 
@@ -36,43 +38,46 @@ namespace Evaluation_App.Forms
 
             foreach (var section in _evaluationResult.Sections)
             {
-                Label lblSection = new Label
+                var lblSection = new Label
                 {
                     Text = section.Name,
-                    AutoSize = true,
-                    Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold)
+                    AutoSize = false,
+                    Width = flowLayoutPanel1.Width - 25,
+                    Height = 28,
+                    Font = new Font("Segoe UI", 10F, FontStyle.Bold)
                 };
                 flowLayoutPanel1.Controls.Add(lblSection);
 
                 foreach (var question in section.Questions)
                 {
-                    Panel panel = new Panel
+                    var panel = new Panel
                     {
                         Width = flowLayoutPanel1.Width - 25,
-                        Height = 30
+                        Height = 45
                     };
 
-                    Label lblQ = new Label
+                    var lblQ = new Label
                     {
-                        Text = question.Text,
+                        Text = $"{question.Text}\n({question.Min}={question.MinMeaning} | {question.Max}={question.MaxMeaning})",
                         AutoSize = false,
-                        Width = panel.Width - 70,
-                        TextAlign = System.Drawing.ContentAlignment.MiddleLeft,
-                        Location = new System.Drawing.Point(0, 0)
+                        Width = panel.Width - 80,
+                        Height = 42,
+                        TextAlign = ContentAlignment.MiddleLeft,
+                        Location = new Point(0, 0)
                     };
 
-                    NumericUpDown nud = new NumericUpDown
+                    var nud = new NumericUpDown
                     {
-                        Minimum = 0,
-                        Maximum = 100,
-                        Width = 60,
-                        Location = new System.Drawing.Point(panel.Width - 65, 0),
+                        Minimum = (decimal)question.Min,
+                        Maximum = (decimal)question.Max,
+                        Value = (decimal)question.Default,
+                        Width = 72,
+                        Location = new Point(panel.Width - 76, 0),
                         Name = question.Id
                     };
 
                     panel.Controls.Add(lblQ);
                     panel.Controls.Add(nud);
-
                     flowLayoutPanel1.Controls.Add(panel);
                     _inputControls[question.Id] = nud;
                 }
@@ -83,68 +88,81 @@ namespace Evaluation_App.Forms
         {
             foreach (var kvp in _inputControls)
             {
-                if (_evaluationResult.Questions.TryGetValue(kvp.Key, out Question value))
-                    kvp.Value.Value = (decimal)value.Score;
+                if (_evaluationResult.Questions.TryGetValue(kvp.Key, out var value))
+                    kvp.Value.Value = Math.Clamp((decimal)value.Score, kvp.Value.Minimum, kvp.Value.Maximum);
             }
+        }
+
+        private void ApplyInputsToModel()
+        {
+            foreach (var section in _evaluationResult.Sections)
+            foreach (var question in section.Questions)
+                if (_inputControls.TryGetValue(question.Id, out var nud))
+                    question.Score = (double)nud.Value;
+
+            _evaluationResult.FinalNote = txtFinalNote.Text;
+            _evaluationResult.RecommendAsTeamLead = chkTeamLead.Visible && chkTeamLead.Checked;
+            _evaluationResult.SetTotalScore();
         }
 
         private void btnSave_Click(object sender, EventArgs e)
         {
-            foreach (var section in _evaluationResult.Sections)
-                foreach (var question in section.Questions)
-                    if (_inputControls.TryGetValue(question.Id, out var nud))
-                        question.Score = (int)nud.Value;
-
-            _evaluationResult.FinalNote = txtFinalNote.Text;
-            _evaluationResult.RecommendAsTeamLead = chkTeamLead.Checked;
-            _evaluationResult.SetTotalScore();
-
+            ApplyInputsToModel();
             EvaluationService.Save(_evaluationResult);
-
-            if(MessageBox.Show("تم حفظ تقييم الموظف بنجاح!") == DialogResult.OK)
-            {
-                this.Hide();
-
-                var empListForm = new EmployeeListForm();
-                empListForm.Show();
-            }
+            MessageBox.Show("Saved successfully.");
         }
 
         private void btnReset_Click(object sender, EventArgs e)
         {
-            if (MessageBox.Show("هل تريد إعادة تعيين التقييم؟", "تأكيد", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            foreach (var section in _evaluationResult.Sections)
+            foreach (var question in section.Questions)
+                if (_inputControls.TryGetValue(question.Id, out var nud))
+                    nud.Value = (decimal)question.Default;
+
+            chkTeamLead.Checked = false;
+            txtFinalNote.Text = string.Empty;
+
+            EvaluationService.Reset(_employee.Code);
+            _evaluationResult.Reset();
+            MessageBox.Show("Saved successfully.");
+        }
+
+        private void btnLoad_Click(object sender, EventArgs e)
+        {
+            using var dialog = new OpenFileDialog
             {
-                foreach (var nud in _inputControls.Values)
-                    nud.Value = 0;
+                Filter = "Excel files (*.xlsx)|*.xlsx",
+                Title = "Load employee evaluation from Excel"
+            };
 
-                chkTeamLead.Checked = false;
-                txtFinalNote.Text = "";
+            if (dialog.ShowDialog() != DialogResult.OK)
+                return;
 
-                EvaluationService.Reset(_employee.Code);
-                _evaluationResult.Reset();
+            if (!ExcelExportService.TryLoadEvaluationFromExcel(dialog.FileName, _employee.Code, _evaluationResult))
+            {
+                MessageBox.Show("Could not load data from selected Excel file.");
+                return;
             }
+
+            LoadPreviousAnswers();
+            txtFinalNote.Text = _evaluationResult.FinalNote;
+            chkTeamLead.Checked = _evaluationResult.RecommendAsTeamLead;
+            MessageBox.Show("Loaded successfully.");
+        }
+
+        private void btnGenerateExcel_Click(object sender, EventArgs e)
+        {
+            ApplyInputsToModel();
+            EvaluationService.Save(_evaluationResult);
+            ExcelExportService.ExportTeamMember(_employee);
+            MessageBox.Show("Excel report generated on Desktop.");
         }
 
         private void btnBack_Click(object sender, EventArgs e)
         {
-            this.Close();
-        }
-
-        private void btnPrint_Click(object sender, EventArgs e)
-        {
-            foreach (var section in _evaluationResult.Sections)
-                foreach (var question in section.Questions)
-                    if (_inputControls.TryGetValue(question.Id, out var nud))
-                        question.Score = (int)nud.Value;
-
-            _evaluationResult.FinalNote = txtFinalNote.Text;
-            _evaluationResult.RecommendAsTeamLead = chkTeamLead.Checked;
-            _evaluationResult.SetTotalScore();
-
-            EvaluationService.Save(_evaluationResult);
-
-            ExcelExportService.ExportTeamMember(_employee);
-            MessageBox.Show("تم إنشاء تقرير Excel لجميع التقييمات على سطح المكتب.");
+            var list = new EmployeeListForm();
+            list.Show();
+            Hide();
         }
     }
 }

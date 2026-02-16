@@ -1,0 +1,128 @@
+{
+  "Sections": [
+    {
+      "Name": "Workflow Efficiency",
+      "Weight": 45,
+      "Include": true,
+      "Questions": [
+        {
+          "Id": "wf1",
+          "Text": "Clarity of workflow steps and ownership",
+          "Weight": 9,
+          "Include": true,
+          "Min": 1,
+          "Max": 5,
+          "Default": 3,
+          "MinMeaning": "Workflow is confusing with unclear ownership",
+          "MaxMeaning": "Workflow is clear, predictable, and well-owned"
+        },
+        {
+          "Id": "wf2",
+          "Text": "Speed of approvals and decision making",
+          "Weight": 9,
+          "Include": true,
+          "Min": 1,
+          "Max": 5,
+          "Default": 3,
+          "MinMeaning": "Approvals are slow and block progress",
+          "MaxMeaning": "Approvals are fast and keep delivery moving"
+        },
+        {
+          "Id": "wf3",
+          "Text": "Effectiveness of sprint planning and prioritization",
+          "Weight": 9,
+          "Include": true,
+          "Min": 1,
+          "Max": 5,
+          "Default": 3,
+          "MinMeaning": "Planning frequently misaligns with business priorities",
+          "MaxMeaning": "Planning is realistic and strongly aligned to priorities"
+        },
+        {
+          "Id": "wf4",
+          "Text": "Practicality of policies in real daily work",
+          "Weight": 9,
+          "Include": true,
+          "Min": 1,
+          "Max": 5,
+          "Default": 3,
+          "MinMeaning": "Policies are hard to apply day-to-day",
+          "MaxMeaning": "Policies are practical and consistently applicable"
+        },
+        {
+          "Id": "wf5",
+          "Text": "Impact of process on cross-team collaboration",
+          "Weight": 9,
+          "Include": true,
+          "Min": 1,
+          "Max": 5,
+          "Default": 3,
+          "MinMeaning": "Process creates frequent collaboration friction",
+          "MaxMeaning": "Process enables smooth cross-team collaboration"
+        }
+      ]
+    },
+    {
+      "Name": "Engineering Enablement",
+      "Weight": 55,
+      "Include": true,
+      "Questions": [
+        {
+          "Id": "en1",
+          "Text": "Availability of tools and technical resources",
+          "Weight": 11,
+          "Include": true,
+          "Min": 1,
+          "Max": 5,
+          "Default": 3,
+          "MinMeaning": "Tools/resources are frequently missing",
+          "MaxMeaning": "Tools/resources are reliable and sufficient"
+        },
+        {
+          "Id": "en2",
+          "Text": "Quality of documentation and knowledge base",
+          "Weight": 11,
+          "Include": true,
+          "Min": 1,
+          "Max": 5,
+          "Default": 3,
+          "MinMeaning": "Documentation is outdated or incomplete",
+          "MaxMeaning": "Documentation is current and highly usable"
+        },
+        {
+          "Id": "en3",
+          "Text": "Support response quality for blockers",
+          "Weight": 11,
+          "Include": true,
+          "Min": 1,
+          "Max": 5,
+          "Default": 3,
+          "MinMeaning": "Blockers remain unresolved for long periods",
+          "MaxMeaning": "Blockers are resolved quickly with high-quality support"
+        },
+        {
+          "Id": "en4",
+          "Text": "Process contribution to code quality and stability",
+          "Weight": 11,
+          "Include": true,
+          "Min": 1,
+          "Max": 5,
+          "Default": 3,
+          "MinMeaning": "Process harms quality/stability",
+          "MaxMeaning": "Process significantly improves quality/stability"
+        },
+        {
+          "Id": "en5",
+          "Text": "Overall system impact on productivity",
+          "Weight": 11,
+          "Include": true,
+          "Min": 1,
+          "Max": 5,
+          "Default": 3,
+          "MinMeaning": "System significantly reduces productivity",
+          "MaxMeaning": "System strongly increases productivity"
+        }
+      ]
+    }
+  ]
+}

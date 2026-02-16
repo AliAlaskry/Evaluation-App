@@ -3,101 +3,88 @@ using Newtonsoft.Json;
 
 public static class ConfigLoader
 {
-    private static readonly string BasePath =
-        Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data");
+    private static readonly string BasePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data");
+    private static readonly string EmployeeEvaluationPath = Path.Combine(BasePath, "employee_evaluation_config.json");
+    private static readonly string SystemConfigPath = Path.Combine(BasePath, "system_evaluation_config.json");
 
-    private static readonly string EmployeeEvaluationPath =
-        Path.Combine(BasePath, "evaluation_config.json");
-
-    private static readonly string SystemConfigPath =
-        Path.Combine(BasePath, "system_evaluation.json");
-
-    /// <summary>
-    /// تحميل الأقسام والأسئلة الخاصة بتقييم الموظفين
-    /// </summary>
     public static List<Section> LoadEmployeeSections()
     {
-        return LoadSectionsFromFile(EmployeeEvaluationPath);
+        return LoadConfigFromFile(EmployeeEvaluationPath).Sections;
     }
 
-    /// <summary>
-    /// تحميل الأقسام والأسئلة الخاصة بتقييم النظام
-    /// </summary>
     public static List<Section> LoadSystemSections()
     {
-        return LoadSectionsFromFile(SystemConfigPath);
+        return LoadConfigFromFile(SystemConfigPath).Sections;
     }
 
-    // ================= PRIVATE HELPERS =================
+    public static EmployeeEvaluationOptions LoadEmployeeOptions()
+    {
+        return LoadConfigFromFile(EmployeeEvaluationPath).Options;
+    }
 
-    private static List<Section> LoadSectionsFromFile(string path)
+    private static EvaluationConfig LoadConfigFromFile(string path)
     {
         try
         {
             if (!File.Exists(path))
             {
-                MessageBox.Show(
-                    $"ملف الإعدادات غير موجود:\n{path}",
-                    "خطأ",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
-
-                return new List<Section>();
+                MessageBox.Show($"ملف الإعدادات غير موجود:\n{path}", "خطأ", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return new EvaluationConfig();
             }
 
             var json = File.ReadAllText(path);
-            var wrapper = JsonConvert.DeserializeObject<SectionWrapper>(json);
+            var config = JsonConvert.DeserializeObject<EvaluationConfig>(json) ?? new EvaluationConfig();
+            config.Sections ??= new List<Section>();
+            config.Options ??= new EmployeeEvaluationOptions();
 
-            if (wrapper?.Sections == null)
-                return new List<Section>();
-
-            return FilterManagerOnly(wrapper.Sections);
+            return FilterSections(config);
         }
         catch (Exception ex)
         {
-            MessageBox.Show(
-                "حدث خطأ أثناء تحميل ملف التقييم:\n" + ex.Message,
-                "خطأ",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Error);
-
-            return new List<Section>();
+            MessageBox.Show("حدث خطأ أثناء تحميل ملف التقييم:\n" + ex.Message, "خطأ", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            return new EvaluationConfig();
         }
     }
 
-    /// <summary>
-    /// فلترة الأقسام والأسئلة الخاصة بالمدير
-    /// </summary>
-    private static List<Section> FilterManagerOnly(List<Section> sections)
+    private static EvaluationConfig FilterSections(EvaluationConfig config)
     {
         var currentUser = AuthService.CurrentUser;
 
-        // حماية إضافية
-        if (currentUser == null)
-            return sections;
-
-        return sections
-            .Where(section =>
+        config.Sections = config.Sections
+            .Where(section => section.Include && (!section.ManagerOnly || currentUser.IsTeamLead))
+            .Select(section =>
             {
-                // 1️⃣ حذف القسم لو ManagerOnly
-                if (section.ManagerOnly && !currentUser.IsTeamLead)
-                    return false;
-
-                // 2️⃣ حذف الأسئلة فقط لو ManagerOnly
-                section.Questions = section.Questions?
-                    .Where(q => !q.ManagerOnly || currentUser.IsTeamLead)
-                    .ToList() ?? new List<Question>();
-
-                return true;
+                section.Questions = (section.Questions ?? new List<Question>())
+                    .Where(q => q.Include && (!q.ManagerOnly || currentUser.IsTeamLead))
+                    .Select(NormalizeQuestion)
+                    .ToList();
+                return section;
             })
+            .Where(section => section.Questions.Any())
             .ToList();
+
+        return config;
+    }
+
+    private static Question NormalizeQuestion(Question question)
+    {
+        if (question.Max < question.Min)
+            (question.Min, question.Max) = (question.Max, question.Min);
+
+        question.Default = Math.Clamp(question.Default, question.Min, question.Max);
+        question.Score = Math.Clamp(question.Score == 0 ? question.Default : question.Score, question.Min, question.Max);
+        return question;
     }
 }
 
-/// <summary>
-/// Wrapper لفك JSON
-/// </summary>
-public class SectionWrapper
+public class EvaluationConfig
 {
-    public List<Section> Sections { get; set; }
+    public List<Section> Sections { get; set; } = new();
+    public EmployeeEvaluationOptions Options { get; set; } = new();
+}
+
+public class EmployeeEvaluationOptions
+{
+    public bool AskPreferTeamLeaderAssistant { get; set; } = false;
+    public List<string> IssuesToResolve { get; set; } = new();
 }

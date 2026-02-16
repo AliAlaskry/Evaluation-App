@@ -3,15 +3,18 @@
     partial class SystemEvaluationForm
     {
         private System.ComponentModel.IContainer components = null;
-        private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
-        private System.Windows.Forms.Button btnSave;
-        private System.Windows.Forms.Button btnReset;
-        private System.Windows.Forms.Button btnPrint;
-        private System.Windows.Forms.Button btnSignOut;
-        private System.Windows.Forms.Label lblUser;
-        private System.Windows.Forms.Label lblSuggestions;
-        private System.Windows.Forms.TextBox txtSuggestions;
-        private System.Windows.Forms.CheckBox chkTeamLeadAssistant;
+        private Label lblTitle;
+        private CheckBox chkTeamLeadAssistant;
+        private FlowLayoutPanel flowLayoutPanel1;
+        private Label lblIssues;
+        private ListBox lstIssues;
+        private Label lblSuggestions;
+        private TextBox txtSuggestions;
+        private Button btnSave;
+        private Button btnReset;
+        private Button btnLoad;
+        private Button btnGenerateExcel;
+        private Button btnBack;
 
         protected override void Dispose(bool disposing)
         {
@@ -22,124 +25,131 @@
 
         private void InitializeComponent()
         {
-            this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
-            this.btnSave = new System.Windows.Forms.Button();
-            this.btnReset = new System.Windows.Forms.Button();
-            this.btnPrint = new System.Windows.Forms.Button();
-            this.btnSignOut = new System.Windows.Forms.Button();
-            this.lblUser = new System.Windows.Forms.Label();
-            this.SuspendLayout();
+            lblTitle = new Label();
+            chkTeamLeadAssistant = new CheckBox();
+            flowLayoutPanel1 = new FlowLayoutPanel();
+            lblIssues = new Label();
+            lstIssues = new ListBox();
+            lblSuggestions = new Label();
+            txtSuggestions = new TextBox();
+            btnSave = new Button();
+            btnReset = new Button();
+            btnLoad = new Button();
+            btnGenerateExcel = new Button();
+            btnBack = new Button();
+            SuspendLayout();
             // 
-            // lblUser
+            // lblTitle
             // 
-
+            lblTitle.Dock = DockStyle.Top;
+            lblTitle.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
+            lblTitle.Location = new Point(0, 0);
+            lblTitle.Size = new Size(760, 48);
+            lblTitle.Text = "System Evaluation";
+            lblTitle.TextAlign = ContentAlignment.MiddleCenter;
+            // 
             // chkTeamLeadAssistant
-            this.chkTeamLeadAssistant = new System.Windows.Forms.CheckBox();
-            this.chkTeamLeadAssistant.AutoSize = true;
-            this.chkTeamLeadAssistant.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
-            this.chkTeamLeadAssistant.Location = new System.Drawing.Point(12, 35);
-            this.chkTeamLeadAssistant.Name = "chkTeamLeadAssistant";
-            this.chkTeamLeadAssistant.Size = new System.Drawing.Size(260, 19);
-            this.chkTeamLeadAssistant.Text = "هل تحب تكون مساعد مدير الفريق القادم؟";
-            this.chkTeamLeadAssistant.UseVisualStyleBackColor = true;
-
-            this.lblUser.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
-            this.lblUser.Location = new System.Drawing.Point(12, 9);
-            this.lblUser.Name = "lblUser";
-            this.lblUser.Size = new System.Drawing.Size(560, 25);
-            this.lblUser.TabIndex = 0;
-            this.lblUser.Text = "المستخدم: ...";
-            this.lblUser.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            chkTeamLeadAssistant.AutoSize = true;
+            chkTeamLeadAssistant.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            chkTeamLeadAssistant.Location = new Point(12, 55);
+            chkTeamLeadAssistant.Size = new Size(365, 19);
+            chkTeamLeadAssistant.Text = "Do you prefer to be next team leader assistant";
             // 
             // flowLayoutPanel1
             // 
-            this.flowLayoutPanel1.Location = new System.Drawing.Point(12, 60);
-            this.flowLayoutPanel1.Name = "flowLayoutPanel1";
-            this.flowLayoutPanel1.Size = new System.Drawing.Size(560, 380);
-            this.flowLayoutPanel1.TabIndex = 1;
-            this.flowLayoutPanel1.AutoScroll = true;
-            this.flowLayoutPanel1.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
-            this.flowLayoutPanel1.WrapContents = false;
-
+            flowLayoutPanel1.AutoScroll = true;
+            flowLayoutPanel1.FlowDirection = FlowDirection.TopDown;
+            flowLayoutPanel1.Location = new Point(12, 80);
+            flowLayoutPanel1.Size = new Size(736, 280);
+            flowLayoutPanel1.WrapContents = false;
+            // 
+            // lblIssues
+            // 
+            lblIssues.AutoSize = true;
+            lblIssues.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            lblIssues.Location = new Point(12, 367);
+            lblIssues.Text = "Issues";
+            // 
+            // lstIssues
+            // 
+            lstIssues.Location = new Point(12, 387);
+            lstIssues.Size = new Size(736, 94);
+            lstIssues.SelectionMode = SelectionMode.None;
+            // 
             // lblSuggestions
-            this.lblSuggestions = new System.Windows.Forms.Label();
-            this.lblSuggestions.AutoSize = true;
-            this.lblSuggestions.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
-            this.lblSuggestions.Location = new System.Drawing.Point(12, 445);
-            this.lblSuggestions.Name = "lblSuggestions";
-            this.lblSuggestions.Size = new System.Drawing.Size(150, 15);
-            this.lblSuggestions.Text = "المقترحات والملاحظات (فى شكل نقاط)";
-
+            // 
+            lblSuggestions.AutoSize = true;
+            lblSuggestions.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            lblSuggestions.Location = new Point(12, 490);
+            lblSuggestions.Text = "Notes / Suggestions";
+            // 
             // txtSuggestions
-            this.txtSuggestions = new System.Windows.Forms.TextBox();
-            this.txtSuggestions.Location = new System.Drawing.Point(12, 465);
-            this.txtSuggestions.Name = "txtSuggestions";
-            this.txtSuggestions.Size = new System.Drawing.Size(560, 80);
-            this.txtSuggestions.Multiline = true;
-            this.txtSuggestions.ScrollBars = ScrollBars.Vertical;
-            this.txtSuggestions.Font = new System.Drawing.Font("Segoe UI", 9F);
-
+            // 
+            txtSuggestions.Location = new Point(12, 510);
+            txtSuggestions.Multiline = true;
+            txtSuggestions.ScrollBars = ScrollBars.Vertical;
+            txtSuggestions.Size = new Size(736, 90);
             // 
             // btnSave
             // 
-            this.btnSave.Location = new System.Drawing.Point(12, 555);
-            this.btnSave.Name = "btnSave";
-            this.btnSave.Size = new System.Drawing.Size(100, 30);
-            this.btnSave.TabIndex = 2;
-            this.btnSave.Text = "حفظ";
-            this.btnSave.UseVisualStyleBackColor = true;
-            this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
+            btnSave.Location = new Point(12, 612);
+            btnSave.Size = new Size(100, 32);
+            btnSave.Text = "Save";
+            btnSave.Click += btnSave_Click;
             // 
             // btnReset
             // 
-            this.btnReset.Location = new System.Drawing.Point(120, 555);
-            this.btnReset.Name = "btnReset";
-            this.btnReset.Size = new System.Drawing.Size(100, 30);
-            this.btnReset.TabIndex = 3;
-            this.btnReset.Text = "إعادة التعيين";
-            this.btnReset.UseVisualStyleBackColor = true;
-            this.btnReset.Click += new System.EventHandler(this.btnReset_Click);
+            btnReset.Location = new Point(120, 612);
+            btnReset.Size = new Size(100, 32);
+            btnReset.Text = "Reset";
+            btnReset.Click += btnReset_Click;
             // 
-            // btnSignOut
+            // btnLoad
             // 
-            this.btnSignOut.Location = new System.Drawing.Point(360, 555);
-            this.btnSignOut.Name = "btnSignOut";
-            this.btnSignOut.Size = new System.Drawing.Size(100, 30);
-            this.btnSignOut.TabIndex = 4;
-            this.btnSignOut.Text = "رجوع";
-            this.btnSignOut.UseVisualStyleBackColor = true;
-            this.btnSignOut.Click += new System.EventHandler(this.btnSignOut_Click);
+            btnLoad.Location = new Point(228, 612);
+            btnLoad.Size = new Size(100, 32);
+            btnLoad.Text = "Load";
+            btnLoad.Click += btnLoad_Click;
             // 
-            // btnPrint
+            // btnGenerateExcel
             // 
-            this.btnPrint.Location = new System.Drawing.Point(472, 555);
-            this.btnPrint.Name = "btnPrint";
-            this.btnPrint.Size = new System.Drawing.Size(100, 30);
-            this.btnPrint.TabIndex = 5;
-            this.btnPrint.Text = "طباعة Excel";
-            this.btnPrint.UseVisualStyleBackColor = true;
-            this.btnPrint.Click += new System.EventHandler(this.btnPrint_Click);
+            btnGenerateExcel.Location = new Point(540, 612);
+            btnGenerateExcel.Size = new Size(100, 32);
+            btnGenerateExcel.Text = "Generate Excel";
+            btnGenerateExcel.Click += btnGenerateExcel_Click;
+            // 
+            // btnBack
+            // 
+            btnBack.Location = new Point(648, 612);
+            btnBack.Size = new Size(100, 32);
+            btnBack.Text = "Back";
+            btnBack.Click += btnBack_Click;
             // 
             // SystemEvaluationForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(584, 610);
-            this.Controls.Add(this.btnPrint);
-            this.Controls.Add(this.btnSignOut);
-            this.Controls.Add(this.btnReset);
-            this.Controls.Add(this.btnSave);
-            this.Controls.Add(this.flowLayoutPanel1);
-            this.Controls.Add(this.lblUser);
-            this.Controls.Add(this.lblSuggestions);
-            this.Controls.Add(this.txtSuggestions);
-            this.Controls.Add(this.chkTeamLeadAssistant);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-            this.MaximizeBox = false;
-            this.MinimizeBox = true;
-            this.Name = "SystemEvaluationForm";
-            this.Text = "تقييم النظام";
-            this.ResumeLayout(false);
+            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleMode = AutoScaleMode.Font;
+            ClientSize = new Size(760, 655);
+            Controls.Add(btnBack);
+            Controls.Add(btnGenerateExcel);
+            Controls.Add(btnLoad);
+            Controls.Add(btnReset);
+            Controls.Add(btnSave);
+            Controls.Add(txtSuggestions);
+            Controls.Add(lblSuggestions);
+            Controls.Add(lstIssues);
+            Controls.Add(lblIssues);
+            Controls.Add(flowLayoutPanel1);
+            Controls.Add(chkTeamLeadAssistant);
+            Controls.Add(lblTitle);
+            FormBorderStyle = FormBorderStyle.FixedSingle;
+            MaximizeBox = false;
+            Name = "SystemEvaluationForm";
+            StartPosition = FormStartPosition.CenterScreen;
+            Text = "System Evaluation";
+            ResumeLayout(false);
+            PerformLayout();
         }
     }
 }

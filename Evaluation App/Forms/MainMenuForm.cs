@@ -8,6 +8,8 @@ namespace Evaluation_App.Forms
         public MainMenuForm()
         {
             InitializeComponent();
+            Text = $"Main Menu - {AuthService.CurrentUser.Name} ({AuthService.CurrentUser.Code})";
+            lblTitle.Text = Text;
             ConfigureMenu();
         }
 
@@ -53,9 +55,9 @@ namespace Evaluation_App.Forms
 
         private void BtnSurvey_Click(object? sender, EventArgs e)
         {
-            var systemForm = new SystemEvaluationForm();
-            systemForm.FormClosed += (_, _) => Show();
-            systemForm.Show();
+            var surveyForm = new SurveyForm();
+            surveyForm.FormClosed += (_, _) => Show();
+            surveyForm.Show();
             Hide();
         }
 

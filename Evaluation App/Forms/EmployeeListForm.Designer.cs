@@ -3,11 +3,9 @@
     partial class EmployeeListForm
     {
         private System.ComponentModel.IContainer components = null;
-        private System.Windows.Forms.ListBox lstEmployees;
-        private System.Windows.Forms.Button btnEvaluate;
-        private System.Windows.Forms.Button btnBack;
-        private System.Windows.Forms.Button btnExportMembers;
-        private System.Windows.Forms.Button btnExpertReport;
+        private Label lblTitle;
+        private ListBox lstEmployees;
+        private Button btnBack;
 
         protected override void Dispose(bool disposing)
         {
@@ -18,60 +16,54 @@
 
         private void InitializeComponent()
         {
-            this.lstEmployees = new System.Windows.Forms.ListBox();
-            this.btnEvaluate = new System.Windows.Forms.Button();
-            this.btnBack = new System.Windows.Forms.Button();
-            this.btnExportMembers = new System.Windows.Forms.Button();
-            this.btnExpertReport = new System.Windows.Forms.Button();
-
+            lblTitle = new Label();
+            lstEmployees = new ListBox();
+            btnBack = new Button();
+            SuspendLayout();
+            // 
+            // lblTitle
+            // 
+            lblTitle.Dock = DockStyle.Top;
+            lblTitle.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
+            lblTitle.Location = new Point(0, 0);
+            lblTitle.Name = "lblTitle";
+            lblTitle.Size = new Size(550, 60);
+            lblTitle.TabIndex = 0;
+            lblTitle.Text = "Employee List";
+            lblTitle.TextAlign = ContentAlignment.MiddleCenter;
+            // 
             // lstEmployees
-            this.lstEmployees.Location = new System.Drawing.Point(20, 20);
-            this.lstEmployees.Size = new System.Drawing.Size(500, 400);
-            this.lstEmployees.Name = "lstEmployees";
-            this.lstEmployees.ScrollAlwaysVisible = true;
-
-            // btnEvaluate
-            this.btnEvaluate.Location = new System.Drawing.Point(20, 440);
-            this.btnEvaluate.Size = new System.Drawing.Size(120, 30);
-            this.btnEvaluate.Name = "btnEvaluate";
-            this.btnEvaluate.Text = "تقييم الموظف";
-            this.btnEvaluate.Click += new System.EventHandler(this.btnEvaluate_Click);
-
+            // 
+            lstEmployees.Location = new Point(20, 70);
+            lstEmployees.Name = "lstEmployees";
+            lstEmployees.Size = new Size(510, 364);
+            lstEmployees.TabIndex = 1;
+            lstEmployees.DoubleClick += lstEmployees_DoubleClick;
+            // 
             // btnBack
-            this.btnBack.Location = new System.Drawing.Point(160, 440);
-            this.btnBack.Size = new System.Drawing.Size(80, 30);
-            this.btnBack.Name = "btnBack";
-            this.btnBack.Text = "رجوع";
-            this.btnBack.Click += new System.EventHandler(this.btnBack_Click);
-
-            // btnExportMembers
-            this.btnExportMembers.Location = new System.Drawing.Point(260, 440);
-            this.btnExportMembers.Size = new System.Drawing.Size(120, 30);
-            this.btnExportMembers.Name = "btnExportMembers";
-            this.btnExportMembers.Text = "تصدير الموظفين";
-            this.btnExportMembers.Enabled = false;
-            this.btnExportMembers.Click += new System.EventHandler(this.btnExportMembers_Click);
-
-            // btnExpertReport
-            this.btnExpertReport.Location = new System.Drawing.Point(400, 440);
-            this.btnExpertReport.Size = new System.Drawing.Size(120, 30);
-            this.btnExpertReport.Name = "btnExpertReport";
-            this.btnExpertReport.Text = "تقرير شامل";
-            this.btnExpertReport.Enabled = false;
-            this.btnExpertReport.Click += new System.EventHandler(this.btnExpertReport_Click);
-
+            // 
+            btnBack.Location = new Point(430, 445);
+            btnBack.Name = "btnBack";
+            btnBack.Size = new Size(100, 32);
+            btnBack.TabIndex = 2;
+            btnBack.Text = "Back";
+            btnBack.UseVisualStyleBackColor = true;
+            btnBack.Click += btnBack_Click;
+            // 
             // EmployeeListForm
-            this.ClientSize = new System.Drawing.Size(550, 500);
-            this.Controls.Add(this.lstEmployees);
-            this.Controls.Add(this.btnEvaluate);
-            this.Controls.Add(this.btnBack);
-            this.Controls.Add(this.btnExportMembers);
-            this.Controls.Add(this.btnExpertReport);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-            this.MaximizeBox = false;
-            this.MinimizeBox = true;
-            this.Name = "EmployeeListForm";
-            this.Text = "قائمة الموظفين";
+            // 
+            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleMode = AutoScaleMode.Font;
+            ClientSize = new Size(550, 490);
+            Controls.Add(btnBack);
+            Controls.Add(lstEmployees);
+            Controls.Add(lblTitle);
+            FormBorderStyle = FormBorderStyle.FixedSingle;
+            MaximizeBox = false;
+            Name = "EmployeeListForm";
+            StartPosition = FormStartPosition.CenterScreen;
+            Text = "Employee List";
+            ResumeLayout(false);
         }
     }
 }
