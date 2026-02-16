@@ -46,8 +46,8 @@ namespace Evaluation_App.Forms
 
         private void btnBack_Click(object sender, EventArgs e)
         {
-            var systemForm = new SystemEvaluationForm();
-            systemForm.Show();
+            var menuForm = new MainMenuForm();
+            menuForm.Show();
             this.Close();
         }
 
