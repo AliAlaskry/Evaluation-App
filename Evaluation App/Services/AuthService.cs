@@ -22,19 +22,11 @@ namespace Evaluation_App.Services
             currentUser = user;
             KeepLoggedIn = keepLoggedIn;
 
-<<<<<<< Updated upstream
             SaveRememberedLogin();
-=======
-            if (keepLoggedIn)
-                SaveRememberedLogin(user.Code);
-            else
-                ClearRememberedLogin();
->>>>>>> Stashed changes
         }
 
         public static bool TryAutoLogin()
         {
-<<<<<<< Updated upstream
             if (!File.Exists(RememberedLoginPath))
                 return false;
 
@@ -57,29 +49,12 @@ namespace Evaluation_App.Services
             {
                 return false;
             }
-=======
-            var code = LoadRememberedLoginCode();
-            if (string.IsNullOrWhiteSpace(code))
-                return false;
-
-            var user = EmployeeService.GetEmployeeByCode(code);
-            if (user == null)
-            {
-                ClearRememberedLogin();
-                return false;
-            }
-
-            currentUser = user;
-            KeepLoggedIn = true;
-            return true;
->>>>>>> Stashed changes
         }
 
         public static void Logout()
         {
             currentUser = null;
             KeepLoggedIn = false;
-<<<<<<< Updated upstream
 
             if (File.Exists(RememberedLoginPath))
                 File.Delete(RememberedLoginPath);
@@ -100,63 +75,6 @@ namespace Evaluation_App.Services
 
             var json = JsonConvert.SerializeObject(currentUser?.Code ?? string.Empty);
             File.WriteAllText(RememberedLoginPath, json);
-=======
-            ClearRememberedLogin();
-        }
-
-        private static void SaveRememberedLogin(string code)
-        {
-            try
-            {
-                var dir = Path.GetDirectoryName(RememberedLoginPath);
-                if (!string.IsNullOrWhiteSpace(dir) && !Directory.Exists(dir))
-                    Directory.CreateDirectory(dir);
-
-                var payload = new RememberedLogin { Code = code };
-                File.WriteAllText(
-                    RememberedLoginPath,
-                    JsonConvert.SerializeObject(payload, Formatting.Indented));
-            }
-            catch
-            {
-                // intentionally ignored to avoid blocking login flow
-            }
-        }
-
-        private static string? LoadRememberedLoginCode()
-        {
-            try
-            {
-                if (!File.Exists(RememberedLoginPath))
-                    return null;
-
-                var json = File.ReadAllText(RememberedLoginPath);
-                var payload = JsonConvert.DeserializeObject<RememberedLogin>(json);
-                return payload?.Code;
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
-        private static void ClearRememberedLogin()
-        {
-            try
-            {
-                if (File.Exists(RememberedLoginPath))
-                    File.Delete(RememberedLoginPath);
-            }
-            catch
-            {
-                // intentionally ignored to avoid crashing logout/login flow
-            }
-        }
-
-        private class RememberedLogin
-        {
-            public string Code { get; set; } = string.Empty;
->>>>>>> Stashed changes
         }
     }
 }

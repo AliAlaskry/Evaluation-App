@@ -5,11 +5,6 @@ namespace Evaluation_App.Forms
 {
     public class MainMenuForm : Form
     {
-        private readonly Button btnModifyConfig;
-        private readonly Button btnSurvey;
-        private readonly Button btnCreateReport;
-        private readonly Button btnExit;
-
         public MainMenuForm()
         {
             Text = "Main Menu";
@@ -28,20 +23,35 @@ namespace Evaluation_App.Forms
                 Height = 70
             };
 
-            btnModifyConfig = CreateButton("Modify Config Files", 90);
-            btnSurvey = CreateButton("Survey", 140);
-            btnCreateReport = CreateButton("Create A Report", 190);
-            btnExit = CreateButton("Exist", 240);
+            List<Button> controllers = new();
 
-            btnModifyConfig.Enabled = AuthService.CurrentUser.IsTeamLead;
+            int top = 90;
+            if (AuthService.CurrentUser.IsTeamLead) 
+            {
+                var btnModifyConfig = CreateButton("Modify Config Files", top);
+                btnModifyConfig.Click += BtnModifyConfig_Click;
+                controllers.Add(btnModifyConfig);
+                top += 50;
+            }
 
-            btnModifyConfig.Click += BtnModifyConfig_Click;
+            var btnSurvey = CreateButton("Survey", top);
             btnSurvey.Click += BtnSurvey_Click;
+            controllers.Add(btnSurvey);
+            top += 50;
+
+            var btnCreateReport = CreateButton("Create A Report", top);
             btnCreateReport.Click += BtnCreateReport_Click;
+            controllers.Add(btnCreateReport);
+            top += 50;
+
+            var btnExit = CreateButton("Exit", top);
             btnExit.Click += (_, _) => Application.Exit();
+            controllers.Add(btnExit);
 
             Controls.Add(title);
-            Controls.AddRange([btnModifyConfig, btnSurvey, btnCreateReport, btnExit]);
+
+            foreach (var control in controllers)
+                Controls.Add(control);
         }
 
         private Button CreateButton(string text, int top)
