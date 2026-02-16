@@ -8,8 +8,8 @@ namespace Evaluation_App.Forms
         public MainMenuForm()
         {
             InitializeComponent();
-            Text = $"Main Menu";
-            lblTitle.Text = $"Welcome - {AuthService.CurrentUser.Name} [{AuthService.CurrentUser.Code}]";
+            Text = $"القائمة الرئيسية";
+            lblTitle.Text = $"مرحباً {AuthService.CurrentUser.Name} [{AuthService.CurrentUser.Code}]";
             ConfigureMenu();
         }
 
@@ -35,14 +35,14 @@ namespace Evaluation_App.Forms
         {
             if (!AuthService.CurrentUser.IsTeamLead)
             {
-                MessageBox.Show("This option is only available for team leaders.");
+                MessageBox.Show("هذا الخيار متاح لقادة الفريق فقط.");
                 return;
             }
 
             string dataFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data");
             if (!Directory.Exists(dataFolder))
             {
-                MessageBox.Show("Config folder was not found.");
+                MessageBox.Show("لم يتم العثور على مجلد الإعدادات.");
                 return;
             }
 

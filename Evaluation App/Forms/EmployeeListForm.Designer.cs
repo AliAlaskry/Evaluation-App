@@ -33,7 +33,7 @@
             btnBack.Name = "btnBack";
             btnBack.Size = new Size(100, 32);
             btnBack.TabIndex = 2;
-            btnBack.Text = "Back";
+            btnBack.Text = "رجوع";
             btnBack.UseVisualStyleBackColor = true;
             btnBack.Click += btnBack_Click;
             // 
@@ -46,9 +46,11 @@
             Controls.Add(lstEmployees);
             FormBorderStyle = FormBorderStyle.FixedSingle;
             MaximizeBox = false;
+            RightToLeft = RightToLeft.Yes;
+            RightToLeftLayout = true;
             Name = "EmployeeListForm";
             StartPosition = FormStartPosition.CenterScreen;
-            Text = "Employee List";
+            Text = "قائمة الموظفين";
             ResumeLayout(false);
         }
     }

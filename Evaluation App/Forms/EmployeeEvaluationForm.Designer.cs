@@ -41,7 +41,7 @@
             lblTitle.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
             lblTitle.Location = new Point(0, 0);
             lblTitle.Size = new Size(760, 55);
-            lblTitle.Text = "Employee Evaluation";
+            lblTitle.Text = "تقييم الموظف";
             lblTitle.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // chkTeamLead
@@ -49,7 +49,7 @@
             chkTeamLead.AutoSize = true;
             chkTeamLead.Location = new Point(12, 58);
             chkTeamLead.Size = new Size(277, 19);
-            chkTeamLead.Text = "Do you suggest him/her as team leader assistant";
+            chkTeamLead.Text = "أوصي به/بها كمساعد قائد فريق";
             // 
             // flowLayoutPanel1
             // 
@@ -64,7 +64,7 @@
             lblFinalNote.AutoSize = true;
             lblFinalNote.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             lblFinalNote.Location = new Point(12, 452);
-            lblFinalNote.Text = "Notes";
+            lblFinalNote.Text = "ملاحظات";
             // 
             // txtFinalNote
             // 
@@ -77,35 +77,35 @@
             // 
             btnSave.Location = new Point(12, 580);
             btnSave.Size = new Size(100, 32);
-            btnSave.Text = "Save";
+            btnSave.Text = "حفظ";
             btnSave.Click += btnSave_Click;
             // 
             // btnReset
             // 
             btnReset.Location = new Point(120, 580);
             btnReset.Size = new Size(100, 32);
-            btnReset.Text = "Reset";
+            btnReset.Text = "إعادة ضبط";
             btnReset.Click += btnReset_Click;
             // 
             // btnLoad
             // 
             btnLoad.Location = new Point(228, 580);
             btnLoad.Size = new Size(100, 32);
-            btnLoad.Text = "Load";
+            btnLoad.Text = "تحميل";
             btnLoad.Click += btnLoad_Click;
             // 
             // btnGenerateExcel
             // 
             btnGenerateExcel.Location = new Point(540, 580);
             btnGenerateExcel.Size = new Size(100, 32);
-            btnGenerateExcel.Text = "Generate Excel";
+            btnGenerateExcel.Text = "توليد Excel";
             btnGenerateExcel.Click += btnGenerateExcel_Click;
             // 
             // btnBack
             // 
             btnBack.Location = new Point(648, 580);
             btnBack.Size = new Size(100, 32);
-            btnBack.Text = "Back";
+            btnBack.Text = "رجوع";
             btnBack.Click += btnBack_Click;
             // 
             // EmployeeEvaluationForm
@@ -125,9 +125,11 @@
             Controls.Add(lblTitle);
             FormBorderStyle = FormBorderStyle.FixedSingle;
             MaximizeBox = false;
+            RightToLeft = RightToLeft.Yes;
+            RightToLeftLayout = true;
             Name = "EmployeeEvaluationForm";
             StartPosition = FormStartPosition.CenterScreen;
-            Text = "Employee Evaluation";
+            Text = "تقييم الموظف";
             ResumeLayout(false);
             PerformLayout();
         }

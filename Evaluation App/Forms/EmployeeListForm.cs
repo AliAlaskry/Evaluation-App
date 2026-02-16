@@ -9,7 +9,7 @@ namespace Evaluation_App.Forms
         public EmployeeListForm()
         {
             InitializeComponent();
-            Text = $"Employee List - {AuthService.CurrentUser.Name} [{AuthService.CurrentUser.Code}]";
+            Text = $"قائمة الموظفين - {AuthService.CurrentUser.Name} [{AuthService.CurrentUser.Code}]";
             LoadEmployees();
         }
 
