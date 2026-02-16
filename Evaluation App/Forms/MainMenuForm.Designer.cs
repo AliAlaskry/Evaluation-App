@@ -48,7 +48,7 @@ namespace Evaluation_App.Forms
             btnSurvey.Name = "btnSurvey";
             btnSurvey.Size = new Size(220, 36);
             btnSurvey.TabIndex = 2;
-            btnSurvey.Text = "التقييمات";
+            btnSurvey.Text = "الإستبيان";
             btnSurvey.UseVisualStyleBackColor = true;
             btnSurvey.Click += BtnSurvey_Click;
             // 
@@ -59,7 +59,7 @@ namespace Evaluation_App.Forms
             btnCreateReport.Name = "btnCreateReport";
             btnCreateReport.Size = new Size(220, 36);
             btnCreateReport.TabIndex = 3;
-            btnCreateReport.Text = "إنشاء تقرير";
+            btnCreateReport.Text = "التقرير";
             btnCreateReport.UseVisualStyleBackColor = true;
             btnCreateReport.Click += BtnCreateReport_Click;
             // 

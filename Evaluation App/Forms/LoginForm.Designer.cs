@@ -28,16 +28,16 @@
             lblCodeTitle.AutoSize = true;
             lblCodeTitle.Location = new Point(50, 17);
             lblCodeTitle.Name = "lblCodeTitle";
-            lblCodeTitle.Size = new Size(88, 15);
+            lblCodeTitle.Size = new Size(70, 15);
             lblCodeTitle.TabIndex = 0;
-            lblCodeTitle.Text = "رمز الموظف";
+            lblCodeTitle.Text = "كود الموظف";
             // 
             // txtCode
             // 
             txtCode.Location = new Point(50, 48);
             txtCode.Name = "txtCode";
-            txtCode.PlaceholderText = "أدخل رمز الموظف...";
-            txtCode.RightToLeft = RightToLeft.No;
+            txtCode.PlaceholderText = "أدخل كود الموظف...";
+            txtCode.RightToLeft = RightToLeft.Yes;
             txtCode.Size = new Size(200, 23);
             txtCode.TabIndex = 1;
             // 
@@ -46,7 +46,7 @@
             chkKeepLogged.AutoSize = true;
             chkKeepLogged.Location = new Point(50, 88);
             chkKeepLogged.Name = "chkKeepLogged";
-            chkKeepLogged.Size = new Size(105, 19);
+            chkKeepLogged.Size = new Size(120, 19);
             chkKeepLogged.TabIndex = 2;
             chkKeepLogged.Text = "تذكر تسجيل الدخول";
             chkKeepLogged.UseVisualStyleBackColor = true;
@@ -68,9 +68,9 @@
             Controls.Add(chkKeepLogged);
             Controls.Add(btnLogin);
             MinimumSize = new Size(360, 210);
+            Name = "LoginForm";
             RightToLeft = RightToLeft.Yes;
             RightToLeftLayout = true;
-            Name = "LoginForm";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "تسجيل الدخول";
             ResumeLayout(false);

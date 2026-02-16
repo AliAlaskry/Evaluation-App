@@ -3,7 +3,6 @@ namespace Evaluation_App.Forms
     partial class SurveyForm
     {
         private System.ComponentModel.IContainer components = null;
-        private Label lblTitle;
         private Button btnRateSystem;
         private Button btnRateTeammates;
         private Button btnGenerateExcel;
@@ -21,23 +20,12 @@ namespace Evaluation_App.Forms
 
         private void InitializeComponent()
         {
-            lblTitle = new Label();
             btnRateSystem = new Button();
             btnRateTeammates = new Button();
             btnGenerateExcel = new Button();
             btnBack = new Button();
+            lblTitle = new Label();
             SuspendLayout();
-            // 
-            // lblTitle
-            // 
-            lblTitle.Dock = DockStyle.Top;
-            lblTitle.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
-            lblTitle.Location = new Point(0, 0);
-            lblTitle.Name = "lblTitle";
-            lblTitle.Size = new Size(420, 75);
-            lblTitle.TabIndex = 0;
-            lblTitle.Text = "التقييمات";
-            lblTitle.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // btnRateSystem
             // 
@@ -68,7 +56,7 @@ namespace Evaluation_App.Forms
             btnGenerateExcel.Name = "btnGenerateExcel";
             btnGenerateExcel.Size = new Size(220, 38);
             btnGenerateExcel.TabIndex = 3;
-            btnGenerateExcel.Text = "توليد Excel";
+            btnGenerateExcel.Text = "تصدير Excel شامل";
             btnGenerateExcel.UseVisualStyleBackColor = true;
             btnGenerateExcel.Click += BtnGenerateExcel_Click;
             // 
@@ -83,6 +71,17 @@ namespace Evaluation_App.Forms
             btnBack.UseVisualStyleBackColor = true;
             btnBack.Click += BtnBack_Click;
             // 
+            // lblTitle
+            // 
+            lblTitle.Dock = DockStyle.Top;
+            lblTitle.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
+            lblTitle.Location = new Point(0, 0);
+            lblTitle.Name = "lblTitle";
+            lblTitle.Size = new Size(420, 75);
+            lblTitle.TabIndex = 0;
+            lblTitle.Text = "إستبيان الـ Sprint";
+            lblTitle.TextAlign = ContentAlignment.MiddleCenter;
+            // 
             // SurveyForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -95,12 +94,13 @@ namespace Evaluation_App.Forms
             Controls.Add(lblTitle);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
+            Name = "SurveyForm";
             RightToLeft = RightToLeft.Yes;
             RightToLeftLayout = true;
-            Name = "SurveyForm";
             StartPosition = FormStartPosition.CenterScreen;
-            Text = "التقييمات";
+            Text = "إستبيان الـ Sprint";
             ResumeLayout(false);
         }
+        private Label lblTitle;
     }
 }

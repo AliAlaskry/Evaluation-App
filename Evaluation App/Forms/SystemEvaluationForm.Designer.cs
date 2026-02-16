@@ -44,7 +44,9 @@
             lblTitle.Dock = DockStyle.Top;
             lblTitle.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
             lblTitle.Location = new Point(0, 0);
+            lblTitle.Name = "lblTitle";
             lblTitle.Size = new Size(760, 48);
+            lblTitle.TabIndex = 11;
             lblTitle.Text = "تقييم النظام";
             lblTitle.TextAlign = ContentAlignment.MiddleCenter;
             // 
@@ -53,7 +55,9 @@
             chkTeamLeadAssistant.AutoSize = true;
             chkTeamLeadAssistant.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             chkTeamLeadAssistant.Location = new Point(12, 55);
-            chkTeamLeadAssistant.Size = new Size(365, 19);
+            chkTeamLeadAssistant.Name = "chkTeamLeadAssistant";
+            chkTeamLeadAssistant.Size = new Size(172, 19);
+            chkTeamLeadAssistant.TabIndex = 10;
             chkTeamLeadAssistant.Text = "أرشّح نفسي كمساعد قائد فريق";
             // 
             // flowLayoutPanel1
@@ -61,7 +65,9 @@
             flowLayoutPanel1.AutoScroll = true;
             flowLayoutPanel1.FlowDirection = FlowDirection.TopDown;
             flowLayoutPanel1.Location = new Point(12, 80);
+            flowLayoutPanel1.Name = "flowLayoutPanel1";
             flowLayoutPanel1.Size = new Size(736, 280);
+            flowLayoutPanel1.TabIndex = 9;
             flowLayoutPanel1.WrapContents = false;
             // 
             // lblIssues
@@ -69,60 +75,80 @@
             lblIssues.AutoSize = true;
             lblIssues.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             lblIssues.Location = new Point(12, 367);
+            lblIssues.Name = "lblIssues";
+            lblIssues.Size = new Size(106, 15);
+            lblIssues.TabIndex = 8;
             lblIssues.Text = "قضايا بحاجة لمعالجة";
             // 
             // lstIssues
             // 
             lstIssues.Location = new Point(12, 387);
-            lstIssues.Size = new Size(736, 94);
+            lstIssues.Name = "lstIssues";
             lstIssues.SelectionMode = SelectionMode.None;
+            lstIssues.Size = new Size(736, 94);
+            lstIssues.TabIndex = 7;
             // 
             // lblSuggestions
             // 
             lblSuggestions.AutoSize = true;
             lblSuggestions.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             lblSuggestions.Location = new Point(12, 490);
+            lblSuggestions.Name = "lblSuggestions";
+            lblSuggestions.Size = new Size(104, 15);
+            lblSuggestions.TabIndex = 6;
             lblSuggestions.Text = "ملاحظات / اقتراحات";
             // 
             // txtSuggestions
             // 
             txtSuggestions.Location = new Point(12, 510);
             txtSuggestions.Multiline = true;
+            txtSuggestions.Name = "txtSuggestions";
             txtSuggestions.ScrollBars = ScrollBars.Vertical;
             txtSuggestions.Size = new Size(736, 90);
+            txtSuggestions.TabIndex = 5;
             // 
             // btnSave
             // 
             btnSave.Location = new Point(12, 612);
+            btnSave.Name = "btnSave";
             btnSave.Size = new Size(100, 32);
+            btnSave.TabIndex = 4;
             btnSave.Text = "حفظ";
             btnSave.Click += btnSave_Click;
             // 
             // btnReset
             // 
             btnReset.Location = new Point(120, 612);
+            btnReset.Name = "btnReset";
             btnReset.Size = new Size(100, 32);
+            btnReset.TabIndex = 3;
             btnReset.Text = "إعادة ضبط";
             btnReset.Click += btnReset_Click;
             // 
             // btnLoad
             // 
             btnLoad.Location = new Point(228, 612);
+            btnLoad.Name = "btnLoad";
             btnLoad.Size = new Size(100, 32);
+            btnLoad.TabIndex = 2;
             btnLoad.Text = "تحميل";
             btnLoad.Click += btnLoad_Click;
             // 
             // btnGenerateExcel
             // 
             btnGenerateExcel.Location = new Point(540, 612);
+            btnGenerateExcel.Name = "btnGenerateExcel";
             btnGenerateExcel.Size = new Size(100, 32);
-            btnGenerateExcel.Text = "توليد Excel";
+            btnGenerateExcel.TabIndex = 1;
+            btnGenerateExcel.Text = "تصدير Excel";
             btnGenerateExcel.Click += btnGenerateExcel_Click;
             // 
             // btnBack
             // 
             btnBack.Location = new Point(648, 612);
+            btnBack.Name = "btnBack";
             btnBack.Size = new Size(100, 32);
+            btnBack.TabIndex = 0;
             btnBack.Text = "رجوع";
             btnBack.Click += btnBack_Click;
             // 
@@ -145,9 +171,9 @@
             Controls.Add(lblTitle);
             FormBorderStyle = FormBorderStyle.FixedSingle;
             MaximizeBox = false;
+            Name = "SystemEvaluationForm";
             RightToLeft = RightToLeft.Yes;
             RightToLeftLayout = true;
-            Name = "SystemEvaluationForm";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "تقييم النظام";
             ResumeLayout(false);
