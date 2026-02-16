@@ -339,14 +339,16 @@ public static class ExcelExportService
     private static List<KeyValuePair<string, string>> GetSheetRows(IXLWorksheet sheet)
     {
         var rows = new List<KeyValuePair<string, string>>();
-        int row = 1;
+        int lastRow = sheet.LastRowUsed()?.RowNumber() ?? 0;
 
-        while (!sheet.Cell(row, COLUMN_LABEL).IsEmpty())
+        for (int row = 1; row <= lastRow; row++)
         {
             string key = sheet.Cell(row, COLUMN_LABEL).GetString().Trim();
+            if (string.IsNullOrWhiteSpace(key))
+                continue;
+
             string value = sheet.Cell(row, COLUMN_VALUE).GetString();
             rows.Add(new KeyValuePair<string, string>(key, value));
-            row++;
         }
 
         return rows;
@@ -354,10 +356,12 @@ public static class ExcelExportService
 
     private static void LoadRows(IXLWorksheet sheet, Dictionary<string, Question> textToQuestion, Action<string> setNote, Action<bool> setAssistant)
     {
-        int row = 1;
-        while (!sheet.Cell(row, COLUMN_LABEL).IsEmpty())
+        int lastRow = sheet.LastRowUsed()?.RowNumber() ?? 0;
+        for (int row = 1; row <= lastRow; row++)
         {
             string label = sheet.Cell(row, COLUMN_LABEL).GetString().Trim();
+            if (string.IsNullOrWhiteSpace(label))
+                continue;
 
             if (textToQuestion.TryGetValue(label, out var question))
             {
@@ -374,8 +378,6 @@ public static class ExcelExportService
                 string value = sheet.Cell(row, COLUMN_VALUE).GetString();
                 setAssistant(value.Contains("yes", StringComparison.OrdinalIgnoreCase) || value.Contains("نعم"));
             }
-
-            row++;
         }
     }
 
@@ -395,7 +397,7 @@ public static class ExcelExportService
         int row = 1;
         ws.Cell(row, COLUMN_LABEL).Value = workSheetTitle;
         ws.Row(row).Style.Font.Bold = true;
-        row += 2;
+        row++;
 
         foreach (var section in eval.Sections)
         {
@@ -415,14 +417,14 @@ public static class ExcelExportService
             ws.Cell(row, COLUMN_VALUE).Value = section.TotalScore;
 
             ws.Row(row).Style.Font.Bold = true;
-            row += 2;
+            row++;
         }
 
         ws.Cell(row, COLUMN_LABEL).Value = LABEL_TOTAL;
         ws.Cell(row, COLUMN_VALUE).Value = eval.TotalScore;
 
         ws.Row(row).Style.Font.Bold = true;
-        row += 2;
+        row++;
 
         ws.Cell(row, COLUMN_LABEL).Value = LABEL_NOTES;
         ws.Cell(row, COLUMN_VALUE).Value = eval.FinalNote;
@@ -458,7 +460,7 @@ public static class ExcelExportService
         int row = 1;
         ws.Cell(row, COLUMN_LABEL).Value = workSheetTitle;
         ws.Row(row).Style.Font.Bold = true;
-        row += 2;
+        row++;
 
         foreach (var section in eval.Sections)
         {
@@ -478,14 +480,14 @@ public static class ExcelExportService
             ws.Cell(row, COLUMN_VALUE).Value = section.TotalScore;
 
             ws.Row(row).Style.Font.Bold = true;
-            row += 2;
+            row++;
         }
 
         ws.Cell(row, COLUMN_LABEL).Value = LABEL_TOTAL;
         ws.Cell(row, COLUMN_VALUE).Value = eval.TotalScore;
 
         ws.Row(row).Style.Font.Bold = true;
-        row += 2;
+        row++;
 
         ws.Cell(row, COLUMN_LABEL).Value = LABEL_NOTES;
         ws.Cell(row, COLUMN_VALUE).Value = eval.FinalNote;
