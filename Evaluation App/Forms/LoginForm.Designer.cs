@@ -17,64 +17,62 @@
 
         private void InitializeComponent()
         {
-            this.lblCodeTitle = new System.Windows.Forms.Label();
-            this.txtCode = new System.Windows.Forms.TextBox();
-            this.chkKeepLogged = new System.Windows.Forms.CheckBox();
-            this.btnLogin = new System.Windows.Forms.Button();
-            this.SuspendLayout();
-
+            lblCodeTitle = new Label();
+            txtCode = new TextBox();
+            chkKeepLogged = new CheckBox();
+            btnLogin = new Button();
+            SuspendLayout();
+            // 
             // lblCodeTitle
-            this.lblCodeTitle.AutoSize = true;
-            this.lblCodeTitle.Location = new System.Drawing.Point(24, 24);
-            this.lblCodeTitle.Name = "lblCodeTitle";
-            this.lblCodeTitle.Size = new System.Drawing.Size(69, 16);
-            this.lblCodeTitle.TabIndex = 0;
-            this.lblCodeTitle.Text = "كود الموظف";
-
-            // lblCodeTitle
-            this.lblCodeTitle.AutoSize = true;
-            this.lblCodeTitle.Location = new System.Drawing.Point(50, 15);
-            this.lblCodeTitle.Name = "lblCodeTitle";
-            this.lblCodeTitle.Size = new System.Drawing.Size(69, 16);
-            this.lblCodeTitle.Text = "كود الموظف";
-
+            // 
+            lblCodeTitle.AutoSize = true;
+            lblCodeTitle.Location = new Point(180, 17);
+            lblCodeTitle.Name = "lblCodeTitle";
+            lblCodeTitle.Size = new Size(70, 15);
+            lblCodeTitle.TabIndex = 0;
+            lblCodeTitle.Text = "كود الموظف";
+            // 
             // txtCode
-            this.txtCode.Location = new System.Drawing.Point(50, 35);
-            this.txtCode.Name = "txtCode";
-            this.txtCode.PlaceholderText = "ادخل كود الموظف";
-            this.txtCode.Size = new System.Drawing.Size(200, 22);
-
+            // 
+            txtCode.Location = new Point(50, 35);
+            txtCode.Name = "txtCode";
+            txtCode.PlaceholderText = "ادخل كود الموظف";
+            txtCode.RightToLeft = RightToLeft.Yes;
+            txtCode.Size = new Size(200, 23);
+            txtCode.TabIndex = 1;
+            // 
             // chkKeepLogged
-            this.chkKeepLogged.AutoSize = true;
-            this.chkKeepLogged.Location = new System.Drawing.Point(50, 65);
-            this.chkKeepLogged.Name = "chkKeepLogged";
-            this.chkKeepLogged.Size = new System.Drawing.Size(121, 20);
-            this.chkKeepLogged.Text = "Keep me logged";
-            this.chkKeepLogged.UseVisualStyleBackColor = true;
-
+            // 
+            chkKeepLogged.AutoSize = true;
+            chkKeepLogged.Location = new Point(163, 64);
+            chkKeepLogged.Name = "chkKeepLogged";
+            chkKeepLogged.Size = new Size(87, 19);
+            chkKeepLogged.TabIndex = 2;
+            chkKeepLogged.Text = "أبقنى مسجلا";
+            chkKeepLogged.UseVisualStyleBackColor = true;
+            // 
             // btnLogin
-            this.btnLogin.Location = new System.Drawing.Point(50, 95);
-            this.btnLogin.Name = "btnLogin";
-            this.btnLogin.Size = new System.Drawing.Size(112, 32);
-            this.btnLogin.TabIndex = 3;
-            this.btnLogin.Text = "تسجيل الدخول";
-            this.btnLogin.Click += new System.EventHandler(this.btnLogin_Click);
-
+            // 
+            btnLogin.Location = new Point(95, 90);
+            btnLogin.Name = "btnLogin";
+            btnLogin.Size = new Size(112, 32);
+            btnLogin.TabIndex = 3;
+            btnLogin.Text = "تسجيل الدخول";
+            btnLogin.Click += btnLogin_Click;
+            // 
             // LoginForm
-            this.ClientSize = new System.Drawing.Size(300, 155);
-            this.Controls.Add(this.lblCodeTitle);
-            this.Controls.Add(this.txtCode);
-            this.Controls.Add(this.chkKeepLogged);
-            this.Controls.Add(this.btnLogin);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Sizable;
-            this.MaximizeBox = true;
-            this.MinimizeBox = true;
-            this.MinimumSize = new System.Drawing.Size(360, 210);
-            this.Name = "LoginForm";
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "تسجيل الدخول";
-            this.ResumeLayout(false);
-            this.PerformLayout();
+            // 
+            ClientSize = new Size(344, 171);
+            Controls.Add(lblCodeTitle);
+            Controls.Add(txtCode);
+            Controls.Add(chkKeepLogged);
+            Controls.Add(btnLogin);
+            MinimumSize = new Size(360, 210);
+            Name = "LoginForm";
+            StartPosition = FormStartPosition.CenterScreen;
+            Text = "تسجيل الدخول";
+            ResumeLayout(false);
+            PerformLayout();
         }
     }
 

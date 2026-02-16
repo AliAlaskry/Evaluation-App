@@ -39,6 +39,5 @@ namespace Evaluation_App.Forms
             mainMenuForm.Show();
             this.Hide();
         }
-
     }
 }
