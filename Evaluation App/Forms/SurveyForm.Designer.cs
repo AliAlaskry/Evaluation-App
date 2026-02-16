@@ -36,7 +36,7 @@ namespace Evaluation_App.Forms
             lblTitle.Name = "lblTitle";
             lblTitle.Size = new Size(420, 75);
             lblTitle.TabIndex = 0;
-            lblTitle.Text = "Survey";
+            lblTitle.Text = "التقييمات";
             lblTitle.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // btnRateSystem
@@ -46,7 +46,7 @@ namespace Evaluation_App.Forms
             btnRateSystem.Name = "btnRateSystem";
             btnRateSystem.Size = new Size(220, 38);
             btnRateSystem.TabIndex = 1;
-            btnRateSystem.Text = "Rate System";
+            btnRateSystem.Text = "تقييم النظام";
             btnRateSystem.UseVisualStyleBackColor = true;
             btnRateSystem.Click += BtnRateSystem_Click;
             // 
@@ -57,7 +57,7 @@ namespace Evaluation_App.Forms
             btnRateTeammates.Name = "btnRateTeammates";
             btnRateTeammates.Size = new Size(220, 38);
             btnRateTeammates.TabIndex = 2;
-            btnRateTeammates.Text = "Rate Teammates";
+            btnRateTeammates.Text = "تقييم الزملاء";
             btnRateTeammates.UseVisualStyleBackColor = true;
             btnRateTeammates.Click += BtnRateTeammates_Click;
             // 
@@ -68,7 +68,7 @@ namespace Evaluation_App.Forms
             btnGenerateExcel.Name = "btnGenerateExcel";
             btnGenerateExcel.Size = new Size(220, 38);
             btnGenerateExcel.TabIndex = 3;
-            btnGenerateExcel.Text = "Generate Excel";
+            btnGenerateExcel.Text = "توليد Excel";
             btnGenerateExcel.UseVisualStyleBackColor = true;
             btnGenerateExcel.Click += BtnGenerateExcel_Click;
             // 
@@ -79,7 +79,7 @@ namespace Evaluation_App.Forms
             btnBack.Name = "btnBack";
             btnBack.Size = new Size(220, 38);
             btnBack.TabIndex = 4;
-            btnBack.Text = "Back";
+            btnBack.Text = "رجوع";
             btnBack.UseVisualStyleBackColor = true;
             btnBack.Click += BtnBack_Click;
             // 
@@ -95,9 +95,11 @@ namespace Evaluation_App.Forms
             Controls.Add(lblTitle);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
+            RightToLeft = RightToLeft.Yes;
+            RightToLeftLayout = true;
             Name = "SurveyForm";
             StartPosition = FormStartPosition.CenterScreen;
-            Text = "Survey";
+            Text = "التقييمات";
             ResumeLayout(false);
         }
     }

@@ -19,7 +19,7 @@ public static class ConfigLoader
 
     public static EmployeeEvaluationOptions LoadEmployeeOptions()
     {
-        return LoadConfigFromFile(EmployeeEvaluationPath).Options;
+        return LoadConfigFromFile(SystemConfigPath).Options;
     }
 
     private static EvaluationConfig LoadConfigFromFile(string path)

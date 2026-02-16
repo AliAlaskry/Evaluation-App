@@ -5,7 +5,8 @@ namespace Evaluation_App.Forms
     public partial class EmployeeEvaluationForm : Form
     {
         private readonly Employee _employee;
-        private readonly Dictionary<string, NumericUpDown> _inputControls = new();
+        private readonly Dictionary<string, TrackBar> _inputControls = new();
+        private readonly Dictionary<string, Label> _valueLabels = new();
         private EvaluationResult _evaluationResult;
         private readonly EmployeeEvaluationOptions _employeeOptions;
 
@@ -15,8 +16,8 @@ namespace Evaluation_App.Forms
             _employee = employee;
             _employeeOptions = ConfigLoader.LoadEmployeeOptions();
 
-            Text = $"Employee Evaluation - {AuthService.CurrentUser.Name} [{AuthService.CurrentUser.Code}]";
-            lblTitle.Text = $"Rating: {employee.Name} [{employee.Code}]";
+            Text = $"تقييم الموظف - {AuthService.CurrentUser.Name} [{AuthService.CurrentUser.Code}]";
+            lblTitle.Text = $"تقييم: {employee.Name} [{employee.Code}]";
 
             _evaluationResult = EvaluationService.LoadEvaluation(_employee.Code)
                 ?? new EvaluationResult(_employee.Code, true, ConfigLoader.LoadEmployeeSections());
@@ -27,7 +28,7 @@ namespace Evaluation_App.Forms
             chkTeamLead.Visible = _employeeOptions.AskPreferTeamLeaderAssistant && !_employee.IsTeamLead;
             chkTeamLead.Checked = _evaluationResult.RecommendAsTeamLead;
 
-            lblFinalNote.Text = AuthService.CurrentUser.IsTeamLead ? "Leader notes" : "Leave a message";
+            lblFinalNote.Text = AuthService.CurrentUser.IsTeamLead ? "ملاحظات قائد الفريق" : "ملاحظة ختامية";
             txtFinalNote.Text = _evaluationResult.FinalNote;
         }
 
@@ -35,6 +36,7 @@ namespace Evaluation_App.Forms
         {
             flowLayoutPanel1.Controls.Clear();
             _inputControls.Clear();
+            _valueLabels.Clear();
 
             foreach (var section in _evaluationResult.Sections)
             {
@@ -44,7 +46,8 @@ namespace Evaluation_App.Forms
                     AutoSize = false,
                     Width = flowLayoutPanel1.Width - 25,
                     Height = 28,
-                    Font = new Font("Segoe UI", 10F, FontStyle.Bold)
+                    Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+                    TextAlign = ContentAlignment.MiddleRight
                 };
                 flowLayoutPanel1.Controls.Add(lblSection);
 
@@ -53,33 +56,83 @@ namespace Evaluation_App.Forms
                     var panel = new Panel
                     {
                         Width = flowLayoutPanel1.Width - 25,
-                        Height = 45
+                        Height = 95,
+                        RightToLeft = RightToLeft.Yes
                     };
 
                     var lblQ = new Label
                     {
-                        Text = $"{question.Text}\n({question.Min}={question.MinMeaning} | {question.Max}={question.MaxMeaning})",
+                        Text = question.Text,
                         AutoSize = false,
-                        Width = panel.Width - 80,
-                        Height = 42,
-                        TextAlign = ContentAlignment.MiddleLeft,
+                        Width = panel.Width,
+                        Height = 24,
+                        TextAlign = ContentAlignment.MiddleRight,
                         Location = new Point(0, 0)
                     };
 
-                    var nud = new NumericUpDown
+                    int min = (int)Math.Round(question.Min);
+                    int max = (int)Math.Round(question.Max);
+                    int def = (int)Math.Round(question.Default);
+                    def = Math.Clamp(def, min, max);
+
+                    var slider = new TrackBar
                     {
-                        Minimum = (decimal)question.Min,
-                        Maximum = (decimal)question.Max,
-                        Value = (decimal)question.Default,
-                        Width = 72,
-                        Location = new Point(panel.Width - 76, 0),
-                        Name = question.Id
+                        Minimum = min,
+                        Maximum = max,
+                        Value = def,
+                        TickStyle = TickStyle.None,
+                        AutoSize = false,
+                        Width = panel.Width - 20,
+                        Height = 30,
+                        Location = new Point(10, 28),
+                        Name = question.Id,
+                        RightToLeft = RightToLeft.No
                     };
 
+                    var minLabel = new Label
+                    {
+                        Text = $"{question.Min}: {question.MinMeaning}",
+                        AutoSize = false,
+                        Width = (panel.Width / 2) - 10,
+                        Height = 32,
+                        Location = new Point(10, 60),
+                        TextAlign = ContentAlignment.TopLeft,
+                        ForeColor = Color.DimGray
+                    };
+
+                    var maxLabel = new Label
+                    {
+                        Text = $"{question.Max}: {question.MaxMeaning}",
+                        AutoSize = false,
+                        Width = (panel.Width / 2) - 10,
+                        Height = 32,
+                        Location = new Point(panel.Width / 2, 60),
+                        TextAlign = ContentAlignment.TopRight,
+                        ForeColor = Color.DimGray
+                    };
+
+                    var valueLabel = new Label
+                    {
+                        Text = slider.Value.ToString(),
+                        AutoSize = false,
+                        Width = 60,
+                        Height = 20,
+                        Location = new Point(panel.Width - 70, 30),
+                        TextAlign = ContentAlignment.MiddleRight,
+                        Font = new Font("Segoe UI", 9F, FontStyle.Bold)
+                    };
+
+                    slider.ValueChanged += (_, _) => valueLabel.Text = slider.Value.ToString();
+
                     panel.Controls.Add(lblQ);
-                    panel.Controls.Add(nud);
+                    panel.Controls.Add(slider);
+                    panel.Controls.Add(minLabel);
+                    panel.Controls.Add(maxLabel);
+                    panel.Controls.Add(valueLabel);
                     flowLayoutPanel1.Controls.Add(panel);
-                    _inputControls[question.Id] = nud;
+
+                    _inputControls[question.Id] = slider;
+                    _valueLabels[question.Id] = valueLabel;
                 }
             }
         }
@@ -89,7 +142,10 @@ namespace Evaluation_App.Forms
             foreach (var kvp in _inputControls)
             {
                 if (_evaluationResult.Questions.TryGetValue(kvp.Key, out var value))
-                    kvp.Value.Value = Math.Clamp((decimal)value.Score, kvp.Value.Minimum, kvp.Value.Maximum);
+                {
+                    kvp.Value.Value = Math.Clamp((int)Math.Round(value.Score), kvp.Value.Minimum, kvp.Value.Maximum);
+                    _valueLabels[kvp.Key].Text = kvp.Value.Value.ToString();
+                }
             }
         }
 
@@ -97,8 +153,8 @@ namespace Evaluation_App.Forms
         {
             foreach (var section in _evaluationResult.Sections)
             foreach (var question in section.Questions)
-                if (_inputControls.TryGetValue(question.Id, out var nud))
-                    question.Score = (double)nud.Value;
+                if (_inputControls.TryGetValue(question.Id, out var slider))
+                    question.Score = slider.Value;
 
             _evaluationResult.FinalNote = txtFinalNote.Text;
             _evaluationResult.RecommendAsTeamLead = chkTeamLead.Visible && chkTeamLead.Checked;
@@ -109,22 +165,22 @@ namespace Evaluation_App.Forms
         {
             ApplyInputsToModel();
             EvaluationService.Save(_evaluationResult);
-            MessageBox.Show("Saved successfully.");
+            MessageBox.Show("تم الحفظ بنجاح.");
         }
 
         private void btnReset_Click(object sender, EventArgs e)
         {
             foreach (var section in _evaluationResult.Sections)
             foreach (var question in section.Questions)
-                if (_inputControls.TryGetValue(question.Id, out var nud))
-                    nud.Value = (decimal)question.Default;
+                if (_inputControls.TryGetValue(question.Id, out var slider))
+                    slider.Value = Math.Clamp((int)Math.Round(question.Default), slider.Minimum, slider.Maximum);
 
             chkTeamLead.Checked = false;
             txtFinalNote.Text = string.Empty;
 
             EvaluationService.Reset(_employee.Code);
             _evaluationResult.Reset();
-            MessageBox.Show("Saved successfully.");
+            MessageBox.Show("تمت إعادة الضبط.");
         }
 
         private void btnLoad_Click(object sender, EventArgs e)
@@ -132,7 +188,7 @@ namespace Evaluation_App.Forms
             using var dialog = new OpenFileDialog
             {
                 Filter = "Excel files (*.xlsx)|*.xlsx",
-                Title = "Load employee evaluation from Excel"
+                Title = "تحميل تقييم الموظف من ملف Excel"
             };
 
             if (dialog.ShowDialog() != DialogResult.OK)
@@ -140,14 +196,14 @@ namespace Evaluation_App.Forms
 
             if (!ExcelExportService.TryLoadEvaluationFromExcel(dialog.FileName, _employee.Code, _evaluationResult))
             {
-                MessageBox.Show("Could not load data from selected Excel file.");
+                MessageBox.Show("تعذر تحميل البيانات من ملف Excel المحدد.");
                 return;
             }
 
             LoadPreviousAnswers();
             txtFinalNote.Text = _evaluationResult.FinalNote;
             chkTeamLead.Checked = _evaluationResult.RecommendAsTeamLead;
-            MessageBox.Show("Loaded successfully.");
+            MessageBox.Show("تم التحميل بنجاح.");
         }
 
         private void btnGenerateExcel_Click(object sender, EventArgs e)
@@ -155,7 +211,7 @@ namespace Evaluation_App.Forms
             ApplyInputsToModel();
             EvaluationService.Save(_evaluationResult);
             ExcelExportService.ExportTeamMember(_employee);
-            MessageBox.Show("Excel report generated on Desktop.");
+            MessageBox.Show("تم إنشاء تقرير Excel على سطح المكتب.");
         }
 
         private void btnBack_Click(object sender, EventArgs e)
