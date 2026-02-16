@@ -11,7 +11,6 @@ namespace Evaluation_App.Forms
             InitializeComponent();
             FormClosing += SurveyForm_FormClosing;
             Text = $"الإستبيان - {AuthService.CurrentUser.Name} ({AuthService.CurrentUser.Code})";
-            EvaluationService.ResetAll();
         }
 
         private void SurveyForm_FormClosing(object? sender, FormClosingEventArgs e)

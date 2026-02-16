@@ -250,10 +250,30 @@ namespace Evaluation_App.Forms
 
         private void btnBack_Click(object sender, EventArgs e)
         {
+            var shouldNavigate = ConfirmSaveBeforeBack();
+            if (!shouldNavigate)
+                return;
+
             var list = new EmployeeListForm();
             list.Show();
             _isNavigating = true;
             Hide();
+        }
+
+        private bool ConfirmSaveBeforeBack()
+        {
+            var result = MessageBox.Show("هل تريد حفظ التقييم قبل الرجوع؟", "تأكيد", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+
+            if (result == DialogResult.Cancel)
+                return false;
+
+            if (result == DialogResult.Yes)
+            {
+                ApplyInputsToModel();
+                EvaluationService.Save(_evaluationResult);
+            }
+
+            return true;
         }
     }
 }
