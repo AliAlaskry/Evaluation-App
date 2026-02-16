@@ -5,11 +5,21 @@ public static class EvaluationService
 {
     public static void Save(EvaluationResult eval)
     {
+        SaveEvaluation(eval.Code, eval);
+    }
+
+    public static void Save(SystemEvaluationrResult eval)
+    {
+        SaveEvaluation(eval.Code, eval);
+    }
+
+    private static void SaveEvaluation(string code, object evaluation)
+    {
         if (!Directory.Exists(EvaluationPath))
             Directory.CreateDirectory(EvaluationPath);
 
-        string file = Path.Combine(EvaluationPath, $"{eval.Code}.json");
-        File.WriteAllText(file, JsonConvert.SerializeObject(eval, Formatting.Indented));
+        string file = Path.Combine(EvaluationPath, $"{code}.json");
+        File.WriteAllText(file, JsonConvert.SerializeObject(evaluation, Formatting.Indented));
     }
 
     public static EvaluationResult LoadEvaluation(string employeeCode)
@@ -18,6 +28,14 @@ public static class EvaluationService
         if (!File.Exists(file)) return null;
 
         return JsonConvert.DeserializeObject<EvaluationResult>(File.ReadAllText(file));
+    }
+
+    public static SystemEvaluationrResult LoadSystemEvaluation()
+    {
+        string file = Path.Combine(EvaluationPath, $"{SYSTEM_EVALUATION_CODE}.json");
+        if (!File.Exists(file)) return null;
+
+        return JsonConvert.DeserializeObject<SystemEvaluationrResult>(File.ReadAllText(file));
     }
 
     public static bool HasSavedEvaluation(string employeeCode)
