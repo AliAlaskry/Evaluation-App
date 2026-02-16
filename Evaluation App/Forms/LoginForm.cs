@@ -6,7 +6,6 @@ namespace Evaluation_App.Forms
     {
         public LoginForm()
         {
-            EvaluationService.ResetAll();
             InitializeComponent();
         }
 
@@ -17,7 +16,7 @@ namespace Evaluation_App.Forms
 
             if (user == null)
             {
-                MessageBox.Show("كود الموظف غير صحيح");
+                MessageBox.Show("كود الموظف غير صحيح أو غير مشارك في التقييم");
                 return;
             }
 
@@ -33,7 +32,7 @@ namespace Evaluation_App.Forms
             }
 
             // تسجيل الدخول
-            AuthService.Login(user);
+            AuthService.Login(user, chkKeepLogged.Checked);
 
             // فتح تقييم النظام أولًا
             var systemForm = new SystemEvaluationForm();
