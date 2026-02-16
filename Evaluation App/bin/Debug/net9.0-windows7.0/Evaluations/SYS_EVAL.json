@@ -1,0 +1,142 @@
+{
+  "Code": "SYS_EVAL",
+  "Sections": [
+    {
+      "Name": "أداء القواعد الحالية (System Rules Fitness)",
+      "NumberMeaning": "",
+      "Weight": 50.0,
+      "ManagerOnly": false,
+      "TeamLeaderOnly": false,
+      "Include": true,
+      "Questions": [
+        {
+          "Id": "sys1",
+          "Text": "وضوح القواعد وسهولة فهمها بدون اختلاف تفسير",
+          "Weight": 20.0,
+          "ManagerOnly": false,
+          "TeamLeaderOnly": false,
+          "Include": true,
+          "Min": 0.0,
+          "Max": 100.0,
+          "Default": 0.0,
+          "MinMeaning": "القواعد تسبب لَبس واختلافات تفسير",
+          "MaxMeaning": "القواعد واضحة ومفهومة للجميع",
+          "Score": 24.0
+        },
+        {
+          "Id": "sys2",
+          "Text": "سهولة تطبيق القواعد عملياً يومياً بدون عبء زائد",
+          "Weight": 20.0,
+          "ManagerOnly": false,
+          "TeamLeaderOnly": false,
+          "Include": true,
+          "Min": 0.0,
+          "Max": 100.0,
+          "Default": 0.0,
+          "MinMeaning": "تطبيقها مرهق ويضيع وقت",
+          "MaxMeaning": "تطبيقها سهل وطبيعي ضمن الروتين",
+          "Score": 30.0
+        },
+        {
+          "Id": "sys3",
+          "Text": "عدالة القواعد وتوازنها بين التخصصات",
+          "Weight": 20.0,
+          "ManagerOnly": false,
+          "TeamLeaderOnly": false,
+          "Include": true,
+          "Min": 0.0,
+          "Max": 100.0,
+          "Default": 0.0,
+          "MinMeaning": "بعض التخصصات متضررة",
+          "MaxMeaning": "القواعد عادلة للجميع",
+          "Score": 0.0
+        },
+        {
+          "Id": "sys4",
+          "Text": "مرونة القواعد مع الحالات الاستثنائية بدون كسر النظام",
+          "Weight": 20.0,
+          "ManagerOnly": false,
+          "TeamLeaderOnly": false,
+          "Include": true,
+          "Min": 0.0,
+          "Max": 100.0,
+          "Default": 0.0,
+          "MinMeaning": "القواعد جامدة وتمنع الحلول",
+          "MaxMeaning": "القواعد مرنة باستثناءات مضبوطة",
+          "Score": 0.0
+        },
+        {
+          "Id": "sys5",
+          "Text": "تأثير القواعد على روح الفريق والتعاون والثقة",
+          "Weight": 20.0,
+          "ManagerOnly": false,
+          "TeamLeaderOnly": false,
+          "Include": true,
+          "Min": 0.0,
+          "Max": 100.0,
+          "Default": 0.0,
+          "MinMeaning": "توتر واحتكاك داخل الفريق",
+          "MaxMeaning": "تعزيز قوي للتعاون والثقة",
+          "Score": 0.0
+        }
+      ],
+      "TotalScore": 10.8
+    },
+    {
+      "Name": "تأثير النظام على الإنتاجية والجودة (Outcome Impact)",
+      "NumberMeaning": "",
+      "Weight": 50.0,
+      "ManagerOnly": false,
+      "TeamLeaderOnly": false,
+      "Include": true,
+      "Questions": [
+        {
+          "Id": "out1",
+          "Text": "تأثير القواعد على التركيز وإنهاء المهام (خصوصاً WIP=1)",
+          "Weight": 25.0,
+          "ManagerOnly": false,
+          "TeamLeaderOnly": false,
+          "Include": true,
+          "Min": 0.0,
+          "Max": 100.0,
+          "Default": 0.0,
+          "MinMeaning": "تسبب تعطيل أو انتظار",
+          "MaxMeaning": "تحسن التركيز وتسريع الإغلاق",
+          "Score": 0.0
+        },
+        {
+          "Id": "out2",
+          "Text": "تأثير حد 14 ساعة على جودة التقسيم وتقليل المفاجآت",
+          "Weight": 25.0,
+          "ManagerOnly": false,
+          "TeamLeaderOnly": false,
+          "Include": true,
+          "Min": 0.0,
+          "Max": 100.0,
+          "Default": 0.0,
+          "MinMeaning": "عبء غير مفيد أو تقسيم سيئ",
+          "MaxMeaning": "تحسين واضح للتخطيط وتقليل المخاطر",
+          "Score": 37.0
+        },
+        {
+          "Id": "out3",
+          "Text": "تأثير صرامة تعريف الإغلاق (DoD) على الجودة وتقليل إعادة العمل",
+          "Weight": 25.0,
+          "ManagerOnly": false,
+          "TeamLeaderOnly": false,
+          "Include": true,
+          "Min": 0.0,
+          "Max": 100.0,
+          "Default": 0.0,
+          "MinMeaning": "بطء بدون فائدة",
+          "MaxMeaning": "جودة أعلى وإعادة عمل أقل",
+          "Score": 0.0
+        }
+      ],
+      "TotalScore": 12.333333333333334
+    }
+  ],
+  "FinalNote": "",
+  "RecommendAsTeamLead": false,
+  "TotalScore": 11.566666666666668
+}
