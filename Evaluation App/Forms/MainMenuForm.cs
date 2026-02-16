@@ -1,5 +1,6 @@
-using System.Diagnostics;
+using DocumentFormat.OpenXml.Wordprocessing;
 using Evaluation_App.Services;
+using System.Diagnostics;
 
 namespace Evaluation_App.Forms
 {
@@ -42,24 +43,7 @@ namespace Evaluation_App.Forms
 
         private void BtnModifyConfig_Click(object? sender, EventArgs e)
         {
-            if (!AuthService.CurrentUser.IsTeamLead)
-            {
-                MessageBox.Show("هذا الخيار متاح لقادة الفريق فقط.");
-                return;
-            }
-
-            string dataFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data");
-            if (!Directory.Exists(dataFolder))
-            {
-                MessageBox.Show("لم يتم العثور على مجلد الإعدادات.");
-                return;
-            }
-
-            Process.Start(new ProcessStartInfo
-            {
-                FileName = dataFolder,
-                UseShellExecute = true
-            });
+            
         }
 
         private void BtnSurvey_Click(object? sender, EventArgs e)

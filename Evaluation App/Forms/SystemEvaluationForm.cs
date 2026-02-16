@@ -16,7 +16,6 @@ namespace Evaluation_App.Forms
             InitializeComponent();
             FormClosing += SystemEvaluationForm_FormClosing;
             Text = $"تقييم النظام - {AuthService.CurrentUser.Name} ({AuthService.CurrentUser.Code})";
-            lblTitle.Text = Text;
 
             _employeeOptions = ConfigLoader.LoadEmployeeOptions();
             _evaluationResult = EvaluationService.LoadEvaluation(SYSTEM_EVALUATION_CODE)

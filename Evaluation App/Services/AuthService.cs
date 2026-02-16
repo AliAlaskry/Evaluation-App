@@ -7,7 +7,7 @@ namespace Evaluation_App.Services
         private const string RememberedLoginFileName = "remembered_login.json";
 
         private static readonly string RememberedLoginPath =
-            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", RememberedLoginFileName);
+            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Session", RememberedLoginFileName);
 
         private static Employee? currentUser;
         public static Employee CurrentUser => currentUser!;

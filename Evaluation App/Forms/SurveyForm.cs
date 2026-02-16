@@ -11,7 +11,6 @@ namespace Evaluation_App.Forms
             InitializeComponent();
             FormClosing += SurveyForm_FormClosing;
             Text = $"التقييمات - {AuthService.CurrentUser.Name} ({AuthService.CurrentUser.Code})";
-            lblTitle.Text = Text;
         }
 
         private void SurveyForm_FormClosing(object? sender, FormClosingEventArgs e)
