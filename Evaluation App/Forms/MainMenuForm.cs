@@ -10,6 +10,7 @@ namespace Evaluation_App.Forms
         public MainMenuForm()
         {
             InitializeComponent();
+            FormClosing += MainMenuForm_FormClosing;
             Text = $"القائمة الرئيسية";
             lblTitle.Text = $"مرحباً {AuthService.CurrentUser.Name} [{AuthService.CurrentUser.Code}]";
             ConfigureMenu();
@@ -64,7 +65,6 @@ namespace Evaluation_App.Forms
         private void BtnSurvey_Click(object? sender, EventArgs e)
         {
             var surveyForm = new SurveyForm();
-            surveyForm.FormClosed += (_, _) => Show();
             surveyForm.Show();
             _isNavigating = true;
             Hide();

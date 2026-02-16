@@ -9,6 +9,7 @@ namespace Evaluation_App.Forms
         public SurveyForm()
         {
             InitializeComponent();
+            FormClosing += SurveyForm_FormClosing;
             Text = $"التقييمات - {AuthService.CurrentUser.Name} ({AuthService.CurrentUser.Code})";
             lblTitle.Text = Text;
         }
@@ -22,7 +23,6 @@ namespace Evaluation_App.Forms
         private void BtnRateSystem_Click(object sender, EventArgs e)
         {
             var form = new SystemEvaluationForm();
-            form.FormClosed += (_, _) => Show();
             form.Show();
             _isNavigating = true;
             Hide();
@@ -31,7 +31,6 @@ namespace Evaluation_App.Forms
         private void BtnRateTeammates_Click(object sender, EventArgs e)
         {
             var form = new EmployeeListForm();
-            form.FormClosed += (_, _) => Show();
             form.Show();
             _isNavigating = true;
             Hide();

@@ -5,6 +5,7 @@ namespace Evaluation_App.Forms
     public partial class EmployeeEvaluationForm : Form
     {
         private readonly Employee _employee;
+        private bool _isNavigating;
         private readonly Dictionary<string, TrackBar> _inputControls = new();
         private readonly Dictionary<string, Label> _valueLabels = new();
         private EvaluationResult _evaluationResult;
@@ -29,7 +30,7 @@ namespace Evaluation_App.Forms
             chkTeamLead.Visible = _employeeOptions.AskPreferTeamLeaderAssistant && !_employee.IsTeamLead;
             chkTeamLead.Checked = _evaluationResult.RecommendAsTeamLead;
 
-            lblFinalNote.Text = AuthService.CurrentUser.IsTeamLead ? "ملاحظات قائد الفريق" : "ملاحظة ختامية";
+            lblFinalNote.Text = AuthService.CurrentUser.IsTeamLead ? "ملاحظات قائد الفريق" : "كلمه لزميلك";
             txtFinalNote.Text = _evaluationResult.FinalNote;
         }
 
