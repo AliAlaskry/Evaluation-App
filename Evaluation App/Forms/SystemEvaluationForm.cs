@@ -60,7 +60,7 @@ namespace Evaluation_App.Forms
                     var panel = new Panel
                     {
                         Width = flowLayoutPanel1.Width - 25,
-                        Height = 102,
+                        Height = 116,
                         Margin = new Padding(3),
                         RightToLeft = RightToLeft.Yes
                     };
@@ -89,11 +89,11 @@ namespace Evaluation_App.Forms
                         Width = panel.Width - 20,
                         Height = 30,
                         Name = question.Id,
-                        Location = new Point(10, 28),
+                        Location = new Point(10, 42),
                         RightToLeft = RightToLeft.No
                     };
 
-                    const int hintLabelY = 62;
+                    const int hintLabelY = 76;
                     int hintLabelWidth = (slider.Width / 2) - 4;
 
                     var minLabel = new Label
@@ -120,22 +120,23 @@ namespace Evaluation_App.Forms
 
                     var valueLabel = new Label
                     {
-                        Text = slider.Value.ToString(),
+                        Text = string.Empty,
                         AutoSize = false,
-                        Width = 60,
+                        Width = 48,
                         Height = 20,
-                        Location = new Point(panel.Width - 70, 30),
-                        TextAlign = ContentAlignment.MiddleRight,
+                        Location = new Point(slider.Left, slider.Top - 18),
+                        TextAlign = ContentAlignment.MiddleCenter,
                         Font = new Font("Segoe UI", 9F, FontStyle.Bold)
                     };
 
-                    slider.ValueChanged += (_, _) => valueLabel.Text = slider.Value.ToString();
+                    slider.ValueChanged += (_, _) => UpdateValueLabelPosition(valueLabel, slider);
 
                     panel.Controls.Add(qLabel);
                     panel.Controls.Add(slider);
                     panel.Controls.Add(minLabel);
                     panel.Controls.Add(maxLabel);
                     panel.Controls.Add(valueLabel);
+                    UpdateValueLabelPosition(valueLabel, slider);
                     flowLayoutPanel1.Controls.Add(panel);
 
                     _inputControls[question.Id] = slider;
@@ -173,9 +174,22 @@ namespace Evaluation_App.Forms
                 if (_evaluationResult.Questions.TryGetValue(kvp.Key, out var value))
                 {
                     kvp.Value.Value = Math.Clamp((int)Math.Round(value.Score), kvp.Value.Minimum, kvp.Value.Maximum);
-                    _valueLabels[kvp.Key].Text = kvp.Value.Value.ToString();
+                    UpdateValueLabelPosition(_valueLabels[kvp.Key], kvp.Value);
                 }
             }
+        }
+
+        private static void UpdateValueLabelPosition(Label valueLabel, TrackBar slider)
+        {
+            valueLabel.Text = slider.Value.ToString();
+
+            int valueRange = Math.Max(1, slider.Maximum - slider.Minimum);
+            int trackWidth = Math.Max(1, slider.Width - 16);
+            double ratio = (slider.Value - slider.Minimum) / (double)valueRange;
+            int thumbX = slider.Left + 8 + (int)Math.Round(trackWidth * ratio);
+
+            valueLabel.Left = Math.Clamp(thumbX - (valueLabel.Width / 2), slider.Left, slider.Right - valueLabel.Width);
+            valueLabel.Top = slider.Top - 18;
         }
 
         private void ApplyInputsToModel()
