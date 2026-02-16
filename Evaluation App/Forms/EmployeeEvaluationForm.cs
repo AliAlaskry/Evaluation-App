@@ -5,7 +5,6 @@ namespace Evaluation_App.Forms
     public partial class EmployeeEvaluationForm : Form
     {
         private readonly Employee _employee;
-        private bool _isNavigating;
         private readonly Dictionary<string, TrackBar> _inputControls = new();
         private readonly Dictionary<string, Label> _valueLabels = new();
         private EvaluationResult _evaluationResult;

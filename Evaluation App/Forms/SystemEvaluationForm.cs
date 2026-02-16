@@ -6,7 +6,6 @@ namespace Evaluation_App.Forms
     public partial class SystemEvaluationForm : Form
     {
         private readonly Dictionary<string, TrackBar> _inputControls = new();
-        private bool _isNavigating;
         private readonly Dictionary<string, Label> _valueLabels = new();
         private EvaluationResult _evaluationResult;
         private EmployeeEvaluationOptions _employeeOptions;
@@ -14,7 +13,6 @@ namespace Evaluation_App.Forms
         public SystemEvaluationForm()
         {
             InitializeComponent();
-            FormClosing += SystemEvaluationForm_FormClosing;
             Text = $"تقييم النظام - {AuthService.CurrentUser.Name} ({AuthService.CurrentUser.Code})";
             lblTitle.Text = Text;
 

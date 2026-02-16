@@ -9,7 +9,6 @@ namespace Evaluation_App.Forms
         public SurveyForm()
         {
             InitializeComponent();
-            FormClosing += SurveyForm_FormClosing;
             Text = $"التقييمات - {AuthService.CurrentUser.Name} ({AuthService.CurrentUser.Code})";
             lblTitle.Text = Text;
         }

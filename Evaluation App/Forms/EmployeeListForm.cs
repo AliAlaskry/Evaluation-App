@@ -10,7 +10,6 @@ namespace Evaluation_App.Forms
         public EmployeeListForm()
         {
             InitializeComponent();
-            FormClosing += EmployeeListForm_FormClosing;
             Text = $"قائمة الموظفين - {AuthService.CurrentUser.Name} [{AuthService.CurrentUser.Code}]";
             LoadEmployees();
         }
