@@ -155,7 +155,7 @@ public class ScoringOptions
     public string CombinedTotalFormula { get; set; } = "TotalScore = sum(SectionScore * SectionWeight) / sum(SectionWeight)";
 }
 
-public readonly record struct ScoringFormulaContext(ScoringOptions Scoring, bool UseCombinedFormulas);
+public readonly record struct ScoringFormulaContext(ScoringOptions scoring, bool useCombinedFormulas);
 
 public class NormalizationOptions
 {

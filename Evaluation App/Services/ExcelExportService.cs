@@ -181,7 +181,7 @@ public static class ExcelExportService
                 }
                 else if (string.Equals(label, LABEL_SECTION_TOTAL, StringComparison.OrdinalIgnoreCase))
                 {
-                    string sectionName = FindCurrentSectionName(resultSheet, row);
+                    sectionName = FindCurrentSectionName(resultSheet, row);
                     if (sectionByName.TryGetValue(sectionName, out var section))
                     {
                         var includedQuestions = section.Questions.Where(q => q.Include).ToList();
@@ -276,9 +276,9 @@ public static class ExcelExportService
         if (denominator > 0)
             fallback = includedQuestions.Zip(questionScores, (q, s) => q.Weight * s).Sum() / denominator;
 
-        string? formula = context.UseCombinedFormulas
-            ? (section.CombinedFormula ?? context.Scoring.CombinedSectionFormula ?? section.Formula ?? context.Scoring.SectionFormula)
-            : (section.Formula ?? context.Scoring.SectionFormula);
+        string? formula = context.useCombinedFormulas
+            ? (section.CombinedFormula ?? context.scoring.CombinedSectionFormula ?? section.Formula ?? context.scoring.SectionFormula)
+            : (section.Formula ?? context.scoring.SectionFormula);
 
         return FormulaEngine.EvaluateToScalar(formula,
             new Dictionary<string, FormulaEngine.Value>

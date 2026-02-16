@@ -22,8 +22,8 @@ public class Section
         if (sumWeights > 0)
             defaultScore = activeQuestions.Sum(q => q.Score * q.Weight) / sumWeights;
 
-        string? formula = context.UseCombinedFormulas ? (CombinedFormula ?? context.Scoring.CombinedSectionFormula ?? Formula ?? context.Scoring.SectionFormula)
-                                                     : (Formula ?? context.Scoring.SectionFormula);
+        string? formula = context.useCombinedFormulas ? (CombinedFormula ?? context.scoring.CombinedSectionFormula ?? Formula ?? context.scoring.SectionFormula)
+                                                     : (Formula ?? context.scoring.SectionFormula);
 
         TotalScore = FormulaEngine.EvaluateToScalar(formula,
             new Dictionary<string, FormulaEngine.Value>
