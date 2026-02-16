@@ -22,24 +22,34 @@ public class SystemEvaluationrResult
 
     public void SetTotalScore()
     {
-        TotalScore = CalculateTotalScore();
-    }
-
-    private double CalculateTotalScore()
-    {
-        var normalization = ConfigLoader.LoadSystemOptions().Normalization;
+        var options = ConfigLoader.LoadSystemOptions();
+        var context = new ScoringFormulaContext(options.Scoring, useCombinedFormulas: false);
 
         foreach (var section in Sections)
-            section.SetTotalScore(normalization);
+        {
+            foreach (var question in section.Questions)
+                question.Score = EvaluationResult.ScoreQuestion(question, options.Scoring, false);
+
+            section.SetTotalScore(context);
+        }
 
         var activeSections = Sections.Where(s => s.Include && !s.TeamLeaderOnly).ToList();
-        double sumWeights = activeSections.Sum(s => s.Weight);
+        var sectionScores = activeSections.Select(s => s.TotalScore).ToList();
+        var sectionWeights = activeSections.Select(s => (double)s.Weight).ToList();
 
-        if (sumWeights <= 0)
-            return 0;
+        double defaultScore = 0;
+        double sumWeights = sectionWeights.Sum();
+        if (sumWeights > 0)
+            defaultScore = activeSections.Sum(s => s.TotalScore * s.Weight) / sumWeights;
 
-        double weightedSum = activeSections.Sum(s => s.TotalScore * s.Weight);
-        return weightedSum / sumWeights;
+        TotalScore = FormulaEngine.EvaluateToScalar(options.Scoring.TotalFormula,
+            new Dictionary<string, FormulaEngine.Value>
+            {
+                ["SectionScore"] = new FormulaEngine.Value(sectionScores),
+                ["SectionWeight"] = new FormulaEngine.Value(sectionWeights),
+                ["SectionCount"] = new FormulaEngine.Value(sectionScores.Count)
+            },
+            defaultScore);
     }
 
     public void Reset()

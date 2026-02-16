@@ -24,24 +24,56 @@ public class EvaluationResult
 
     public void SetTotalScore()
     {
-        TotalScore = CalculateTotalScore();
-    }
-
-    private double CalculateTotalScore()
-    {
-        var normalization = ConfigLoader.LoadEmployeeOptions().Normalization;
+        var options = ConfigLoader.LoadEmployeeOptions();
+        var context = new ScoringFormulaContext(options.Scoring, useCombinedFormulas: false);
 
         foreach (var section in Sections)
-            section.SetTotalScore(normalization);
+        {
+            foreach (var question in section.Questions)
+                question.Score = ScoreQuestion(question, options.Scoring, false);
+
+            section.SetTotalScore(context);
+        }
 
         var activeSections = Sections.Where(s => s.Include && !s.TeamLeaderOnly).ToList();
-        double sumWeights = activeSections.Sum(s => s.Weight);
+        var sectionScores = activeSections.Select(s => s.TotalScore).ToList();
+        var sectionWeights = activeSections.Select(s => (double)s.Weight).ToList();
 
-        if (sumWeights <= 0)
-            return 0;
+        double defaultScore = 0;
+        double sumWeights = sectionWeights.Sum();
+        if (sumWeights > 0)
+            defaultScore = activeSections.Sum(s => s.TotalScore * s.Weight) / sumWeights;
 
-        double weightedSum = activeSections.Sum(s => s.TotalScore * s.Weight);
-        return weightedSum / sumWeights;
+        TotalScore = FormulaEngine.EvaluateToScalar(options.Scoring.TotalFormula,
+            new Dictionary<string, FormulaEngine.Value>
+            {
+                ["SectionScore"] = new FormulaEngine.Value(sectionScores),
+                ["SectionWeight"] = new FormulaEngine.Value(sectionWeights),
+                ["SectionCount"] = new FormulaEngine.Value(sectionScores.Count)
+            },
+            defaultScore);
+    }
+
+    public static double ScoreQuestion(Question question, ScoringOptions scoring, bool useCombinedFormula, IReadOnlyList<double>? scores = null)
+    {
+        string? formula = useCombinedFormula
+            ? (question.CombinedFormula ?? scoring.DefaultCombinedQuestionFormula ?? question.Formula)
+            : (question.Formula ?? scoring.DefaultQuestionFormula);
+
+        var scoreList = (scores ?? new[] { question.Score }).ToList();
+        double fallback = question.Score;
+
+        return Math.Clamp(FormulaEngine.EvaluateToScalar(formula,
+            new Dictionary<string, FormulaEngine.Value>
+            {
+                ["Scores"] = new FormulaEngine.Value(scoreList),
+                ["Value"] = new FormulaEngine.Value(question.Score),
+                ["Min"] = new FormulaEngine.Value(question.Min),
+                ["Max"] = new FormulaEngine.Value(question.Max),
+                ["Default"] = new FormulaEngine.Value(question.Default),
+                ["QuestionWeight"] = new FormulaEngine.Value(question.Weight)
+            },
+            fallback), question.Min, question.Max);
     }
 
     public void Reset()

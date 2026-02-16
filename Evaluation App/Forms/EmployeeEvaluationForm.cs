@@ -10,6 +10,7 @@ namespace Evaluation_App.Forms
         private readonly Dictionary<string, Label> _valueLabels = new();
         private EvaluationResult _evaluationResult;
         private readonly EmployeeOptions _employeeOptions;
+        private bool _hasSavedAfterOpen;
 
         public EmployeeEvaluationForm(Employee employee)
         {
@@ -197,8 +198,12 @@ namespace Evaluation_App.Forms
 
         private void btnSave_Click(object sender, EventArgs e)
         {
+            if (!ConfirmSaveWithDefaultValuesWarning())
+                return;
+
             ApplyInputsToModel();
             EvaluationService.Save(_evaluationResult);
+            _hasSavedAfterOpen = true;
             MessageBox.Show("تم الحفظ بنجاح.");
         }
 
@@ -262,6 +267,9 @@ namespace Evaluation_App.Forms
 
         private bool ConfirmSaveBeforeBack()
         {
+            if (_hasSavedAfterOpen)
+                return true;
+
             var result = MessageBox.Show("هل تريد حفظ التقييم قبل الرجوع؟", "تأكيد", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
 
             if (result == DialogResult.Cancel)
@@ -269,11 +277,43 @@ namespace Evaluation_App.Forms
 
             if (result == DialogResult.Yes)
             {
+                if (!ConfirmSaveWithDefaultValuesWarning())
+                    return false;
+
                 ApplyInputsToModel();
                 EvaluationService.Save(_evaluationResult);
+                _hasSavedAfterOpen = true;
             }
 
             return true;
+        }
+
+        private bool ConfirmSaveWithDefaultValuesWarning()
+        {
+            if (!HasAnyInputWithDefaultValue())
+                return true;
+
+            var result = MessageBox.Show(
+                "هناك عناصر ما زالت على القيم الافتراضية. هل تريد المتابعة بالحفظ؟",
+                "تنبيه قبل الحفظ",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning);
+
+            return result == DialogResult.Yes;
+        }
+
+        private bool HasAnyInputWithDefaultValue()
+        {
+            foreach (var section in _evaluationResult.Sections)
+            foreach (var question in section.Questions)
+                if (_inputControls.TryGetValue(question.Id, out var slider))
+                {
+                    int defaultValue = Math.Clamp((int)Math.Round(question.Default), slider.Minimum, slider.Maximum);
+                    if (slider.Value == defaultValue)
+                        return true;
+                }
+
+            return false;
         }
     }
 }

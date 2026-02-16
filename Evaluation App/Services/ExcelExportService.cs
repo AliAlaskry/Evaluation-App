@@ -152,7 +152,10 @@ public static class ExcelExportService
             int finalRateColumn = lastDataColumn + 1;
             resultSheet.Cell(1, finalRateColumn).Value = "Final Rate";
 
-            var finalRateByLabel = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            var options = isSystemSheet ? ConfigLoader.LoadSystemOptions() : ConfigLoader.LoadEmployeeOptions();
+            var context = new ScoringFormulaContext(options.Scoring, useCombinedFormulas: true);
+            var questionFinalRateByLabel = new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase);
+            var sectionFinalRateByName = new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase);
 
             for (int row = 2; row <= baseRows.Count; row++)
             {
@@ -160,12 +163,21 @@ public static class ExcelExportService
                 if (string.IsNullOrWhiteSpace(label))
                     continue;
 
-                string startAddress = resultSheet.Cell(row, firstDataColumn).Address.ToStringRelative();
-                string endAddress = resultSheet.Cell(row, lastDataColumn).Address.ToStringRelative();
-
-                if (questionToSection.ContainsKey(label))
+                if (questionToSection.TryGetValue(label, out var sectionName) && sectionByName.TryGetValue(sectionName, out var sectionForQuestion))
                 {
-                    resultSheet.Cell(row, finalRateColumn).FormulaA1 = $"IFERROR(AVERAGE({startAddress}:{endAddress}),0)";
+                    var question = sectionForQuestion.Questions.FirstOrDefault(q => q.Include && string.Equals(q.Text, label, StringComparison.OrdinalIgnoreCase));
+                    if (question != null)
+                    {
+                        var scores = new List<double>();
+                        for (int col = firstDataColumn; col <= lastDataColumn; col++)
+                            if (resultSheet.Cell(row, col).TryGetValue<double>(out var v))
+                                scores.Add(v);
+
+                        question.Score = scores.Count == 0 ? question.Default : scores.Average();
+                        double questionFinal = EvaluationResult.ScoreQuestion(question, options.Scoring, true, scores);
+                        resultSheet.Cell(row, finalRateColumn).Value = questionFinal;
+                        questionFinalRateByLabel[label] = questionFinal;
+                    }
                 }
                 else if (string.Equals(label, LABEL_SECTION_TOTAL, StringComparison.OrdinalIgnoreCase))
                 {
@@ -173,27 +185,21 @@ public static class ExcelExportService
                     if (sectionByName.TryGetValue(sectionName, out var section))
                     {
                         var includedQuestions = section.Questions.Where(q => q.Include).ToList();
-                        string numerator = string.Join("+", includedQuestions
-                            .Where(q => finalRateByLabel.ContainsKey(q.Text))
-                            .Select(q => $"{resultSheet.Cell(finalRateByLabel[q.Text], finalRateColumn).Address.ToStringRelative()}*{q.Weight.ToString(System.Globalization.CultureInfo.InvariantCulture)}"));
-                        double denominator = includedQuestions.Sum(q => q.Weight);
-                        if (!string.IsNullOrEmpty(numerator) && denominator > 0)
-                            resultSheet.Cell(row, finalRateColumn).FormulaA1 = $"IFERROR(({numerator})/{denominator.ToString(System.Globalization.CultureInfo.InvariantCulture)},0)";
+                        var questionScores = includedQuestions.Select(q => questionFinalRateByLabel.TryGetValue(q.Text, out var s) ? s : q.Default).ToList();
+                        double sectionScore = ComputeSectionScore(section, questionScores, context);
+                        resultSheet.Cell(row, finalRateColumn).Value = sectionScore;
+                        sectionFinalRateByName[section.Name] = sectionScore;
                     }
                 }
                 else if (string.Equals(label, LABEL_TOTAL, StringComparison.OrdinalIgnoreCase))
                 {
-                    string numerator = string.Join("+", templateSections
+                    var scoredSections = templateSections
                         .Where(s => s.Include)
-                        .Select(s => (Section: s, Row: FindSectionTotalRow(resultSheet, s.Name, finalRateByLabel)))
-                        .Where(x => x.Row > 0)
-                        .Select(x => $"{resultSheet.Cell(x.Row, finalRateColumn).Address.ToStringRelative()}*{x.Section.Weight.ToString(System.Globalization.CultureInfo.InvariantCulture)}"));
-                    double denominator = templateSections.Where(s => s.Include).Sum(s => s.Weight);
-                    if (!string.IsNullOrEmpty(numerator) && denominator > 0)
-                        resultSheet.Cell(row, finalRateColumn).FormulaA1 = $"IFERROR(({numerator})/{denominator.ToString(System.Globalization.CultureInfo.InvariantCulture)},0)";
-                }
+                        .Select(s => (Section: s, Score: sectionFinalRateByName.TryGetValue(s.Name, out var score) ? score : 0d))
+                        .ToList();
 
-                finalRateByLabel[label] = row;
+                    resultSheet.Cell(row, finalRateColumn).Value = ComputeTotalScore(scoredSections, options.Scoring, useCombined: true);
+                }
             }
 
             resultSheet.Columns().AdjustToContents();
@@ -257,6 +263,54 @@ public static class ExcelExportService
 
         destination.SetTotalScore();
         return true;
+    }
+
+
+    private static double ComputeSectionScore(Section section, List<double> questionScores, ScoringFormulaContext context)
+    {
+        var includedQuestions = section.Questions.Where(q => q.Include).ToList();
+        var questionWeights = includedQuestions.Select(q => q.Weight).ToList();
+
+        double fallback = 0;
+        double denominator = questionWeights.Sum();
+        if (denominator > 0)
+            fallback = includedQuestions.Zip(questionScores, (q, s) => q.Weight * s).Sum() / denominator;
+
+        string? formula = context.UseCombinedFormulas
+            ? (section.CombinedFormula ?? context.Scoring.CombinedSectionFormula ?? section.Formula ?? context.Scoring.SectionFormula)
+            : (section.Formula ?? context.Scoring.SectionFormula);
+
+        return FormulaEngine.EvaluateToScalar(formula,
+            new Dictionary<string, FormulaEngine.Value>
+            {
+                ["QuestionScore"] = new FormulaEngine.Value(questionScores),
+                ["QuestionWeight"] = new FormulaEngine.Value(questionWeights),
+                ["QuestionCount"] = new FormulaEngine.Value(questionScores.Count),
+                ["SectionWeight"] = new FormulaEngine.Value(section.Weight)
+            },
+            fallback);
+    }
+
+    private static double ComputeTotalScore(List<(Section Section, double Score)> sectionScores, ScoringOptions scoring, bool useCombined)
+    {
+        var scores = sectionScores.Select(x => x.Score).ToList();
+        var weights = sectionScores.Select(x => (double)x.Section.Weight).ToList();
+
+        double fallback = 0;
+        double denominator = weights.Sum();
+        if (denominator > 0)
+            fallback = sectionScores.Sum(x => x.Score * x.Section.Weight) / denominator;
+
+        string formula = useCombined ? scoring.CombinedTotalFormula : scoring.TotalFormula;
+
+        return FormulaEngine.EvaluateToScalar(formula,
+            new Dictionary<string, FormulaEngine.Value>
+            {
+                ["SectionScore"] = new FormulaEngine.Value(scores),
+                ["SectionWeight"] = new FormulaEngine.Value(weights),
+                ["SectionCount"] = new FormulaEngine.Value(scores.Count)
+            },
+            fallback);
     }
 
     private static string BuildDesktopExportPath(string reportFileName)
@@ -345,7 +399,6 @@ public static class ExcelExportService
 
         foreach (var section in eval.Sections)
         {
-            int sectionQuestionStart = row + 1;
             ws.Cell(row, COLUMN_LABEL).Value = section.Name;
             ws.Cell(row, COLUMN_VALUE).Value = section.NumberMeaning;
             ws.Row(row).Style.Font.Bold = true;
@@ -359,26 +412,14 @@ public static class ExcelExportService
             }
 
             ws.Cell(row, COLUMN_LABEL).Value = LABEL_SECTION_TOTAL;
-            int sectionQuestionEnd = row - 1;
-            if (sectionQuestionEnd >= sectionQuestionStart)
-                ws.Cell(row, COLUMN_VALUE).FormulaA1 = $"IFERROR(AVERAGE(B{sectionQuestionStart}:B{sectionQuestionEnd}),0)";
-            else
-                ws.Cell(row, COLUMN_VALUE).Value = 0;
+            ws.Cell(row, COLUMN_VALUE).Value = section.TotalScore;
 
             ws.Row(row).Style.Font.Bold = true;
             row += 2;
         }
 
         ws.Cell(row, COLUMN_LABEL).Value = LABEL_TOTAL;
-        var sectionTotalRows = ws.Column(COLUMN_LABEL).CellsUsed()
-            .Where(c => string.Equals(c.GetString().Trim(), LABEL_SECTION_TOTAL, StringComparison.OrdinalIgnoreCase))
-            .Select(c => c.Address.RowNumber)
-            .ToList();
-
-        if (sectionTotalRows.Count > 0)
-            ws.Cell(row, COLUMN_VALUE).FormulaA1 = $"IFERROR(AVERAGE({string.Join(",", sectionTotalRows.Select(r => $"B{r}"))}),0)";
-        else
-            ws.Cell(row, COLUMN_VALUE).Value = 0;
+        ws.Cell(row, COLUMN_VALUE).Value = eval.TotalScore;
 
         ws.Row(row).Style.Font.Bold = true;
         row += 2;
@@ -421,7 +462,6 @@ public static class ExcelExportService
 
         foreach (var section in eval.Sections)
         {
-            int sectionQuestionStart = row + 1;
             ws.Cell(row, COLUMN_LABEL).Value = section.Name;
             ws.Cell(row, COLUMN_VALUE).Value = section.NumberMeaning;
             ws.Row(row).Style.Font.Bold = true;
@@ -435,26 +475,14 @@ public static class ExcelExportService
             }
 
             ws.Cell(row, COLUMN_LABEL).Value = LABEL_SECTION_TOTAL;
-            int sectionQuestionEnd = row - 1;
-            if (sectionQuestionEnd >= sectionQuestionStart)
-                ws.Cell(row, COLUMN_VALUE).FormulaA1 = $"IFERROR(AVERAGE(B{sectionQuestionStart}:B{sectionQuestionEnd}),0)";
-            else
-                ws.Cell(row, COLUMN_VALUE).Value = 0;
+            ws.Cell(row, COLUMN_VALUE).Value = section.TotalScore;
 
             ws.Row(row).Style.Font.Bold = true;
             row += 2;
         }
 
         ws.Cell(row, COLUMN_LABEL).Value = LABEL_TOTAL;
-        var sectionTotalRows = ws.Column(COLUMN_LABEL).CellsUsed()
-            .Where(c => string.Equals(c.GetString().Trim(), LABEL_SECTION_TOTAL, StringComparison.OrdinalIgnoreCase))
-            .Select(c => c.Address.RowNumber)
-            .ToList();
-
-        if (sectionTotalRows.Count > 0)
-            ws.Cell(row, COLUMN_VALUE).FormulaA1 = $"IFERROR(AVERAGE({string.Join(",", sectionTotalRows.Select(r => $"B{r}"))}),0)";
-        else
-            ws.Cell(row, COLUMN_VALUE).Value = 0;
+        ws.Cell(row, COLUMN_VALUE).Value = eval.TotalScore;
 
         ws.Row(row).Style.Font.Bold = true;
         row += 2;
@@ -490,19 +518,5 @@ public static class ExcelExportService
         return string.Empty;
     }
 
-    private static int FindSectionTotalRow(IXLWorksheet sheet, string sectionName, Dictionary<string, int> knownRows)
-    {
-        if (!knownRows.TryGetValue(sectionName, out int sectionNameRow))
-            return -1;
 
-        for (int row = sectionNameRow + 1; row <= sheet.LastRowUsed().RowNumber(); row++)
-        {
-            string label = sheet.Cell(row, COLUMN_LABEL).GetString().Trim();
-            if (string.Equals(label, LABEL_SECTION_TOTAL, StringComparison.OrdinalIgnoreCase))
-                return row;
-
-        }
-
-        return -1;
-    }
 }
