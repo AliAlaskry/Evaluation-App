@@ -19,12 +19,23 @@ public static class ConfigLoader
 
     public static SystemOptions LoadSystemOptions()
     {
-        return LoadOptionsFromFile(SystemConfigPath).SystemOptions;
+        var options = LoadOptionsFromFile(SystemConfigPath).Options;
+        return new SystemOptions
+        {
+            IssuesToResolve = options.IssuesToResolve,
+            Normalization = options.Normalization
+        };
     }
 
     public static EmployeeOptions LoadEmployeeOptions()
     {
-        return LoadOptionsFromFile(EmployeeEvaluationPath).EmployeeOptions;
+        var options = LoadOptionsFromFile(EmployeeEvaluationPath).Options;
+        return new EmployeeOptions
+        {
+            AskPreferTeamLeaderAssistant = options.AskPreferTeamLeaderAssistant,
+            Normalization = options.Normalization,
+            IssuesToResolve = options.IssuesToResolve
+        };
     }
 
     private static EvaluationConfig LoadSectionsFromFile(string path, bool isEmployeeEvaluation, Employee? targetEmployee)
@@ -108,17 +119,31 @@ public static class ConfigLoader
 
 public class EvaluationConfig
 {
+    public EvaluationOptions Options { get; set; } = new();
     public List<Section> Sections { get; set; } = new();
-    public SystemOptions SystemOptions { get; set; } = new();
-    public EmployeeOptions EmployeeOptions { get; set; } = new();
+}
+
+public class EvaluationOptions
+{
+    public List<string> IssuesToResolve { get; set; } = new();
+    public bool AskPreferTeamLeaderAssistant { get; set; } = false;
+    public NormalizationOptions Normalization { get; set; } = new();
 }
 
 public class SystemOptions
 {
     public List<string> IssuesToResolve { get; set; } = new();
+    public NormalizationOptions Normalization { get; set; } = new();
 }
 
-public class EmployeeOptions
+public class EmployeeOptions : SystemOptions
 {
     public bool AskPreferTeamLeaderAssistant { get; set; } = false;
+}
+
+public class NormalizationOptions
+{
+    public double ScaleMin { get; set; } = 0;
+    public double ScaleMax { get; set; } = 100;
+    public bool HigherIsBetter { get; set; } = true;
 }

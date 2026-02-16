@@ -29,8 +29,10 @@ public class EvaluationResult
 
     private double CalculateTotalScore()
     {
+        var normalization = ConfigLoader.LoadEmployeeOptions().Normalization;
+
         foreach (var section in Sections)
-            section.SetTotalScore();
+            section.SetTotalScore(normalization);
 
         var activeSections = Sections.Where(s => s.Include && !s.TeamLeaderOnly).ToList();
         double sumWeights = activeSections.Sum(s => s.Weight);
