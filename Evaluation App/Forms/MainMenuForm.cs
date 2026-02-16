@@ -3,7 +3,7 @@ using Evaluation_App.Services;
 
 namespace Evaluation_App.Forms
 {
-    public class MainMenuForm : Form
+    public partial class MainMenuForm : Form
     {
         private readonly Label _titleLabel;
         private readonly Button _btnModifyConfig;
@@ -14,11 +14,9 @@ namespace Evaluation_App.Forms
 
         public MainMenuForm()
         {
-            Text = "Main Menu";
-            StartPosition = FormStartPosition.CenterScreen;
-            ClientSize = new Size(420, 340);
-            MaximizeBox = false;
-            FormBorderStyle = FormBorderStyle.FixedDialog;
+            InitializeComponent();
+            ConfigureMenu();
+        }
 
             _titleLabel = new Label
             {
