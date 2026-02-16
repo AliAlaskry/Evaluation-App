@@ -32,7 +32,7 @@ public class EvaluationResult
         foreach (var section in Sections)
             section.SetTotalScore();
 
-        var activeSections = Sections.Where(s => s.Include).ToList();
+        var activeSections = Sections.Where(s => s.Include && !s.TeamLeaderOnly).ToList();
         double sumWeights = activeSections.Sum(s => s.Weight);
 
         if (sumWeights <= 0)

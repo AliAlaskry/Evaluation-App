@@ -7,22 +7,22 @@ public static class ConfigLoader
     private static readonly string EmployeeEvaluationPath = Path.Combine(BasePath, "employee_evaluation_config.json");
     private static readonly string SystemConfigPath = Path.Combine(BasePath, "system_evaluation_config.json");
 
-    public static List<Section> LoadEmployeeSections()
+    public static List<Section> LoadEmployeeSections(Employee? targetEmployee = null)
     {
-        return LoadConfigFromFile(EmployeeEvaluationPath).Sections;
+        return LoadConfigFromFile(EmployeeEvaluationPath, true, targetEmployee).Sections;
     }
 
     public static List<Section> LoadSystemSections()
     {
-        return LoadConfigFromFile(SystemConfigPath).Sections;
+        return LoadConfigFromFile(SystemConfigPath, false, null).Sections;
     }
 
     public static EmployeeEvaluationOptions LoadEmployeeOptions()
     {
-        return LoadConfigFromFile(SystemConfigPath).Options;
+        return LoadConfigFromFile(EmployeeEvaluationPath, true, null).Options;
     }
 
-    private static EvaluationConfig LoadConfigFromFile(string path)
+    private static EvaluationConfig LoadConfigFromFile(string path, bool isEmployeeEvaluation, Employee? targetEmployee)
     {
         try
         {
@@ -37,7 +37,7 @@ public static class ConfigLoader
             config.Sections ??= new List<Section>();
             config.Options ??= new EmployeeEvaluationOptions();
 
-            return FilterSections(config);
+            return FilterSections(config, isEmployeeEvaluation, targetEmployee);
         }
         catch (Exception ex)
         {
@@ -46,16 +46,20 @@ public static class ConfigLoader
         }
     }
 
-    private static EvaluationConfig FilterSections(EvaluationConfig config)
+    private static EvaluationConfig FilterSections(EvaluationConfig config, bool isEmployeeEvaluation, Employee? targetEmployee)
     {
         var currentUser = AuthService.CurrentUser;
+        bool canSeeTeamLeaderOnly = isEmployeeEvaluation &&
+                                     currentUser.IsTeamLead &&
+                                     targetEmployee != null &&
+                                     !string.Equals(currentUser.Code, targetEmployee.Code, StringComparison.OrdinalIgnoreCase);
 
         config.Sections = config.Sections
-            .Where(section => section.Include && (!section.ManagerOnly || currentUser.IsTeamLead))
+            .Where(section => section.Include && (!section.ManagerOnly || currentUser.IsTeamLead) && (!section.TeamLeaderOnly || canSeeTeamLeaderOnly))
             .Select(section =>
             {
                 section.Questions = (section.Questions ?? new List<Question>())
-                    .Where(q => q.Include && (!q.ManagerOnly || currentUser.IsTeamLead))
+                    .Where(q => q.Include && (!q.ManagerOnly || currentUser.IsTeamLead) && (!q.TeamLeaderOnly || canSeeTeamLeaderOnly))
                     .Select(NormalizeQuestion)
                     .ToList();
                 return section;

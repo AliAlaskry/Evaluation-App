@@ -4,6 +4,7 @@ public class Question
     public string Text { get; set; } = string.Empty;
     public double Weight { get; set; } = 0;
     public bool ManagerOnly { get; set; } = false;
+    public bool TeamLeaderOnly { get; set; } = false;
     public bool Include { get; set; } = true;
     public double Min { get; set; } = 0;
     public double Max { get; set; } = 100;

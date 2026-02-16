@@ -22,7 +22,7 @@ namespace Evaluation_App.Forms
             lblTitle.Text = $"تقييم: {employee.Name} [{employee.Code}]";
 
             _evaluationResult = EvaluationService.LoadEvaluation(_employee.Code)
-                ?? new EvaluationResult(_employee.Code, true, ConfigLoader.LoadEmployeeSections());
+                ?? new EvaluationResult(_employee.Code, true, ConfigLoader.LoadEmployeeSections(_employee));
 
             LoadSections();
             LoadPreviousAnswers();
@@ -37,7 +37,15 @@ namespace Evaluation_App.Forms
         private void EmployeeEvaluationForm_FormClosing(object? sender, FormClosingEventArgs e)
         {
             if (!_isNavigating && e.CloseReason == CloseReason.UserClosing)
+            {
+                if (!ExitConfirmationService.ConfirmExit())
+                {
+                    e.Cancel = true;
+                    return;
+                }
+
                 Application.Exit();
+            }
         }
 
         private void LoadSections()

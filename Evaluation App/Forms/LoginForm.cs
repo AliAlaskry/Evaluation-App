@@ -15,7 +15,15 @@ namespace Evaluation_App.Forms
         private void LoginForm_FormClosing(object? sender, FormClosingEventArgs e)
         {
             if (!_isNavigating && e.CloseReason == CloseReason.UserClosing)
+            {
+                if (!ExitConfirmationService.ConfirmExit())
+                {
+                    e.Cancel = true;
+                    return;
+                }
+
                 Application.Exit();
+            }
         }
 
         private void btnLogin_Click(object sender, EventArgs e)

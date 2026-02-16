@@ -119,6 +119,7 @@ public static class ExcelExportService
         foreach (var section in eval.Sections)
         {
             ws.Cell(row, 1).Value = section.Name;
+            ws.Cell(row, 2).Value = section.NumberMeaning;
             ws.Row(row).Style.Font.Bold = true;
             row++;
 
