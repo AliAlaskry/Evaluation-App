@@ -13,10 +13,9 @@ public class EvaluationResult
     }
 
     public bool IsEmployeeEvaluation { get; set; }
-
     public string Code { get; set; }
-    public List<Section> Sections { get; set; } = new List<Section>();
-    public string FinalNote { get; set; }
+    public List<Section> Sections { get; set; } = new();
+    public string FinalNote { get; set; } = string.Empty;
     public bool RecommendAsTeamLead { get; set; } = false;
     public double TotalScore { get; private set; }
 
@@ -27,38 +26,27 @@ public class EvaluationResult
     {
         TotalScore = CalculateTotalScore();
     }
+
     private double CalculateTotalScore()
     {
         foreach (var section in Sections)
             section.SetTotalScore();
 
-        // مجموع أوزان الأسئلة
-        double sumWeights = Sections.Sum(q => q.Weight);
+        var activeSections = Sections.Where(s => s.Include).ToList();
+        double sumWeights = activeSections.Sum(s => s.Weight);
 
-        // مجموع Score × Weight
-        double weightedSum = Sections.Sum(q => q.TotalScore * q.Weight);
+        if (sumWeights <= 0)
+            return 0;
 
-        // إذا مجموع الأوزان أقل من 1، نعتبر الباقي مكتمل (100%)
-        if (sumWeights < 1.0)
-        {
-            double remainingWeight = 1.0 - sumWeights;
-            weightedSum += remainingWeight * 100.0; // الباقي مكتمل 100%
-        }
-
-        // إذا مجموع الأوزان أكبر من 1 => خطأ
-        if (sumWeights > 1.0)
-        {
-            MessageBox.Show($"Something wrong with section {Code}: sum of weights > 1");
-        }
-
-        return weightedSum;
+        double weightedSum = activeSections.Sum(s => s.TotalScore * s.Weight);
+        return weightedSum / sumWeights;
     }
+
     public void Reset()
     {
-        foreach(var question in Questions.Values)
-        {
-            question.Score = 0;
-            SetTotalScore();
-        }
+        foreach (var question in Questions.Values)
+            question.Score = question.Default;
+
+        SetTotalScore();
     }
 }

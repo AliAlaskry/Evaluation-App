@@ -1,0 +1,157 @@
+{
+  "Options": {
+    "AskPreferTeamLeaderAssistant": true,
+    "IssuesToResolve": [
+      "Sprint estimation consistency across the team.",
+      "Pull request review turnaround time.",
+      "Cross-team communication blockers.",
+      "Documentation and knowledge sharing gaps.",
+      "Test coverage on critical modules."
+    ]
+  },
+  "Sections": [
+    {
+      "Name": "Delivery Quality",
+      "Weight": 35,
+      "Include": true,
+      "Questions": [
+        {
+          "Id": "dq1",
+          "Text": "Accuracy of effort estimation and delivery commitments",
+          "Weight": 9,
+          "Include": true,
+          "Min": 1,
+          "Max": 5,
+          "Default": 3,
+          "MinMeaning": "Frequently under/over-estimates and misses delivery dates",
+          "MaxMeaning": "Estimates precisely and consistently delivers as committed"
+        },
+        {
+          "Id": "dq2",
+          "Text": "Code quality, maintainability, and adherence to standards",
+          "Weight": 10,
+          "Include": true,
+          "Min": 1,
+          "Max": 5,
+          "Default": 3,
+          "MinMeaning": "Code often requires heavy rework",
+          "MaxMeaning": "Code is clean, maintainable, and production-ready"
+        },
+        {
+          "Id": "dq3",
+          "Text": "Defect prevention and testing discipline",
+          "Weight": 8,
+          "Include": true,
+          "Min": 1,
+          "Max": 5,
+          "Default": 3,
+          "MinMeaning": "Rarely validates changes before handoff",
+          "MaxMeaning": "Proactively tests and minimizes escaped defects"
+        },
+        {
+          "Id": "dq4",
+          "Text": "Task ownership and completion reliability",
+          "Weight": 8,
+          "Include": true,
+          "Min": 1,
+          "Max": 5,
+          "Default": 3,
+          "MinMeaning": "Needs frequent follow-up to close tasks",
+          "MaxMeaning": "Owns tasks end-to-end with minimal follow-up"
+        }
+      ]
+    },
+    {
+      "Name": "Technical Effectiveness",
+      "Weight": 30,
+      "Include": true,
+      "Questions": [
+        {
+          "Id": "te1",
+          "Text": "Problem solving and root-cause analysis",
+          "Weight": 10,
+          "Include": true,
+          "Min": 1,
+          "Max": 5,
+          "Default": 3,
+          "MinMeaning": "Struggles to diagnose and resolve issues",
+          "MaxMeaning": "Resolves issues quickly with clear root-cause analysis"
+        },
+        {
+          "Id": "te2",
+          "Text": "System design decisions and tradeoff awareness",
+          "Weight": 10,
+          "Include": true,
+          "Min": 1,
+          "Max": 5,
+          "Default": 3,
+          "MinMeaning": "Design choices are often risky or unclear",
+          "MaxMeaning": "Makes balanced, scalable, and well-justified design decisions"
+        },
+        {
+          "Id": "te3",
+          "Text": "Learning agility and adoption of new tools/approaches",
+          "Weight": 10,
+          "Include": true,
+          "Min": 1,
+          "Max": 5,
+          "Default": 3,
+          "MinMeaning": "Slow adaptation to new technologies",
+          "MaxMeaning": "Learns quickly and applies improvements effectively"
+        }
+      ]
+    },
+    {
+      "Name": "Collaboration and Leadership Potential",
+      "Weight": 35,
+      "Include": true,
+      "Questions": [
+        {
+          "Id": "cl1",
+          "Text": "Communication clarity during planning and execution",
+          "Weight": 8,
+          "Include": true,
+          "Min": 1,
+          "Max": 5,
+          "Default": 3,
+          "MinMeaning": "Communication is unclear and causes confusion",
+          "MaxMeaning": "Communicates clearly and aligns stakeholders effectively"
+        },
+        {
+          "Id": "cl2",
+          "Text": "Cooperation and willingness to support teammates",
+          "Weight": 9,
+          "Include": true,
+          "Min": 1,
+          "Max": 5,
+          "Default": 3,
+          "MinMeaning": "Rarely supports others",
+          "MaxMeaning": "Consistently supports others and enables team success"
+        },
+        {
+          "Id": "cl3",
+          "Text": "Accountability and professional behavior under pressure",
+          "Weight": 9,
+          "Include": true,
+          "Min": 1,
+          "Max": 5,
+          "Default": 3,
+          "MinMeaning": "Loses focus and accountability under pressure",
+          "MaxMeaning": "Maintains accountability and professionalism in difficult situations"
+        },
+        {
+          "Id": "cl4",
+          "Text": "Potential to coach others and influence team direction",
+          "Weight": 9,
+          "Include": true,
+          "ManagerOnly": true,
+          "Min": 1,
+          "Max": 5,
+          "Default": 3,
+          "MinMeaning": "Limited mentoring/influence capability",
+          "MaxMeaning": "Strong mentoring and leadership influence"
+        }
+      ]
+    }
+  ]
+}
