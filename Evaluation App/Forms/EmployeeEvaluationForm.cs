@@ -64,7 +64,7 @@ namespace Evaluation_App.Forms
                     var panel = new Panel
                     {
                         Width = flowLayoutPanel1.Width - 25,
-                        Height = 95,
+                        Height = 102,
                         RightToLeft = RightToLeft.Yes
                     };
 
@@ -97,24 +97,27 @@ namespace Evaluation_App.Forms
                         RightToLeft = RightToLeft.No
                     };
 
+                    const int hintLabelY = 62;
+                    int hintLabelWidth = (slider.Width / 2) - 4;
+
                     var minLabel = new Label
                     {
-                        Text = $"{question.Min}: {question.MinMeaning}",
+                        Text = question.MinMeaning,
                         AutoSize = false,
-                        Width = (panel.Width / 2) - 10,
-                        Height = 32,
-                        Location = new Point(10, 60),
+                        Width = hintLabelWidth,
+                        Height = 30,
+                        Location = new Point(slider.Left, hintLabelY),
                         TextAlign = ContentAlignment.TopLeft,
                         ForeColor = Color.DimGray
                     };
 
                     var maxLabel = new Label
                     {
-                        Text = $"{question.Max}: {question.MaxMeaning}",
+                        Text = question.MaxMeaning,
                         AutoSize = false,
-                        Width = (panel.Width / 2) - 10,
-                        Height = 32,
-                        Location = new Point(panel.Width / 2, 60),
+                        Width = hintLabelWidth,
+                        Height = 30,
+                        Location = new Point(slider.Right - hintLabelWidth, hintLabelY),
                         TextAlign = ContentAlignment.TopRight,
                         ForeColor = Color.DimGray
                     };
