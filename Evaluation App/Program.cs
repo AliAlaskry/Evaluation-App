@@ -1,4 +1,5 @@
 ﻿using Evaluation_App.Forms;
+using Evaluation_App.Services;
 
 namespace Evaluation_App
 {
@@ -13,7 +14,12 @@ namespace Evaluation_App
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            // بدء التطبيق بشاشة تسجيل الدخول
+            if (AuthService.TryAutoLogin())
+            {
+                Application.Run(new SystemEvaluationForm());
+                return;
+            }
+
             Application.Run(new LoginForm());
         }
     }

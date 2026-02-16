@@ -134,6 +134,9 @@
             this.Controls.Add(this.lblSuggestions);
             this.Controls.Add(this.txtSuggestions);
             this.Controls.Add(this.chkTeamLeadAssistant);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.MaximizeBox = false;
+            this.MinimizeBox = true;
             this.Name = "SystemEvaluationForm";
             this.Text = "تقييم النظام";
             this.ResumeLayout(false);
