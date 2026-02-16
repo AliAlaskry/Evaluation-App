@@ -35,6 +35,6 @@ public static class EmployeeService
 
     public static Employee GetEmployeeByCode(string code)
     {
-        return LoadEmployees().FirstOrDefault(e => e.Code == code);
+        return LoadEmployees().FirstOrDefault(e => e.Code == code && e.Include);
     }
 }
