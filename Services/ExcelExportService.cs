@@ -12,7 +12,10 @@ public static class ExcelExportService
         using var workbook = new XLWorkbook();
 
         foreach (var emp in employees)
-            ExportEvaluation(workbook, emp.Code, BuildEmployeeSheetTitle(emp));
+        {
+            var eval = EvaluationService.LoadEvaluation(emp.Code);
+            ExportEmployeeEvaluation(workbook, BuildEmployeeSheetTitle(emp), eval);
+        }
 
         if (workbook.Worksheets.Count != employees.Count - 1)
         {
@@ -29,7 +32,8 @@ public static class ExcelExportService
         string fileName = BuildDesktopExportPath($"{emp.Name} Report.xlsx");
         using var workbook = new XLWorkbook();
 
-        ExportEvaluation(workbook, emp.Code, BuildEmployeeSheetTitle(emp));
+        var eval = EvaluationService.LoadEvaluation(emp.Code);
+        ExportEmployeeEvaluation(workbook, BuildEmployeeSheetTitle(emp), eval);
 
         if (workbook.Worksheets.Count != 1)
         {
@@ -46,7 +50,7 @@ public static class ExcelExportService
         string fileName = BuildDesktopExportPath(SYSTEM_EVALUATION_FILE_NAME);
         using var workbook = new XLWorkbook();
 
-        ExportEvaluation(workbook, SYSTEM_EVALUATION_CODE, BuildSystemSheetTitle());
+        ExportSystemEvaluation(workbook, SYSTEM_EVALUATION_CODE);
 
         if (workbook.Worksheets.Count != 1)
         {
@@ -63,12 +67,15 @@ public static class ExcelExportService
         string fileName = BuildDesktopExportPath(FULL_SURVEY_FILE_NAME);
         using var workbook = new XLWorkbook();
 
-        ExportEvaluation(workbook, SYSTEM_EVALUATION_CODE, BuildSystemSheetTitle());
+        ExportSystemEvaluation(workbook, SYSTEM_EVALUATION_CODE);
 
         var employees = EmployeeService.LoadEmployees();
 
         foreach (var emp in employees)
-            ExportEvaluation(workbook, emp.Code, BuildEmployeeSheetTitle(emp));
+        {
+            var eval = EvaluationService.LoadEvaluation(emp.Code);
+            ExportEmployeeEvaluation(workbook, emp.Code, eval);
+        }
 
         if (workbook.Worksheets.Count != employees.Count)
         {
@@ -111,7 +118,7 @@ public static class ExcelExportService
             return false;
 
         using var workbook = new XLWorkbook();
-        WriteSystemEvaluationSheet(workbook, BuildSystemSheetTitle(), systemModel);
+        WriteSystemEvaluationSheet(workbook, SYSTEM_EVALUATION_CODE, systemModel);
         foreach (var employee in employeeSheets)
             WriteEmployeeEvaluationSheet(workbook, BuildEmployeeSheetTitle(employee.Employee), employee.Eval);
 
@@ -385,7 +392,7 @@ public static class ExcelExportService
 
     private static void WriteSystemEvaluationSheet(XLWorkbook workbook, string workSheetTitle, SystemEvaluationrResult eval)
     {
-        var ws = workbook.Worksheets.Add(GetWorksheetName(workSheetTitle, eval.Code));
+        var ws = workbook.Worksheets.Add(CampWorksheetName(workSheetTitle));
 
         int row = 1;
         ws.Cell(row, COLUMN_LABEL).Value = workSheetTitle;
@@ -425,7 +432,7 @@ public static class ExcelExportService
 
     private static void WriteEmployeeEvaluationSheet(XLWorkbook workbook, string workSheetTitle, EvaluationResult eval)
     {
-        var ws = workbook.Worksheets.Add(GetWorksheetName(workSheetTitle, eval.Code));
+        var ws = workbook.Worksheets.Add(CampWorksheetName(workSheetTitle));
 
         int row = 1;
         ws.Cell(row, COLUMN_LABEL).Value = workSheetTitle;
@@ -608,18 +615,11 @@ public static class ExcelExportService
         }
     }
 
-    private static void ExportEvaluation(XLWorkbook workbook, string evalCode, string workSheetTitle)
+    private static void ExportEmployeeEvaluation(XLWorkbook workbook, string workSheetTitle, EvaluationResult eval)
     {
-        if (string.Equals(evalCode, SYSTEM_EVALUATION_CODE, StringComparison.OrdinalIgnoreCase))
-        {
-            ExportSystemEvaluation(workbook, evalCode, workSheetTitle);
-            return;
-        }
-
-        var eval = EvaluationService.LoadEvaluation(evalCode);
         if (eval == null) return;
 
-        var ws = workbook.Worksheets.Add(GetWorksheetName(workSheetTitle, evalCode));
+        var ws = workbook.Worksheets.Add(CampWorksheetName(workSheetTitle));
 
         int row = 1;
         ws.Cell(row, COLUMN_LABEL).Value = workSheetTitle;
@@ -669,21 +669,14 @@ public static class ExcelExportService
         ws.Columns().AdjustToContents();
     }
 
-
-    private static string BuildSystemSheetTitle()
-    {
-        return SYSTEM_EVALUATION_CODE;
-    }
-
     private static string BuildEmployeeSheetTitle(Employee employee)
     {
         return $"{employee.Name} - {employee.Code}";
     }
 
-    private static string GetWorksheetName(string title, string code)
+    private static string CampWorksheetName(string title)
     {
-        var raw = $"{title} - {code}";
-        return raw.Length <= 31 ? raw : raw[..31];
+        return title.Length <= 31 ? title : title[..31];
     }
 
     private static bool TryResolveEmployeeFromExcel(string excelPath, out Employee employee)
@@ -725,12 +718,12 @@ public static class ExcelExportService
         return options.AskPreferTeamLeaderAssistant;
     }
 
-    private static void ExportSystemEvaluation(XLWorkbook workbook, string evalCode, string workSheetTitle)
+    private static void ExportSystemEvaluation(XLWorkbook workbook, string workSheetTitle)
     {
         var eval = EvaluationService.LoadSystemEvaluation();
         if (eval == null) return;
 
-        var ws = workbook.Worksheets.Add(GetWorksheetName(workSheetTitle, evalCode));
+        var ws = workbook.Worksheets.Add(workSheetTitle);
 
         int row = 1;
         ws.Cell(row, COLUMN_LABEL).Value = workSheetTitle;
@@ -795,6 +788,4 @@ public static class ExcelExportService
 
         return string.Empty;
     }
-
-
 }
