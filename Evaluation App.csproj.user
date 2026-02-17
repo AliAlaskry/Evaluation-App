@@ -4,10 +4,16 @@
     <_LastSelectedProfileId>D:\Work\Current Projs\RAR-IT\Evaluation App\Evaluation App\Properties\PublishProfiles\FolderProfile.pubxml</_LastSelectedProfileId>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Update="Forms\.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="Forms\EmployeeListForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Update="Forms\EmployeeEvaluationForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Forms\JsonConfigEditorForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Update="Forms\LoginForm.cs">

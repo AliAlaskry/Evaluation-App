@@ -441,11 +441,12 @@ public static class ExcelExportService
         ws.Cell(row, COLUMN_VALUE).Value = eval.FinalNote;
         ws.Row(row).Style.Font.Bold = true;
 
-        if (ShouldExportAssistantField(eval.RecommendAsTeamLead))
+        if (ShouldExportAssistantField())
         {
             row++;
             ws.Cell(row, COLUMN_LABEL).Value = LABEL_TEAM_LEADER_ASSISTANT;
-            ws.Cell(row, COLUMN_VALUE).Value = LABEL_TEAM_LEADER_ASSISTANT_YES;
+            ws.Cell(row, COLUMN_VALUE).Value = eval.RecommendAsTeamLead ?
+                LABEL_TEAM_LEADER_ASSISTANT_YES : LABEL_TEAM_LEADER_ASSISTANT_NO;
             ws.Row(row).Style.Font.Bold = true;
         }
 
@@ -600,20 +601,21 @@ public static class ExcelExportService
         ws.Cell(row, COLUMN_VALUE).Value = eval.FinalNote;
         ws.Row(row).Style.Font.Bold = true;
 
-        if (ShouldExportAssistantField(eval.RecommendAsTeamLead))
+        if (ShouldExportAssistantField())
         {
             row++;
             ws.Cell(row, COLUMN_LABEL).Value = LABEL_TEAM_LEADER_ASSISTANT;
-            ws.Cell(row, COLUMN_VALUE).Value = LABEL_TEAM_LEADER_ASSISTANT_YES;
+            ws.Cell(row, COLUMN_VALUE).Value = eval.RecommendAsTeamLead ?
+                   LABEL_TEAM_LEADER_ASSISTANT_YES : LABEL_TEAM_LEADER_ASSISTANT_NO;
             ws.Row(row).Style.Font.Bold = true;
         }
 
         ws.Columns().AdjustToContents();
     }
 
-    private static bool ShouldExportAssistantField(bool recommendAsTeamLead)
+    private static bool ShouldExportAssistantField()
     {
-        if (!recommendAsTeamLead || AuthService.CurrentUser.IsTeamLead)
+        if (AuthService.CurrentUser.IsTeamLead)
             return false;
 
         var options = ConfigLoader.LoadEmployeeOptions();
@@ -663,11 +665,12 @@ public static class ExcelExportService
         ws.Cell(row, COLUMN_VALUE).Value = eval.FinalNote;
         ws.Row(row).Style.Font.Bold = true;
 
-        if (ShouldExportAssistantField(eval.RecommendAsTeamLead))
+        if (ShouldExportAssistantField())
         {
             row++;
             ws.Cell(row, COLUMN_LABEL).Value = LABEL_TEAM_LEADER_ASSISTANT;
-            ws.Cell(row, COLUMN_VALUE).Value = LABEL_TEAM_LEADER_ASSISTANT_YES;
+            ws.Cell(row, COLUMN_VALUE).Value = eval.RecommendAsTeamLead ?
+                 LABEL_TEAM_LEADER_ASSISTANT_YES : LABEL_TEAM_LEADER_ASSISTANT_NO;
             ws.Row(row).Style.Font.Bold = true;
         }
 

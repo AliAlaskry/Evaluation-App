@@ -23,6 +23,7 @@
     public const string LABEL_NOTES = "Notes";
     public const string LABEL_TEAM_LEADER_ASSISTANT = "Team leader assistant";
     public const string LABEL_TEAM_LEADER_ASSISTANT_YES = "Yes";
+    public const string LABEL_TEAM_LEADER_ASSISTANT_NO = "No";
 
     public const int COLUMN_LABEL = 1;
     public const int COLUMN_VALUE = 2;

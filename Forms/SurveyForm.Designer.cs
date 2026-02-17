@@ -71,7 +71,7 @@ namespace Evaluation_App.Forms
             btnMergeExcel.Name = "btnMergeExcel";
             btnMergeExcel.Size = new Size(220, 38);
             btnMergeExcel.TabIndex = 4;
-            btnMergeExcel.Text = "تجميع تقرير شامل لعضو";
+            btnMergeExcel.Text = "تجميع تقرير عضو";
             btnMergeExcel.UseVisualStyleBackColor = true;
             btnMergeExcel.Click += BtnMergeExcel_Click;
             //
@@ -82,7 +82,7 @@ namespace Evaluation_App.Forms
             btnMergeAllExcel.Name = "btnMergeAllExcel";
             btnMergeAllExcel.Size = new Size(220, 38);
             btnMergeAllExcel.TabIndex = 5;
-            btnMergeAllExcel.Text = "تجميع تقرير شامل للكل";
+            btnMergeAllExcel.Text = "تجميع تقرير شامل";
             btnMergeAllExcel.UseVisualStyleBackColor = true;
             btnMergeAllExcel.Click += BtnMergeAllExcel_Click;
             //
