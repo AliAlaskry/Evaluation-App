@@ -1,18 +1,20 @@
 ﻿using Newtonsoft.Json;
 
-public class SystemEvaluationrResult
+public class EmployeeEvaluationResult
 {
     [JsonConstructor]
-    public SystemEvaluationrResult(List<Section> sections)
+    public EmployeeEvaluationResult(Employee emp, List<Section> sections)
     {
+        Employee = emp;
         Sections = sections;
         Questions = sections.SelectMany(o => o.Questions).ToDictionary(o => o.Id, o => o);
         SetTotalScore();
     }
 
+    public Employee Employee { get; set; }
     public List<Section> Sections { get; set; } = new();
     public string FinalNote { get; set; } = string.Empty;
-    public bool ReadyToBeAssistantTeamLeader { get; set; }
+    public bool RecommendAsTeamLead { get; set; } = false;
     public double TotalScore { get; private set; }
 
     [JsonIgnore]
@@ -20,7 +22,7 @@ public class SystemEvaluationrResult
 
     public void SetTotalScore()
     {
-        var scoring = ConfigLoader.LoadSystemOptions().Scoring;
+        var scoring = ConfigLoader.LoadEmployeeOptions().Scoring;
 
         foreach (var section in Sections)
         {
@@ -55,11 +57,5 @@ public class SystemEvaluationrResult
             question.Score = question.Default;
 
         SetTotalScore();
-    }
-
-    public override bool Equals(object? obj)
-    {
-        return obj is SystemEvaluationrResult result &&
-               ReadyToBeAssistantTeamLeader == result.ReadyToBeAssistantTeamLeader;
     }
 }

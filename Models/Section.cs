@@ -7,11 +7,10 @@ public class Section
     public bool TeamLeaderOnly { get; set; } = false;
     public bool Include { get; set; } = true;
     public string? Formula { get; set; }
-    public string? CombinedFormula { get; set; }
     public List<Question> Questions { get; set; } = new List<Question>();
     public double TotalScore { get; private set; }
 
-    public void SetTotalScore(ScoringFormulaContext context)
+    public void SetTotalScore(ScoringOptions scoring)
     {
         var activeQuestions = Questions.Where(q => q.Include && !q.TeamLeaderOnly).ToList();
         var questionScores = activeQuestions.Select(q => q.Score).ToList();
@@ -22,8 +21,7 @@ public class Section
         if (sumWeights > 0)
             defaultScore = activeQuestions.Sum(q => q.Score * q.Weight) / sumWeights;
 
-        string? formula = context.useCombinedFormulas ? (CombinedFormula ?? context.scoring.CombinedSectionFormula ?? Formula ?? context.scoring.SectionFormula)
-                                                     : (Formula ?? context.scoring.SectionFormula);
+        string? formula = Formula ?? scoring.SectionFormula;
 
         TotalScore = FormulaEngine.EvaluateToScalar(formula,
             new Dictionary<string, FormulaEngine.Value>

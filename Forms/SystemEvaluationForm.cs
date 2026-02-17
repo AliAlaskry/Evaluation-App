@@ -22,11 +22,11 @@ namespace Evaluation_App.Forms
             _systemOptions = ConfigLoader.LoadSystemOptions();
             _employeeOptions = ConfigLoader.LoadEmployeeOptions();
             _evaluationResult = EvaluationService.LoadSystemEvaluation()
-                ?? new SystemEvaluationrResult(SYSTEM_EVALUATION_CODE, ConfigLoader.LoadSystemSections());
+                ?? new SystemEvaluationrResult(ConfigLoader.LoadSystemSections());
 
             chkTeamLeadAssistant.Visible = !AuthService.CurrentUser.IsTeamLead 
                 && _employeeOptions.AskPreferTeamLeaderAssistant;
-            chkTeamLeadAssistant.Checked = _evaluationResult.RecommendAsTeamLead;
+            chkTeamLeadAssistant.Checked = _evaluationResult.ReadyToBeAssistantTeamLeader;
 
             LoadSections();
             LoadPreviousAnswers();
@@ -215,7 +215,7 @@ namespace Evaluation_App.Forms
                 if (_inputControls.TryGetValue(question.Id, out var slider))
                     question.Score = slider.Value;
 
-            _evaluationResult.RecommendAsTeamLead = chkTeamLeadAssistant.Checked;
+            _evaluationResult.ReadyToBeAssistantTeamLeader = chkTeamLeadAssistant.Checked;
             _evaluationResult.FinalNote = txtSuggestions.Text;
             _evaluationResult.SetTotalScore();
         }
@@ -228,7 +228,7 @@ namespace Evaluation_App.Forms
                         if (question.Score != slider.Value)
                             return true;
 
-            if (_evaluationResult.RecommendAsTeamLead != chkTeamLeadAssistant.Checked)
+            if (_evaluationResult.ReadyToBeAssistantTeamLeader != chkTeamLeadAssistant.Checked)
                 return true;
 
             if(!_evaluationResult.FinalNote.Equals(txtSuggestions.Text))
@@ -289,7 +289,7 @@ namespace Evaluation_App.Forms
             if (dialog.ShowDialog() != DialogResult.OK)
                 return;
 
-            if (!ExcelExportService.TryLoadEvaluationFromExcel(dialog.FileName, SYSTEM_EVALUATION_CODE, _evaluationResult))
+            if (!ExcelExportService.TryLoadSystemEvaluationFromExcel(dialog.FileName, _evaluationResult))
             {
                 MessageBox.Show("تعذر تحميل البيانات من ملف Excel المحدد.");
                 return;
@@ -297,7 +297,7 @@ namespace Evaluation_App.Forms
 
             LoadPreviousAnswers();
             txtSuggestions.Text = _evaluationResult.FinalNote;
-            chkTeamLeadAssistant.Checked = _evaluationResult.RecommendAsTeamLead;
+            chkTeamLeadAssistant.Checked = _evaluationResult.ReadyToBeAssistantTeamLeader;
             _evaluationResult.Reset();
             MessageBox.Show("تم التحميل بنجاح.");
         }

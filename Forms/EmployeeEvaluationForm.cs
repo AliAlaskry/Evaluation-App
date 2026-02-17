@@ -8,7 +8,7 @@ namespace Evaluation_App.Forms
         private bool _isNavigating;
         private readonly Dictionary<string, TrackBar> _inputControls = new();
         private readonly Dictionary<string, Label> _valueLabels = new();
-        private EvaluationResult _evaluationResult;
+        private EmployeeEvaluationResult _evaluationResult;
         private readonly EmployeeOptions _employeeOptions;
 
         public EmployeeEvaluationForm(Employee employee)
@@ -22,7 +22,7 @@ namespace Evaluation_App.Forms
             lblTitle.Text = $"تقييم: {employee.Name} [{employee.Code}]";
 
             _evaluationResult = EvaluationService.LoadEvaluation(_employee.Code)
-                ?? new EvaluationResult(_employee.Code, true, ConfigLoader.LoadEmployeeSections(_employee));
+                ?? new EmployeeEvaluationResult(_employee, ConfigLoader.LoadEmployeeSections(_employee));
 
             LoadSections();
             LoadPreviousAnswers();
@@ -268,7 +268,7 @@ namespace Evaluation_App.Forms
             if (dialog.ShowDialog() != DialogResult.OK)
                 return;
 
-            if (!ExcelExportService.TryLoadEvaluationFromExcel(dialog.FileName, _employee.Code, _evaluationResult))
+            if (!ExcelExportService.TryLoadEmployeeEvaluationFromExcel(dialog.FileName, _evaluationResult))
             {
                 MessageBox.Show("تعذر تحميل البيانات من ملف Excel المحدد.");
                 return;

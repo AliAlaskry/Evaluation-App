@@ -144,11 +144,6 @@ public class EmployeeOptions : SystemOptions
 public class ScoringOptions
 {
     public string DefaultQuestionFormula { get; set; } = "QuestionScore = Value";
-    public string DefaultCombinedQuestionFormula { get; set; } = "QuestionScore = median(Scores)";
     public string SectionFormula { get; set; } = "SectionScore = sum(QuestionScore * QuestionWeight) / sum(QuestionWeight)";
-    public string CombinedSectionFormula { get; set; } = "SectionScore = sum(QuestionScore * QuestionWeight) / sum(QuestionWeight)";
     public string TotalFormula { get; set; } = "TotalScore = sum(SectionScore * SectionWeight) / sum(SectionWeight)";
-    public string CombinedTotalFormula { get; set; } = "TotalScore = sum(SectionScore * SectionWeight) / sum(SectionWeight)";
 }
-
-public readonly record struct ScoringFormulaContext(ScoringOptions scoring, bool useCombinedFormulas);

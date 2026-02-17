@@ -3,14 +3,14 @@ using static Constants;
 
 public static class EvaluationService
 {
-    public static void Save(EvaluationResult eval)
+    public static void Save(EmployeeEvaluationResult eval)
     {
-        SaveEvaluation(eval.Code, eval);
+        SaveEvaluation(eval.Employee.Code, eval);
     }
 
     public static void Save(SystemEvaluationrResult eval)
     {
-        SaveEvaluation(eval.Code, eval);
+        SaveEvaluation(SYSTEM_EVALUATION_CODE, eval);
     }
 
     private static void SaveEvaluation(string code, object evaluation)
@@ -22,12 +22,12 @@ public static class EvaluationService
         File.WriteAllText(file, JsonConvert.SerializeObject(evaluation, Formatting.Indented));
     }
 
-    public static EvaluationResult LoadEvaluation(string employeeCode)
+    public static EmployeeEvaluationResult LoadEvaluation(string employeeCode)
     {
         string file = Path.Combine(EvaluationPath, $"{employeeCode}.json");
         if (!File.Exists(file)) return null;
 
-        return JsonConvert.DeserializeObject<EvaluationResult>(File.ReadAllText(file));
+        return JsonConvert.DeserializeObject<EmployeeEvaluationResult>(File.ReadAllText(file));
     }
 
     public static SystemEvaluationrResult LoadSystemEvaluation()
