@@ -145,10 +145,6 @@ public static class ExcelExportService
             WriteAndFillEmployeeEvaluationSheet(workbook, title, WORKSHEET_EMPLOYEE_TITLE_PREFIX + title, emp.Eval, true);
         }
 
-        AppendSummaryColumn(workbook.Worksheet(SYSTEM_EVALUATION_CODE));
-        foreach (var ws in workbook.Worksheets.Where(w => w.Name != SYSTEM_EVALUATION_CODE))
-            AppendSummaryColumn(ws);
-
         string fileName = BuildDesktopExportPath($"{BuildEmployeeSheetTitle(AuthService.CurrentUser)} - {FULL_SURVEY_FILE_NAME}");
         workbook.SaveAs(fileName);
         return true;
