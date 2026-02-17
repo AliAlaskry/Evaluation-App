@@ -144,61 +144,78 @@ public static class ExcelExportService
         if (files.Count == 0)
             return false;
 
-        using var firstWorkbook = new XLWorkbook(files[0]);
-        int sheetCount = firstWorkbook.Worksheets.Count;
+        var sheetOrder = new List<string>();
+        var normalizedSheetNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var rowsBySheet = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+        var rowSetBySheet = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
 
-        if (sheetCount == 0)
-            return false;
-
-        for (int fileIndex = 1; fileIndex < files.Count; fileIndex++)
+        foreach (var file in files)
         {
-            using var workbook = new XLWorkbook(files[fileIndex]);
-            if (workbook.Worksheets.Count != sheetCount)
-                return false;
-
-            for (int sheetIndex = 1; sheetIndex <= sheetCount; sheetIndex++)
+            using var workbook = new XLWorkbook(file);
+            foreach (var sheet in workbook.Worksheets)
             {
-                if (!HasSameFirstColumn(firstWorkbook.Worksheet(sheetIndex), workbook.Worksheet(sheetIndex)))
-                    return false;
+                if (normalizedSheetNames.Add(sheet.Name))
+                    sheetOrder.Add(sheet.Name);
+
+                if (!rowsBySheet.TryGetValue(sheet.Name, out var rows))
+                {
+                    rows = new List<string>();
+                    rowsBySheet[sheet.Name] = rows;
+                    rowSetBySheet[sheet.Name] = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                }
+
+                var rowSet = rowSetBySheet[sheet.Name];
+                foreach (var row in GetSheetRows(sheet))
+                {
+                    if (ShouldAggregateInNotesSheet(row.Key))
+                        continue;
+
+                    if (rowSet.Add(row.Key))
+                        rows.Add(row.Key);
+                }
             }
         }
+
+        if (sheetOrder.Count == 0)
+            return false;
 
         using var resultWorkbook = new XLWorkbook();
         var notesRecords = new List<(string SourceFile, string SheetName, string Label, string Value)>();
 
-        for (int sheetIndex = 1; sheetIndex <= sheetCount; sheetIndex++)
+        foreach (var sheetName in sheetOrder)
         {
-            var baseSheet = firstWorkbook.Worksheet(sheetIndex);
-            var resultSheet = resultWorkbook.Worksheets.Add(baseSheet.Name);
-            bool isSystemSheet = baseSheet.Name.Contains("System", StringComparison.OrdinalIgnoreCase) || baseSheet.Name.Contains(SYSTEM_EVALUATION_CODE, StringComparison.OrdinalIgnoreCase);
+            var resultSheet = resultWorkbook.Worksheets.Add(sheetName);
+            bool isSystemSheet = sheetName.Contains("System", StringComparison.OrdinalIgnoreCase) || sheetName.Contains(SYSTEM_EVALUATION_CODE, StringComparison.OrdinalIgnoreCase);
             var templateSections = isSystemSheet ? ConfigLoader.LoadSystemSections() : ConfigLoader.LoadEmployeeSections();
             var sectionByName = templateSections.ToDictionary(s => s.Name, s => s, StringComparer.OrdinalIgnoreCase);
             var questionToSection = templateSections
                 .SelectMany(s => s.Questions.Where(q => q.Include).Select(q => new { q.Text, SectionName = s.Name }))
                 .ToDictionary(x => x.Text, x => x.SectionName, StringComparer.OrdinalIgnoreCase);
 
-            var baseRows = GetSheetRows(baseSheet)
-                .Where(r => !ShouldAggregateInNotesSheet(r.Key))
-                .ToList();
+            var baseRows = rowsBySheet.TryGetValue(sheetName, out var sheetRows) ? sheetRows : new List<string>();
             for (int row = 0; row < baseRows.Count; row++)
-                resultSheet.Cell(row + 1, COLUMN_LABEL).Value = baseRows[row].Key;
+                resultSheet.Cell(row + 1, COLUMN_LABEL).Value = baseRows[row];
 
             for (int fileIndex = 0; fileIndex < files.Count; fileIndex++)
             {
                 using var sourceWorkbook = new XLWorkbook(files[fileIndex]);
-                var sourceSheet = sourceWorkbook.Worksheet(sheetIndex);
-                var sourceRows = GetSheetRows(sourceSheet)
-                    .ToDictionary(o => o.Key, o => o.Value, StringComparer.OrdinalIgnoreCase);
+                var sourceSheet = sourceWorkbook.Worksheets.FirstOrDefault(ws => string.Equals(ws.Name, sheetName, StringComparison.OrdinalIgnoreCase));
+                var sourceRows = sourceSheet == null
+                    ? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    : GetSheetRows(sourceSheet).ToDictionary(o => o.Key, o => o.Value, StringComparer.OrdinalIgnoreCase);
 
-                foreach (var rowEntry in sourceRows)
+                if (sourceSheet != null)
                 {
-                    if (!ShouldAggregateInNotesSheet(rowEntry.Key))
-                        continue;
+                    foreach (var rowEntry in sourceRows)
+                    {
+                        if (!ShouldAggregateInNotesSheet(rowEntry.Key))
+                            continue;
 
-                    if (string.IsNullOrWhiteSpace(rowEntry.Value))
-                        continue;
+                        if (string.IsNullOrWhiteSpace(rowEntry.Value))
+                            continue;
 
-                    notesRecords.Add((Path.GetFileNameWithoutExtension(files[fileIndex]), sourceSheet.Name, rowEntry.Key, rowEntry.Value));
+                        notesRecords.Add((Path.GetFileNameWithoutExtension(files[fileIndex]), sourceSheet.Name, rowEntry.Key, rowEntry.Value));
+                    }
                 }
 
                 int targetColumn = fileIndex + 2;
@@ -206,7 +223,7 @@ public static class ExcelExportService
 
                 for (int row = 1; row < baseRows.Count; row++)
                 {
-                    var key = baseRows[row].Key;
+                    var key = baseRows[row];
                     if (sourceRows.TryGetValue(key, out string? value))
                         resultSheet.Cell(row + 1, targetColumn).Value = value;
                 }
@@ -547,27 +564,6 @@ public static class ExcelExportService
         }
 
         sheet.Columns().AdjustToContents();
-    }
-
-    private static bool HasSameFirstColumn(IXLWorksheet firstSheet, IXLWorksheet secondSheet)
-    {
-        var firstRows = GetSheetRows(firstSheet)
-            .Where(r => !ShouldAggregateInNotesSheet(r.Key))
-            .ToList();
-        var secondRows = GetSheetRows(secondSheet)
-            .Where(r => !ShouldAggregateInNotesSheet(r.Key))
-            .ToList();
-
-        if (firstRows.Count != secondRows.Count)
-            return false;
-
-        for (int i = 0; i < firstRows.Count; i++)
-        {
-            if (!string.Equals(firstRows[i].Key, secondRows[i].Key, StringComparison.OrdinalIgnoreCase))
-                return false;
-        }
-
-        return true;
     }
 
     private static List<KeyValuePair<string, string>> GetSheetRows(IXLWorksheet sheet)

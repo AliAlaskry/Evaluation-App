@@ -20,9 +20,27 @@ public class ConfigFilesMenuForm : Form
         RightToLeft = RightToLeft.Yes;
         RightToLeftLayout = true;
 
-        var panel = new FlowLayoutPanel { Dock = DockStyle.Fill, FlowDirection = FlowDirection.TopDown, Padding = new Padding(80, 40, 80, 20) };
+        var panel = new FlowLayoutPanel
+        {
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            FlowDirection = FlowDirection.TopDown,
+            WrapContents = false,
+            Anchor = AnchorStyles.None,
+            Padding = new Padding(10)
+        };
         panel.Controls.AddRange(new Control[] { _btnSystem, _btnEmployee, _btnBack });
-        Controls.Add(panel);
+
+        var host = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 1
+        };
+        host.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        host.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        host.Controls.Add(panel, 0, 0);
+        Controls.Add(host);
 
         string projectPath = Directory.GetParent(Application.StartupPath).Parent.Parent.Parent.FullName;
 
