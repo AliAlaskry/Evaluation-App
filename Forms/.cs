@@ -24,8 +24,10 @@ public class ConfigFilesMenuForm : Form
         panel.Controls.AddRange(new Control[] { _btnSystem, _btnEmployee, _btnBack });
         Controls.Add(panel);
 
-        _btnSystem.Click += (_, _) => Navigate(new JsonConfigEditorForm("System Config", Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "system_evaluation_config.json")));
-        _btnEmployee.Click += (_, _) => Navigate(new JsonConfigEditorForm("Employee Config", Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "employee_evaluation_config.json")));
+        string projectPath = Directory.GetParent(Application.StartupPath).Parent.Parent.Parent.FullName;
+
+        _btnSystem.Click += (_, _) => Navigate(new JsonConfigEditorForm("System Config", Path.Combine(projectPath, "Data", "system_evaluation_config.json")));
+        _btnEmployee.Click += (_, _) => Navigate(new JsonConfigEditorForm("Employee Config", Path.Combine(projectPath, "Data", "employee_evaluation_config.json")));
         _btnBack.Click += (_, _) =>
         {
             var form = new MainMenuForm();
