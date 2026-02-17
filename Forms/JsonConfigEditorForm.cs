@@ -11,16 +11,23 @@ public class JsonConfigEditorForm : Form
     private readonly TextBox _value = new() { Dock = DockStyle.Fill, Multiline = true, ScrollBars = ScrollBars.Vertical };
     private readonly Label _lblPath = new() { Dock = DockStyle.Top, Height = 26, TextAlign = ContentAlignment.MiddleLeft };
     private readonly Label _lblType = new() { Dock = DockStyle.Top, Height = 26, TextAlign = ContentAlignment.MiddleLeft };
-    private readonly Button _btnUpdate = new() { Text = "تحديث الحقل" };
-    private readonly Button _btnAdd = new() { Text = "إضافة حقل" };
+    private readonly Button _btnRefresh = new() { Text = "تحديث" };
+    private readonly Button _btnEdit = new() { Text = "تعديل" };
+    private readonly Button _btnAdd = new() { Text = "إضافة" };
     private readonly Button _btnDelete = new() { Text = "حذف الحقل" };
     private readonly Button _btnBack = new() { Text = "رجوع" };
     private readonly Button _btnSave = new() { Text = "حفظ" };
-    private readonly Button _btnReloadFile = new() { Text = "تحميل من الملف" };
     private readonly Button _btnLoadJson = new() { Text = "تحميل JSON من ملف" };
+    private readonly SplitContainer _splitContainer = new()
+    {
+        Dock = DockStyle.Fill,
+        Orientation = Orientation.Vertical,
+        SplitterDistance = 420
+    };
     private JObject _root = new();
     private bool _isDirty;
     private bool _isNavigating;
+    private bool _isEditing;
 
     public JsonConfigEditorForm(string title, string filePath)
     {
@@ -33,38 +40,33 @@ public class JsonConfigEditorForm : Form
         RightToLeftLayout = true;
 
         var topPanel = new FlowLayoutPanel { Dock = DockStyle.Top, Height = 40 };
-        topPanel.Controls.AddRange(new Control[] { _btnUpdate, _btnAdd, _btnDelete });
+        topPanel.Controls.AddRange(new Control[] { _btnRefresh, _btnEdit, _btnAdd, _btnDelete });
 
         var bottomPanel = new FlowLayoutPanel { Dock = DockStyle.Bottom, Height = 45 };
-        bottomPanel.Controls.AddRange(new Control[] { _btnBack, _btnSave, _btnReloadFile, _btnLoadJson });
+        bottomPanel.Controls.AddRange(new Control[] { _btnBack, _btnSave, _btnLoadJson });
 
-        var splitContainer = new SplitContainer
-        {
-            Dock = DockStyle.Fill,
-            Orientation = Orientation.Vertical,
-            SplitterDistance = 420
-        };
+        _splitContainer.Panel1.Controls.Add(_tree);
+        _splitContainer.Panel2.Controls.Add(_value);
+        _splitContainer.Panel2.Controls.Add(_lblType);
+        _splitContainer.Panel2.Controls.Add(_lblPath);
 
-        splitContainer.Panel1.Controls.Add(_tree);
-        splitContainer.Panel2.Controls.Add(_value);
-        splitContainer.Panel2.Controls.Add(_lblType);
-        splitContainer.Panel2.Controls.Add(_lblPath);
-
-        Controls.Add(splitContainer);
+        Controls.Add(_splitContainer);
         Controls.Add(topPanel);
         Controls.Add(bottomPanel);
 
         _tree.AfterSelect += (_, _) => PopulateEditorFromSelection();
-        _btnUpdate.Click += (_, _) => UpdateSelected();
+        _btnRefresh.Click += (_, _) => ReloadWithConfirm();
+        _btnEdit.Click += (_, _) => StartEditSelected();
         _btnAdd.Click += (_, _) => AddField();
         _btnDelete.Click += (_, _) => DeleteField();
         _btnSave.Click += (_, _) => SaveChanges();
-        _btnReloadFile.Click += (_, _) => ReloadWithConfirm();
         _btnLoadJson.Click += (_, _) => LoadFromExternalJson();
         _btnBack.Click += (_, _) => BackWithConfirm();
+        _value.KeyDown += Value_KeyDown;
 
         FormClosing += JsonConfigEditorForm_FormClosing;
 
+        SetEditorVisible(false);
         LoadFromFile();
     }
 
@@ -160,6 +162,9 @@ public class JsonConfigEditorForm : Form
 
     private void PopulateEditorFromSelection()
     {
+        if (!_isEditing)
+            return;
+
         if (_tree.SelectedNode?.Tag is not NodeData nodeData)
         {
             _lblPath.Text = "Path:";
@@ -175,7 +180,30 @@ public class JsonConfigEditorForm : Form
             : nodeData.Token.ToString();
     }
 
-    private void UpdateSelected()
+    private void StartEditSelected()
+    {
+        if (_tree.SelectedNode == null)
+            return;
+
+        _isEditing = true;
+        SetEditorVisible(true);
+        PopulateEditorFromSelection();
+        _value.Focus();
+    }
+
+    private void Value_KeyDown(object? sender, KeyEventArgs e)
+    {
+        if (!_isEditing)
+            return;
+
+        if (e.KeyCode != Keys.Enter || e.Shift)
+            return;
+
+        e.SuppressKeyPress = true;
+        ApplyCurrentEdit();
+    }
+
+    private void ApplyCurrentEdit()
     {
         var node = _tree.SelectedNode;
         if (node == null || string.IsNullOrWhiteSpace(node.Name) || node.Name == "root")
@@ -187,7 +215,6 @@ public class JsonConfigEditorForm : Form
             return;
 
         var newValue = ParseValueForToken(_value.Text, token.Type);
-
         if (token.Parent is JProperty p)
         {
             p.Value = newValue;
@@ -202,6 +229,12 @@ public class JsonConfigEditorForm : Form
 
         _isDirty = true;
         RebuildTree();
+        if (_tree.Nodes.Count > 0)
+        {
+            SelectNodeByName(path == "root" ? "root" : $"root.{path}");
+        }
+
+        PopulateEditorFromSelection();
     }
 
     private void AddField()
@@ -213,17 +246,23 @@ public class JsonConfigEditorForm : Form
         var token = node.Name == "root" ? _root as JToken : _root.SelectToken(node.Name.Replace("root.", ""));
         if (token is JObject obj)
         {
-            string key = ShowInputDialog("اسم الحقل", "إضافة");
+            string key = ShowInputDialog("اسم المفتاح", "إضافة");
             if (string.IsNullOrWhiteSpace(key))
                 return;
 
-            string val = ShowInputDialog("القيمة", "إضافة");
-            obj[key] = ParseValue(val);
+            var newToken = PromptForNewToken("القيمة أو JSON (obj/list/field)");
+            if (newToken == null)
+                return;
+
+            obj[key] = newToken;
         }
         else if (token is JArray arr)
         {
-            string val = ShowInputDialog("قيمة العنصر", "إضافة عنصر للقائمة");
-            arr.Add(ParseValue(val));
+            var newToken = PromptForNewToken("أدخل قيمة أو JSON (obj/list/field)");
+            if (newToken == null)
+                return;
+
+            arr.Add(newToken);
         }
         else
         {
@@ -300,13 +339,50 @@ public class JsonConfigEditorForm : Form
 
     private void BackWithConfirm()
     {
-        if (!ConfirmDiscardIfDirty())
+        if (_isDirty)
+        {
+            MessageBox.Show("لا يمكن الرجوع قبل حفظ التغييرات.", "تنبيه", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return;
+        }
 
         var form = new ConfigFilesMenuForm();
         form.Show();
         _isNavigating = true;
         Close();
+    }
+
+    private void SetEditorVisible(bool isVisible)
+    {
+        _splitContainer.Panel2Collapsed = !isVisible;
+    }
+
+    private void SelectNodeByName(string name)
+    {
+        foreach (TreeNode rootNode in _tree.Nodes)
+        {
+            var found = FindNodeRecursive(rootNode, name);
+            if (found != null)
+            {
+                _tree.SelectedNode = found;
+                found.EnsureVisible();
+                return;
+            }
+        }
+    }
+
+    private static TreeNode? FindNodeRecursive(TreeNode node, string name)
+    {
+        if (node.Name == name)
+            return node;
+
+        foreach (TreeNode child in node.Nodes)
+        {
+            var found = FindNodeRecursive(child, name);
+            if (found != null)
+                return found;
+        }
+
+        return null;
     }
 
     private bool ConfirmDiscardIfDirty()
@@ -347,6 +423,22 @@ public class JsonConfigEditorForm : Form
         if (bool.TryParse(value, out bool b)) return new JValue(b);
         if (double.TryParse(value, out double d)) return new JValue(d);
         return new JValue(value);
+    }
+
+    private static JToken? PromptForNewToken(string text)
+    {
+        var raw = ShowInputDialog(text, "إضافة");
+        if (string.IsNullOrWhiteSpace(raw))
+            return null;
+
+        try
+        {
+            return JToken.Parse(raw);
+        }
+        catch
+        {
+            return ParseValue(raw);
+        }
     }
 
     private static JToken ParseValueForToken(string value, JTokenType originalType)
