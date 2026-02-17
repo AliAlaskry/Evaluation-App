@@ -239,6 +239,16 @@ namespace Evaluation_App.Forms
 
         private void btnSave_Click(object sender, EventArgs e)
         {
+            if (!HasChanges())
+            {
+                MessageBox.Show("لا توجد تغييرات للحفظ.");
+                return;
+            }
+
+            var confirm = MessageBox.Show("هل تريد حفظ التغييرات؟", "تأكيد الحفظ", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            if (confirm != DialogResult.Yes)
+                return;
+
             if (!ConfirmSaveWithDefaultValuesWarning())
                 return;
 

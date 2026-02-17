@@ -80,7 +80,48 @@ public static class ExcelExportService
         return true;
     }
 
+    public static bool TryExportTeamLeadCombinedAllReports(string folderPath)
+    {
+        return TryExportCombinedFullSurveyInternal(folderPath, includeAssistantReadinessSheet: true);
+    }
+
+    public static bool TryExportCombinedMemberFullSurvey(string systemEvaluationExcelPath, IReadOnlyList<string> employeeEvaluationExcelPaths)
+    {
+        if (!File.Exists(systemEvaluationExcelPath) || employeeEvaluationExcelPaths.Count == 0)
+            return false;
+
+        var systemModel = new SystemEvaluationrResult(SYSTEM_EVALUATION_CODE, ConfigLoader.LoadSystemSections());
+        if (!TryLoadEvaluationFromExcel(systemEvaluationExcelPath, SYSTEM_EVALUATION_CODE, systemModel))
+            return false;
+
+        var employeeSheets = new List<(string Name, EvaluationResult Eval)>();
+        foreach (var employeeFile in employeeEvaluationExcelPaths.Where(File.Exists))
+        {
+            var eval = new EvaluationResult(Path.GetFileNameWithoutExtension(employeeFile), true, ConfigLoader.LoadEmployeeSections());
+            if (!TryLoadEvaluationFromExcel(employeeFile, eval.Code, eval))
+                return false;
+
+            employeeSheets.Add((Path.GetFileNameWithoutExtension(employeeFile), eval));
+        }
+
+        if (employeeSheets.Count == 0)
+            return false;
+
+        using var workbook = new XLWorkbook();
+        WriteSystemEvaluationSheet(workbook, WORKSHEET_SYSTEM_TITLE, systemModel);
+        foreach (var employee in employeeSheets)
+            WriteEmployeeEvaluationSheet(workbook, employee.Name, employee.Eval);
+
+        workbook.SaveAs(BuildDesktopExportPath(SPRINT_FULL_SURVEY_FILE_NAME));
+        return true;
+    }
+
     public static bool TryExportCombinedFullSurvey(string folderPath)
+    {
+        return TryExportCombinedFullSurveyInternal(folderPath, includeAssistantReadinessSheet: false);
+    }
+
+    private static bool TryExportCombinedFullSurveyInternal(string folderPath, bool includeAssistantReadinessSheet)
     {
         if (!Directory.Exists(folderPath))
             return false;
@@ -150,7 +191,7 @@ public static class ExcelExportService
             int firstDataColumn = 2;
             int lastDataColumn = files.Count + 1;
             int finalRateColumn = lastDataColumn + 1;
-            resultSheet.Cell(1, finalRateColumn).Value = "Final Rate";
+            resultSheet.Cell(1, finalRateColumn).Value = "Summary";
 
             var options = isSystemSheet ? ConfigLoader.LoadSystemOptions() : ConfigLoader.LoadEmployeeOptions();
             var context = new ScoringFormulaContext(options.Scoring, useCombinedFormulas: true);
@@ -204,6 +245,9 @@ public static class ExcelExportService
 
             resultSheet.Columns().AdjustToContents();
         }
+
+        if (includeAssistantReadinessSheet)
+            AppendAssistantReadinessSheet(resultWorkbook);
 
         resultWorkbook.SaveAs(BuildDesktopExportPath(SPRINT_FULL_SURVEY_FILE_NAME));
         return true;
@@ -317,6 +361,132 @@ public static class ExcelExportService
     {
         string prefix = $"{AuthService.CurrentUser.Name} [{AuthService.CurrentUser.Code}] - ";
         return Path.Combine(DesktopPath, $"{prefix}{reportFileName}");
+    }
+
+    private static void WriteSystemEvaluationSheet(XLWorkbook workbook, string workSheetTitle, SystemEvaluationrResult eval)
+    {
+        var ws = workbook.Worksheets.Add($"{workSheetTitle} - {eval.Code}");
+
+        int row = 1;
+        ws.Cell(row, COLUMN_LABEL).Value = workSheetTitle;
+        ws.Row(row).Style.Font.Bold = true;
+        row++;
+
+        foreach (var section in eval.Sections)
+        {
+            ws.Cell(row, COLUMN_LABEL).Value = section.Name;
+            ws.Cell(row, COLUMN_VALUE).Value = section.NumberMeaning;
+            ws.Row(row).Style.Font.Bold = true;
+            row++;
+
+            foreach (var question in section.Questions.Where(q => q.Include))
+            {
+                ws.Cell(row, COLUMN_LABEL).Value = question.Text;
+                ws.Cell(row, COLUMN_VALUE).Value = question.Score;
+                row++;
+            }
+
+            ws.Cell(row, COLUMN_LABEL).Value = LABEL_SECTION_TOTAL;
+            ws.Cell(row, COLUMN_VALUE).Value = section.TotalScore;
+            ws.Row(row).Style.Font.Bold = true;
+            row++;
+        }
+
+        ws.Cell(row, COLUMN_LABEL).Value = LABEL_TOTAL;
+        ws.Cell(row, COLUMN_VALUE).Value = eval.TotalScore;
+        ws.Row(row).Style.Font.Bold = true;
+        row++;
+
+        ws.Cell(row, COLUMN_LABEL).Value = LABEL_NOTES;
+        ws.Cell(row, COLUMN_VALUE).Value = eval.FinalNote;
+        ws.Row(row).Style.Font.Bold = true;
+        ws.Columns().AdjustToContents();
+    }
+
+    private static void WriteEmployeeEvaluationSheet(XLWorkbook workbook, string workSheetTitle, EvaluationResult eval)
+    {
+        var ws = workbook.Worksheets.Add($"{workSheetTitle} - {eval.Code}");
+
+        int row = 1;
+        ws.Cell(row, COLUMN_LABEL).Value = workSheetTitle;
+        ws.Row(row).Style.Font.Bold = true;
+        row++;
+
+        foreach (var section in eval.Sections)
+        {
+            ws.Cell(row, COLUMN_LABEL).Value = section.Name;
+            ws.Cell(row, COLUMN_VALUE).Value = section.NumberMeaning;
+            ws.Row(row).Style.Font.Bold = true;
+            row++;
+
+            foreach (var question in section.Questions.Where(q => q.Include))
+            {
+                ws.Cell(row, COLUMN_LABEL).Value = question.Text;
+                ws.Cell(row, COLUMN_VALUE).Value = question.Score;
+                row++;
+            }
+
+            ws.Cell(row, COLUMN_LABEL).Value = LABEL_SECTION_TOTAL;
+            ws.Cell(row, COLUMN_VALUE).Value = section.TotalScore;
+            ws.Row(row).Style.Font.Bold = true;
+            row++;
+        }
+
+        ws.Cell(row, COLUMN_LABEL).Value = LABEL_TOTAL;
+        ws.Cell(row, COLUMN_VALUE).Value = eval.TotalScore;
+        ws.Row(row).Style.Font.Bold = true;
+        row++;
+
+        ws.Cell(row, COLUMN_LABEL).Value = LABEL_NOTES;
+        ws.Cell(row, COLUMN_VALUE).Value = eval.FinalNote;
+        ws.Row(row).Style.Font.Bold = true;
+
+        if (ShouldExportAssistantField(eval.RecommendAsTeamLead))
+        {
+            row++;
+            ws.Cell(row, COLUMN_LABEL).Value = LABEL_TEAM_LEADER_ASSISTANT;
+            ws.Cell(row, COLUMN_VALUE).Value = LABEL_TEAM_LEADER_ASSISTANT_YES;
+            ws.Row(row).Style.Font.Bold = true;
+        }
+
+        ws.Columns().AdjustToContents();
+    }
+
+    private static void AppendAssistantReadinessSheet(XLWorkbook workbook)
+    {
+        var sheet = workbook.Worksheets.Add("Assistant Readiness");
+        sheet.Cell(1, 1).Value = "Employee";
+        sheet.Cell(1, 2).Value = "Recommended Count";
+        sheet.Cell(1, 3).Value = "Ready For Team Lead Assistant";
+        sheet.Row(1).Style.Font.Bold = true;
+
+        int row = 2;
+        foreach (var ws in workbook.Worksheets.Where(w => !w.Name.Contains(SYSTEM_EVALUATION_CODE, StringComparison.OrdinalIgnoreCase) && !string.Equals(w.Name, "Assistant Readiness", StringComparison.OrdinalIgnoreCase)))
+        {
+            int yesCount = 0;
+            int headerCol = ws.FirstRowUsed()?.LastCellUsed()?.Address.ColumnNumber ?? 2;
+            for (int col = 2; col <= headerCol; col++)
+            {
+                int lastRow = ws.LastRowUsed()?.RowNumber() ?? 0;
+                for (int r = 1; r <= lastRow; r++)
+                {
+                    var label = ws.Cell(r, 1).GetString();
+                    if (!label.Contains("assistant", StringComparison.OrdinalIgnoreCase) && !label.Contains("مساعد"))
+                        continue;
+
+                    var value = ws.Cell(r, col).GetString();
+                    if (value.Contains("yes", StringComparison.OrdinalIgnoreCase) || value.Contains("نعم"))
+                        yesCount++;
+                }
+            }
+
+            sheet.Cell(row, 1).Value = ws.Name;
+            sheet.Cell(row, 2).Value = yesCount;
+            sheet.Cell(row, 3).Value = yesCount > 0 ? "Ready" : "Not Ready";
+            row++;
+        }
+
+        sheet.Columns().AdjustToContents();
     }
 
     private static bool HasSameFirstColumn(IXLWorksheet firstSheet, IXLWorksheet secondSheet)

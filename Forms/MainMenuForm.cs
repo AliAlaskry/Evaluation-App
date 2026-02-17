@@ -51,7 +51,10 @@ namespace Evaluation_App.Forms
 
         private void BtnModifyConfig_Click(object? sender, EventArgs e)
         {
-            
+            var form = new ConfigFilesMenuForm();
+            form.Show();
+            _isNavigating = true;
+            Hide();
         }
 
         private void BtnSurvey_Click(object? sender, EventArgs e)
