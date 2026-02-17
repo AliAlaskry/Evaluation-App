@@ -15,6 +15,7 @@ public class JsonConfigEditorForm : Form
     private readonly Button _btnEdit = new() { Text = "تعديل" };
     private readonly Button _btnAdd = new() { Text = "إضافة" };
     private readonly Button _btnDelete = new() { Text = "حذف الحقل" };
+    private readonly Button _btnChangeType = new() { Text = "تغيير النوع" };
     private readonly Button _btnBack = new() { Text = "رجوع" };
     private readonly Button _btnSave = new() { Text = "حفظ" };
     private readonly Button _btnLoadJson = new() { Text = "تحميل JSON من ملف" };
@@ -41,7 +42,7 @@ public class JsonConfigEditorForm : Form
         RightToLeftLayout = true;
 
         var topPanel = new FlowLayoutPanel { Dock = DockStyle.Top, Height = 40 };
-        topPanel.Controls.AddRange(new Control[] { _btnRefresh, _btnEdit, _btnAdd, _btnDelete });
+        topPanel.Controls.AddRange(new Control[] { _btnRefresh, _btnEdit, _btnAdd, _btnDelete, _btnChangeType });
 
         var bottomPanel = new FlowLayoutPanel { Dock = DockStyle.Bottom, Height = 45 };
         bottomPanel.Controls.AddRange(new Control[] { _btnBack, _btnSave, _btnLoadJson });
@@ -61,6 +62,7 @@ public class JsonConfigEditorForm : Form
         _btnEdit.Click += (_, _) => StartEditSelected();
         _btnAdd.Click += (_, _) => AddField();
         _btnDelete.Click += (_, _) => DeleteField();
+        _btnChangeType.Click += (_, _) => ChangeFieldType();
         _btnSave.Click += (_, _) => SaveChanges();
         _btnLoadJson.Click += (_, _) => LoadFromExternalJson();
         _btnBack.Click += (_, _) => BackWithConfirm();
@@ -413,6 +415,96 @@ public class JsonConfigEditorForm : Form
     }
 
 
+
+    private void ChangeFieldType()
+    {
+        var node = _tree.SelectedNode;
+        if (node == null || string.IsNullOrWhiteSpace(node.Name) || node.Name == "root")
+            return;
+
+        var path = node.Name.Replace("root.", "");
+        var token = _root.SelectToken(path);
+        if (token == null)
+            return;
+
+        var newType = ShowDropdownDialog("اختر النوع الجديد", "Change Type", new[] { "int", "float", "boolean", "string", "obj", "array", "json" });
+        if (string.IsNullOrWhiteSpace(newType))
+            return;
+
+        var promptText = newType == "json"
+            ? "ادخل قيمة JSON كاملة"
+            : "ادخل القيمة الجديدة";
+        var rawValue = ShowInputDialog(promptText, "New Value");
+        if (string.IsNullOrWhiteSpace(rawValue))
+            return;
+
+        var newToken = ParseValueForRequestedType(newType, rawValue);
+        if (newToken == null)
+            return;
+
+        if (token.Parent is JProperty prop)
+        {
+            prop.Value = newToken;
+        }
+        else if (token.Parent is JArray arr)
+        {
+            int start = path.LastIndexOf('[');
+            int end = path.LastIndexOf(']');
+            if (start >= 0 && end > start && int.TryParse(path.Substring(start + 1, end - start - 1), out int index) && index >= 0 && index < arr.Count)
+                arr[index] = newToken;
+        }
+
+        _isDirty = true;
+        RebuildTree();
+        SelectNodeByName($"root.{path}");
+        PopulateEditorFromSelection();
+    }
+
+    private static JToken? ParseValueForRequestedType(string requestedType, string rawValue)
+    {
+        return requestedType switch
+        {
+            "int" when int.TryParse(rawValue, out var i) => new JValue(i),
+            "float" when double.TryParse(rawValue, out var d) => new JValue(d),
+            "boolean" when bool.TryParse(rawValue, out var b) => new JValue(b),
+            "string" => new JValue(rawValue),
+            "obj" => ParseObjectToken(rawValue),
+            "array" => ParseArrayToken(rawValue),
+            "json" => ParseJsonToken(rawValue),
+            _ => InvalidFieldTypeValue()
+        };
+    }
+
+    private static JToken? ParseJsonToken(string rawValue)
+    {
+        try
+        {
+            return JToken.Parse(rawValue);
+        }
+        catch
+        {
+            return InvalidFieldTypeValue();
+        }
+    }
+
+    private static JToken? ParseObjectToken(string rawValue)
+    {
+        var parsed = ParseJsonToken(rawValue);
+        if (parsed is JObject obj)
+            return obj;
+
+        return InvalidFieldTypeValue();
+    }
+
+    private static JToken? ParseArrayToken(string rawValue)
+    {
+        var parsed = ParseJsonToken(rawValue);
+        if (parsed is JArray arr)
+            return arr;
+
+        return InvalidFieldTypeValue();
+    }
+
     private static string ShowInputDialog(string text, string caption)
     {
         var prompt = new Form
@@ -539,8 +631,11 @@ public class JsonConfigEditorForm : Form
     private static string BuildNodeText(string name, JToken token)
     {
         var type = MapDisplayType(token);
-        var value = token.Type is JTokenType.Object or JTokenType.Array ? token.ToString(Formatting.None) : token.ToString();
-        return $"{name} = {value}, Type = {type}";
+        if (token.Type is JTokenType.Object or JTokenType.Array)
+            return $"{name} - {type}";
+
+        var value = token.ToString();
+        return $"{name} - {value} - {type}";
     }
 
     private static string MapDisplayType(JToken token)
