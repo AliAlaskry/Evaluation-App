@@ -7,7 +7,7 @@ namespace Evaluation_App.Forms;
 public class JsonConfigEditorForm : Form
 {
     private readonly string _filePath;
-    private readonly TreeView _tree = new() { Dock = DockStyle.Fill, HideSelection = false };
+    private readonly TreeView _tree = new() { Dock = DockStyle.Fill, HideSelection = false, RightToLeft = RightToLeft.No };
     private readonly TextBox _value = new() { Dock = DockStyle.Fill, Multiline = true, ScrollBars = ScrollBars.Vertical };
     private readonly Label _lblPath = new() { Dock = DockStyle.Top, Height = 26, TextAlign = ContentAlignment.MiddleLeft };
     private readonly Label _lblType = new() { Dock = DockStyle.Top, Height = 26, TextAlign = ContentAlignment.MiddleLeft };
@@ -72,7 +72,8 @@ public class JsonConfigEditorForm : Form
 
         FormClosing += JsonConfigEditorForm_FormClosing;
 
-        SetEditorVisible(false);
+        _isEditing = true;
+        SetEditorVisible(true);
         LoadFromFile();
     }
 
@@ -132,7 +133,7 @@ public class JsonConfigEditorForm : Form
     private void RebuildTree()
     {
         _tree.Nodes.Clear();
-        var rootNode = new TreeNode("obj: root") { Name = "root", Tag = new NodeData("root", _root) };
+        var rootNode = new TreeNode("root") { Name = "root", Tag = new NodeData("root", _root) };
         _tree.Nodes.Add(rootNode);
         AddTokenNodes(rootNode, _root, "root");
         rootNode.Expand();
@@ -632,10 +633,10 @@ public class JsonConfigEditorForm : Form
     {
         var type = MapDisplayType(token);
         if (token.Type is JTokenType.Object or JTokenType.Array)
-            return $"{name} - {type}";
+            return $"[{type}] {name}";
 
         var value = token.ToString();
-        return $"{name} - {value} - {type}";
+        return $"{name}:  {value}";
     }
 
     private static string MapDisplayType(JToken token)
