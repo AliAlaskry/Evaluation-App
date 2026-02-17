@@ -6,6 +6,21 @@ using static Constants;
 
 public static class ExcelExportService
 {
+    private sealed class SourceSurveyFile
+    {
+        public required string SourceTitle { get; init; }
+        public Employee? Evaluator { get; init; }
+        public required SystemEvaluationrResult SystemEvaluation { get; init; }
+        public required List<EmployeeEvaluationResult> EmployeeEvaluations { get; init; }
+    }
+
+    private sealed class NoteRecord
+    {
+        public required string Source { get; init; }
+        public required string Target { get; init; }
+        public required string Note { get; init; }
+    }
+
     public static bool ExportTeamMembers()
     {
         var employees = EmployeeService.LoadEmployees();
@@ -130,8 +145,12 @@ public static class ExcelExportService
             WriteAndFillEmployeeEvaluationSheet(workbook, title, WORKSHEET_EMPLOYEE_TITLE_PREFIX + title, emp.Eval, true);
         }
 
+        AppendSummaryColumn(workbook.Worksheet(SYSTEM_EVALUATION_CODE));
+        foreach (var ws in workbook.Worksheets.Where(w => w.Name != SYSTEM_EVALUATION_CODE))
+            AppendSummaryColumn(ws);
+
         string fileName = BuildDesktopExportPath($"{BuildEmployeeSheetTitle(AuthService.CurrentUser)} - {FULL_SURVEY_FILE_NAME}");
-        workbook.SaveAs(BuildDesktopExportPath(fileName));
+        workbook.SaveAs(fileName);
         return true;
     }
 
@@ -149,18 +168,15 @@ public static class ExcelExportService
             return false;
 
         var employees = EmployeeService.LoadEmployees();
-       
-        var employeeEvaluations = new List<(Employee Employee, SystemEvaluationrResult SysEval, List<EmployeeEvaluationResult> EmpEvals)>();
+
+        var sourceFiles = new List<SourceSurveyFile>();
 
         foreach (var file in files)
         {
-            if(!TryResolveEmployeeFromTitle(file, out Employee currentEmp))
-                return false;
-            
             var systemEval = new SystemEvaluationrResult(ConfigLoader.LoadSystemSections());
             if (!TryLoadSystemEvaluationFromExcel(file, systemEval))
                 return false;
-           
+
             var employeeEvals = new List<EmployeeEvaluationResult>();
             foreach (var emp in employees)
             {
@@ -170,14 +186,22 @@ public static class ExcelExportService
 
                 employeeEvals.Add(eval);
             }
-            employeeEvaluations.Add((currentEmp, systemEval, employeeEvals));
+
+            TryResolveEmployeeFromTitle(file, out Employee currentEmp);
+            sourceFiles.Add(new SourceSurveyFile
+            {
+                Evaluator = currentEmp,
+                SourceTitle = currentEmp != null ? BuildEmployeeSheetTitle(currentEmp) : Path.GetFileNameWithoutExtension(file),
+                SystemEvaluation = systemEval,
+                EmployeeEvaluations = employeeEvals
+            });
         }
 
-        if (employeeEvaluations.Count < 2)
+        if (sourceFiles.Count < 2)
             return false;
 
-        var notesRecords = AggregateNotes(employeeEvaluations);
-        var assistants = AggregateAssistantTeamLeader(employeeEvaluations);
+        var notesRecords = AggregateNotes(sourceFiles);
+        var assistants = AggregateAssistantTeamLeader(sourceFiles, employees);
 
         using var resultWorkbook = new XLWorkbook();
         var defaultSysEval = new SystemEvaluationrResult(ConfigLoader.LoadSystemSections());
@@ -185,118 +209,37 @@ public static class ExcelExportService
 
         var empWSs = new Dictionary<string, IXLWorksheet>();
         string title;
-        foreach (var eval in employeeEvaluations)
+        foreach (var source in sourceFiles)
         {
-            foreach (var empEval in eval.EmpEvals)
+            foreach (var empEval in source.EmployeeEvaluations)
             {
                 title = BuildEmployeeSheetTitle(empEval.Employee);
 
                 if (empWSs.ContainsKey(title))
                     continue;
 
-                empWSs[title] = WriteEmployeeEvaluationSheet(resultWorkbook, title, WORKSHEET_EMPLOYEE_TITLE_PREFIX + title, new(eval.Employee, ConfigLoader.LoadEmployeeSections(eval.Employee)), false);
+                empWSs[title] = WriteEmployeeEvaluationSheet(resultWorkbook, title, WORKSHEET_EMPLOYEE_TITLE_PREFIX + title, new(empEval.Employee, ConfigLoader.LoadEmployeeSections(empEval.Employee)), false);
             }
         }
 
         int columnIndex = 2;
-        foreach(var eval in employeeEvaluations)
+        foreach(var source in sourceFiles)
         {
-            title = BuildEmployeeSheetTitle(eval.Employee);
-            FillSystemEvaluationSheet(systemWS, columnIndex, title, eval.SysEval, false, false);
+            FillSystemEvaluationSheet(systemWS, columnIndex, source.SourceTitle, source.SystemEvaluation, false, false);
 
-            foreach (var empEval in eval.EmpEvals)
+            foreach (var empEval in source.EmployeeEvaluations)
             {
                 var empSheeTitle = BuildEmployeeSheetTitle(empEval.Employee);
                 if (empWSs.TryGetValue(empSheeTitle, out IXLWorksheet empWS))
-                    FillEmployeeEvaluationSheet(empWS, columnIndex, title, empEval, false);
+                    FillEmployeeEvaluationSheet(empWS, columnIndex, source.SourceTitle, empEval, false);
             }
             
             columnIndex++;
         }
 
-        List<double> scores = new List<double>();
-        int index = 2;
-        var scoring = ConfigLoader.LoadEmployeeOptions().Scoring;
-        foreach (var eval in employeeEvaluations)
-        {
-            int row = 1;
-            systemWS.Cell(row, columnIndex).Value = "Summary";
-
-            foreach(var section in eval.SysEval.Sections)
-            {
-                foreach(var question in section.Questions)
-                {
-                    row = GetRowIndexOfData(systemWS, question.Text);
-
-                    scores.Clear();
-                    index = 2;
-                    while (index < columnIndex)
-                    {
-                        if (systemWS.Cell(row, index).TryGetValue(out double tempScore))
-                            scores.Add(tempScore);
-                        else
-                            Console.WriteLine(systemWS.Cell(row, index).Value);
-                        index++;
-                    }
-
-                    double score = Question.ScoreQuestion(question, scores);
-
-                    systemWS.Cell(row, columnIndex).Value = score;
-                }
-
-                row++;
-                section.SetTotalScore(scoring);
-                systemWS.Cell(row, columnIndex).Value = section.TotalScore;
-            }
-
-            row = GetRowIndexOfData(systemWS, LABEL_TOTAL);
-            eval.SysEval.SetTotalScore();
-            systemWS.Cell(row, columnIndex).Value = eval.SysEval.TotalScore;
-            
-
-            foreach (var empEval in eval.EmpEvals)
-            {
-                var empSheeTitle = BuildEmployeeSheetTitle(empEval.Employee);
-
-                if (empWSs.TryGetValue(empSheeTitle, out IXLWorksheet empWS))
-                {
-                    row = 1;
-                    empWS.Cell(row, columnIndex).Value = "Summary";
-                    row++;
-
-                    foreach (var section in empEval.Sections)
-                    {
-                        foreach (var question in section.Questions)
-                        {
-                            row = GetRowIndexOfData(empWS, question.Text);
-
-                            scores.Clear();
-                            index = 2;
-                            while (index < columnIndex)
-                            {
-                                if (empWS.Cell(row, index).TryGetValue(out double tempScore))
-                                    scores.Add(tempScore);
-                                else
-                                    Console.WriteLine(empWS.Cell(row, index).Value);
-                                index++;
-                            }
-
-                            double score = Question.ScoreQuestion(question, scores);
-
-                            empWS.Cell(row, columnIndex).Value = score;
-                        }
-
-                        row++;
-                        section.SetTotalScore(scoring);
-                        empWS.Cell(row, columnIndex).Value = section.TotalScore;
-                    }
-
-                    row = GetRowIndexOfData(empWS, LABEL_TOTAL);
-                    empEval.SetTotalScore();
-                    systemWS.Cell(row, columnIndex).Value = empEval.TotalScore;
-                }
-            }
-        }
+        AppendSummaryColumn(systemWS);
+        foreach (var ws in empWSs.Values)
+            AppendSummaryColumn(ws);
 
         if (includeAssistantReadinessSheet)
             AppendAssistantReadinessSheet(resultWorkbook, assistants);
@@ -309,33 +252,51 @@ public static class ExcelExportService
         return true;
     }
 
-    private static List<(Employee employee, bool ready, List<Employee> recommendation)> AggregateAssistantTeamLeader(List<(Employee Employee, SystemEvaluationrResult SysEval, List<EmployeeEvaluationResult> EmpEvals)> evals)
+    private static List<(Employee employee, bool ready, List<Employee> recommendation)> AggregateAssistantTeamLeader(IReadOnlyList<SourceSurveyFile> sourceFiles, IReadOnlyList<Employee> employees)
     {
         List<(Employee employee, bool ready, List<Employee> recommendation)> data = new();
-        foreach (var emp in EmployeeService.LoadEmployees())
+        foreach (var emp in employees)
         {
-            var whoRecommended = evals.Where(o =>
+            var whoRecommended = sourceFiles.Where(o =>
             {
-                var empEval = o.EmpEvals.FirstOrDefault(o => o.Employee.Code == emp.Code);
+                var empEval = o.EmployeeEvaluations.FirstOrDefault(o => o.Employee.Code == emp.Code);
                 return empEval != null && empEval.RecommendAsTeamLead;
-            }).Select(o => o.Employee).ToList();
+            }).Where(o => o.Evaluator != null).Select(o => o.Evaluator!).ToList();
 
             bool isReady = false;
-            var eval = evals.FirstOrDefault(o => o.Employee.Code.Equals(emp.Code));
-            if (eval != default)
-                isReady = eval.SysEval.ReadyToBeAssistantTeamLeader;
+            var eval = sourceFiles.FirstOrDefault(o => o.Evaluator?.Code.Equals(emp.Code) == true);
+            if (eval != null)
+                isReady = eval.SystemEvaluation.ReadyToBeAssistantTeamLeader;
 
             data.Add(new(emp, isReady, whoRecommended));
         }
         return data.OrderByDescending(o => o.recommendation.Count).ThenByDescending(o => o.ready).ToList();
     }
 
-    private static List<(Employee employee, string notes)> AggregateNotes(List<(Employee Employee, SystemEvaluationrResult SysEval, List<EmployeeEvaluationResult> EmpEvals)> evals)
+    private static List<NoteRecord> AggregateNotes(IReadOnlyList<SourceSurveyFile> sourceFiles)
     {
-        List<(Employee employee, string notes)> data = new();
-        foreach (var eval in evals)
+        List<NoteRecord> data = new();
+        foreach (var source in sourceFiles)
         {
-            data.Add(new(eval.Employee, eval.SysEval.FinalNote));
+            if (!string.IsNullOrWhiteSpace(source.SystemEvaluation.FinalNote))
+            {
+                data.Add(new NoteRecord
+                {
+                    Source = source.SourceTitle,
+                    Target = WORKSHEET_SYSTEM_TITLE,
+                    Note = source.SystemEvaluation.FinalNote
+                });
+            }
+
+            foreach (var empEval in source.EmployeeEvaluations.Where(e => !string.IsNullOrWhiteSpace(e.FinalNote)))
+            {
+                data.Add(new NoteRecord
+                {
+                    Source = source.SourceTitle,
+                    Target = BuildEmployeeSheetTitle(empEval.Employee),
+                    Note = empEval.FinalNote
+                });
+            }
         }
         return data;
     }
@@ -602,6 +563,7 @@ public static class ExcelExportService
         sheet.Cell(1, 1).Value = "Employee";
         sheet.Cell(1, 2).Value = "Is Ready";
         sheet.Cell(1, 3).Value = "Who Recommended";
+        sheet.Cell(1, 4).Value = "Recommendations Count";
         sheet.Row(1).Style.Font.Bold = true;
 
         int row = 2;
@@ -619,6 +581,7 @@ public static class ExcelExportService
                 text += str;
             }
             sheet.Cell(row, 3).Value = text;
+            sheet.Cell(row, 4).Value = assistant.recommendation.Count;
             row++;
         }
 
@@ -636,18 +599,20 @@ public static class ExcelExportService
             || label.Contains("كلمة");
     }
 
-    private static void AppendNotesAndSuggestionsSheet(XLWorkbook workbook, IReadOnlyList<(Employee Employee, string Note)> notesRecords)
+    private static void AppendNotesAndSuggestionsSheet(XLWorkbook workbook, IReadOnlyList<NoteRecord> notesRecords)
     {
         var sheet = workbook.Worksheets.Add("Notes & Suggestions");
-        sheet.Cell(1, 1).Value = "Employee";
-        sheet.Cell(1, 2).Value = "Notes";
+        sheet.Cell(1, 1).Value = "Source File";
+        sheet.Cell(1, 2).Value = "Target Sheet";
+        sheet.Cell(1, 3).Value = "Notes";
         sheet.Row(1).Style.Font.Bold = true;
 
         int row = 2;
         foreach (var record in notesRecords)
         {
-            sheet.Cell(row, 1).Value = BuildEmployeeSheetTitle(record.Employee);
-            sheet.Cell(row, 2).Value = record.Note;
+            sheet.Cell(row, 1).Value = record.Source;
+            sheet.Cell(row, 2).Value = record.Target;
+            sheet.Cell(row, 3).Value = record.Note;
             row++;
         }
 
@@ -744,5 +709,38 @@ public static class ExcelExportService
         }
 
         return string.Empty;
+    }
+
+    private static void AppendSummaryColumn(IXLWorksheet ws)
+    {
+        int lastColumn = ws.LastColumnUsed()?.ColumnNumber() ?? COLUMN_VALUE;
+        if (lastColumn < COLUMN_VALUE)
+            return;
+
+        int summaryColumn = lastColumn + 1;
+        ws.Cell(1, summaryColumn).Value = "Summary";
+        ws.Row(1).Style.Font.Bold = true;
+
+        int lastRow = ws.LastRowUsed()?.RowNumber() ?? 1;
+        for (int row = 2; row <= lastRow; row++)
+        {
+            string label = ws.Cell(row, COLUMN_LABEL).GetString().Trim();
+            if (string.IsNullOrWhiteSpace(label) || ShouldAggregateInNotesSheet(label) || label.Contains("assistant", StringComparison.OrdinalIgnoreCase) || label.Contains("مساعد"))
+                continue;
+
+            var scores = new List<double>();
+            for (int col = COLUMN_VALUE; col <= lastColumn; col++)
+            {
+                if (ws.Cell(row, col).TryGetValue<double>(out var score))
+                    scores.Add(score);
+            }
+
+            if (scores.Count == 0)
+                continue;
+
+            ws.Cell(row, summaryColumn).Value = scores.Average();
+        }
+
+        ws.Columns().AdjustToContents();
     }
 }
