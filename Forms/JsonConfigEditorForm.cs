@@ -8,7 +8,9 @@ public class JsonConfigEditorForm : Form
 {
     private readonly string _filePath;
     private readonly TreeView _tree = new() { Dock = DockStyle.Fill, HideSelection = false };
-    private readonly TextBox _value = new() { Dock = DockStyle.Top, Height = 28 };
+    private readonly TextBox _value = new() { Dock = DockStyle.Fill, Multiline = true, ScrollBars = ScrollBars.Vertical };
+    private readonly Label _lblPath = new() { Dock = DockStyle.Top, Height = 26, TextAlign = ContentAlignment.MiddleLeft };
+    private readonly Label _lblType = new() { Dock = DockStyle.Top, Height = 26, TextAlign = ContentAlignment.MiddleLeft };
     private readonly Button _btnUpdate = new() { Text = "تحديث الحقل" };
     private readonly Button _btnAdd = new() { Text = "إضافة حقل" };
     private readonly Button _btnDelete = new() { Text = "حذف الحقل" };
@@ -22,7 +24,7 @@ public class JsonConfigEditorForm : Form
 
     public JsonConfigEditorForm(string title, string filePath)
     {
-        _filePath = filePath;
+        _filePath = ResolveToProjectDataFile(filePath);
         Text = title;
         Width = 1000;
         Height = 650;
@@ -36,12 +38,23 @@ public class JsonConfigEditorForm : Form
         var bottomPanel = new FlowLayoutPanel { Dock = DockStyle.Bottom, Height = 45 };
         bottomPanel.Controls.AddRange(new Control[] { _btnBack, _btnSave, _btnReloadFile, _btnLoadJson });
 
-        Controls.Add(_tree);
-        Controls.Add(_value);
+        var splitContainer = new SplitContainer
+        {
+            Dock = DockStyle.Fill,
+            Orientation = Orientation.Vertical,
+            SplitterDistance = 420
+        };
+
+        splitContainer.Panel1.Controls.Add(_tree);
+        splitContainer.Panel2.Controls.Add(_value);
+        splitContainer.Panel2.Controls.Add(_lblType);
+        splitContainer.Panel2.Controls.Add(_lblPath);
+
+        Controls.Add(splitContainer);
         Controls.Add(topPanel);
         Controls.Add(bottomPanel);
 
-        _tree.AfterSelect += (_, _) => _value.Text = _tree.SelectedNode?.Tag?.ToString() ?? string.Empty;
+        _tree.AfterSelect += (_, _) => PopulateEditorFromSelection();
         _btnUpdate.Click += (_, _) => UpdateSelected();
         _btnAdd.Click += (_, _) => AddField();
         _btnDelete.Click += (_, _) => DeleteField();
@@ -92,10 +105,11 @@ public class JsonConfigEditorForm : Form
     private void RebuildTree()
     {
         _tree.Nodes.Clear();
-        var rootNode = new TreeNode("root") { Tag = _root.ToString(Formatting.None) };
+        var rootNode = new TreeNode("obj: root") { Name = "root", Tag = new NodeData("root", _root) };
         _tree.Nodes.Add(rootNode);
         AddTokenNodes(rootNode, _root, "root");
         rootNode.Expand();
+        _tree.SelectedNode = rootNode;
     }
 
     private void AddTokenNodes(TreeNode parentNode, JToken token, string path)
@@ -106,7 +120,17 @@ public class JsonConfigEditorForm : Form
                 foreach (var prop in obj.Properties())
                 {
                     var childPath = path == "root" ? prop.Name : $"{path}.{prop.Name}";
-                    var node = new TreeNode(prop.Name) { Tag = prop.Value.Type is JTokenType.Object or JTokenType.Array ? prop.Value.ToString(Formatting.None) : prop.Value.ToString() };
+                    var labelPrefix = prop.Value.Type switch
+                    {
+                        JTokenType.Object => "obj",
+                        JTokenType.Array => "list",
+                        _ => "field"
+                    };
+                    var valuePreview = prop.Value.Type is JTokenType.Object or JTokenType.Array
+                        ? string.Empty
+                        : $" = {prop.Value}";
+
+                    var node = new TreeNode($"{labelPrefix}: {prop.Name}{valuePreview}") { Tag = new NodeData(childPath, prop.Value) };
                     node.Name = childPath;
                     parentNode.Nodes.Add(node);
                     AddTokenNodes(node, prop.Value, childPath);
@@ -116,19 +140,45 @@ public class JsonConfigEditorForm : Form
                 for (int i = 0; i < arr.Count; i++)
                 {
                     var childPath = $"{path}[{i}]";
-                    var node = new TreeNode($"[{i}]") { Tag = arr[i].Type is JTokenType.Object or JTokenType.Array ? arr[i].ToString(Formatting.None) : arr[i].ToString() };
+                    var item = arr[i];
+                    var itemKind = item.Type switch
+                    {
+                        JTokenType.Object => "obj",
+                        JTokenType.Array => "list",
+                        _ => "field"
+                    };
+                    var valuePreview = item.Type is JTokenType.Object or JTokenType.Array ? string.Empty : $" = {item}";
+
+                    var node = new TreeNode($"{itemKind}: [{i}]{valuePreview}") { Tag = new NodeData(childPath, item) };
                     node.Name = childPath;
                     parentNode.Nodes.Add(node);
-                    AddTokenNodes(node, arr[i], childPath);
+                    AddTokenNodes(node, item, childPath);
                 }
                 break;
         }
     }
 
+    private void PopulateEditorFromSelection()
+    {
+        if (_tree.SelectedNode?.Tag is not NodeData nodeData)
+        {
+            _lblPath.Text = "Path:";
+            _lblType.Text = "Type:";
+            _value.Text = string.Empty;
+            return;
+        }
+
+        _lblPath.Text = $"Path: {nodeData.Path}";
+        _lblType.Text = $"Type: {nodeData.Token.Type}";
+        _value.Text = nodeData.Token.Type is JTokenType.Object or JTokenType.Array
+            ? nodeData.Token.ToString(Formatting.Indented)
+            : nodeData.Token.ToString();
+    }
+
     private void UpdateSelected()
     {
         var node = _tree.SelectedNode;
-        if (node == null || string.IsNullOrWhiteSpace(node.Name) || node.Text == "root")
+        if (node == null || string.IsNullOrWhiteSpace(node.Name) || node.Name == "root")
             return;
 
         var path = node.Name.Replace("root.", "");
@@ -136,16 +186,18 @@ public class JsonConfigEditorForm : Form
         if (token == null)
             return;
 
+        var newValue = ParseValueForToken(_value.Text, token.Type);
+
         if (token.Parent is JProperty p)
         {
-            p.Value = ParseValue(_value.Text);
+            p.Value = newValue;
         }
         else if (token.Parent is JArray arr)
         {
             int start = path.LastIndexOf('[');
             int end = path.LastIndexOf(']');
             if (start >= 0 && end > start && int.TryParse(path.Substring(start + 1, end - start - 1), out int index) && index >= 0 && index < arr.Count)
-                arr[index] = ParseValue(_value.Text);
+                arr[index] = newValue;
         }
 
         _isDirty = true;
@@ -158,16 +210,26 @@ public class JsonConfigEditorForm : Form
         if (node == null)
             return;
 
-        string key = ShowInputDialog("اسم الحقل", "إضافة");
-        if (string.IsNullOrWhiteSpace(key))
-            return;
-
-        string val = ShowInputDialog("القيمة", "إضافة");
-        var token = node.Text == "root" ? _root as JToken : _root.SelectToken(node.Name.Replace("root.", ""));
+        var token = node.Name == "root" ? _root as JToken : _root.SelectToken(node.Name.Replace("root.", ""));
         if (token is JObject obj)
+        {
+            string key = ShowInputDialog("اسم الحقل", "إضافة");
+            if (string.IsNullOrWhiteSpace(key))
+                return;
+
+            string val = ShowInputDialog("القيمة", "إضافة");
             obj[key] = ParseValue(val);
+        }
         else if (token is JArray arr)
+        {
+            string val = ShowInputDialog("قيمة العنصر", "إضافة عنصر للقائمة");
             arr.Add(ParseValue(val));
+        }
+        else
+        {
+            MessageBox.Show("يمكن الإضافة فقط داخل كائن (obj) أو قائمة (list).", "تنبيه", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
 
         _isDirty = true;
         RebuildTree();
@@ -176,7 +238,7 @@ public class JsonConfigEditorForm : Form
     private void DeleteField()
     {
         var node = _tree.SelectedNode;
-        if (node == null || node.Text == "root")
+        if (node == null || node.Name == "root")
             return;
 
         if (MessageBox.Show("تأكيد حذف الحقل؟", "تأكيد", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
@@ -286,4 +348,45 @@ public class JsonConfigEditorForm : Form
         if (double.TryParse(value, out double d)) return new JValue(d);
         return new JValue(value);
     }
+
+    private static JToken ParseValueForToken(string value, JTokenType originalType)
+    {
+        if (originalType is JTokenType.Object or JTokenType.Array)
+        {
+            try
+            {
+                return JToken.Parse(value);
+            }
+            catch
+            {
+                return originalType == JTokenType.Object ? new JObject() : new JArray();
+            }
+        }
+
+        return ParseValue(value);
+    }
+
+    private static string ResolveToProjectDataFile(string filePath)
+    {
+        var candidatePaths = new List<string>
+        {
+            filePath,
+            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", Path.GetFileName(filePath)),
+            Path.Combine(Directory.GetCurrentDirectory(), "Data", Path.GetFileName(filePath))
+        };
+
+        var directory = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
+        while (directory != null)
+        {
+            candidatePaths.Add(Path.Combine(directory.FullName, "Data", Path.GetFileName(filePath)));
+            if (directory.GetFiles("*.csproj").Any())
+                break;
+
+            directory = directory.Parent;
+        }
+
+        return candidatePaths.FirstOrDefault(File.Exists) ?? candidatePaths.Last();
+    }
+
+    private sealed record NodeData(string Path, JToken Token);
 }
