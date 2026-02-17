@@ -1,6 +1,6 @@
 {
   "Options": {
-    "AskPreferTeamLeaderAssistant": true,
+    "AskPreferTeamLeaderAssistant": false,
     "Normalization": { "ScaleMin": 0, "ScaleMax": 100, "HigherIsBetter": true },
     "Scoring": {
       "DefaultQuestionFormula": "QuestionScore = Value",
