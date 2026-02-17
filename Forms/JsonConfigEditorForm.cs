@@ -18,6 +18,7 @@ public class JsonConfigEditorForm : Form
     private readonly Button _btnBack = new() { Text = "رجوع" };
     private readonly Button _btnSave = new() { Text = "حفظ" };
     private readonly Button _btnLoadJson = new() { Text = "تحميل JSON من ملف" };
+    private readonly Button _btnApply = new() { Text = "Apply", Dock = DockStyle.Bottom, Height = 34 };
     private readonly SplitContainer _splitContainer = new()
     {
         Dock = DockStyle.Fill,
@@ -47,6 +48,7 @@ public class JsonConfigEditorForm : Form
 
         _splitContainer.Panel1.Controls.Add(_tree);
         _splitContainer.Panel2.Controls.Add(_value);
+        _splitContainer.Panel2.Controls.Add(_btnApply);
         _splitContainer.Panel2.Controls.Add(_lblType);
         _splitContainer.Panel2.Controls.Add(_lblPath);
 
@@ -62,12 +64,33 @@ public class JsonConfigEditorForm : Form
         _btnSave.Click += (_, _) => SaveChanges();
         _btnLoadJson.Click += (_, _) => LoadFromExternalJson();
         _btnBack.Click += (_, _) => BackWithConfirm();
-        _value.KeyDown += Value_KeyDown;
+        _btnApply.Click += (_, _) => ConfirmAndApplyCurrentEdit();
+        _tree.NodeMouseClick += Tree_NodeMouseClick;
+        _tree.MouseDown += Tree_MouseDown;
 
         FormClosing += JsonConfigEditorForm_FormClosing;
 
         SetEditorVisible(false);
         LoadFromFile();
+    }
+
+    private void Tree_NodeMouseClick(object? sender, TreeNodeMouseClickEventArgs e)
+    {
+        _tree.SelectedNode = e.Node;
+        if (_isEditing)
+            SetEditorVisible(true);
+    }
+
+    private void Tree_MouseDown(object? sender, MouseEventArgs e)
+    {
+        if (_tree.HitTest(e.Location).Node != null)
+            return;
+
+        _tree.SelectedNode = null;
+        _lblPath.Text = "Path:";
+        _lblType.Text = "Type:";
+        _value.Text = string.Empty;
+        SetEditorVisible(false);
     }
 
     private void JsonConfigEditorForm_FormClosing(object? sender, FormClosingEventArgs e)
@@ -122,17 +145,7 @@ public class JsonConfigEditorForm : Form
                 foreach (var prop in obj.Properties())
                 {
                     var childPath = path == "root" ? prop.Name : $"{path}.{prop.Name}";
-                    var labelPrefix = prop.Value.Type switch
-                    {
-                        JTokenType.Object => "obj",
-                        JTokenType.Array => "list",
-                        _ => "field"
-                    };
-                    var valuePreview = prop.Value.Type is JTokenType.Object or JTokenType.Array
-                        ? string.Empty
-                        : $" = {prop.Value}";
-
-                    var node = new TreeNode($"{labelPrefix}: {prop.Name}{valuePreview}") { Tag = new NodeData(childPath, prop.Value) };
+                    var node = new TreeNode(BuildNodeText(prop.Name, prop.Value)) { Tag = new NodeData(childPath, prop.Value) };
                     node.Name = childPath;
                     parentNode.Nodes.Add(node);
                     AddTokenNodes(node, prop.Value, childPath);
@@ -143,15 +156,7 @@ public class JsonConfigEditorForm : Form
                 {
                     var childPath = $"{path}[{i}]";
                     var item = arr[i];
-                    var itemKind = item.Type switch
-                    {
-                        JTokenType.Object => "obj",
-                        JTokenType.Array => "list",
-                        _ => "field"
-                    };
-                    var valuePreview = item.Type is JTokenType.Object or JTokenType.Array ? string.Empty : $" = {item}";
-
-                    var node = new TreeNode($"{itemKind}: [{i}]{valuePreview}") { Tag = new NodeData(childPath, item) };
+                    var node = new TreeNode(BuildNodeText($"[{i}]", item)) { Tag = new NodeData(childPath, item) };
                     node.Name = childPath;
                     parentNode.Nodes.Add(node);
                     AddTokenNodes(node, item, childPath);
@@ -191,15 +196,14 @@ public class JsonConfigEditorForm : Form
         _value.Focus();
     }
 
-    private void Value_KeyDown(object? sender, KeyEventArgs e)
+    private void ConfirmAndApplyCurrentEdit()
     {
         if (!_isEditing)
             return;
 
-        if (e.KeyCode != Keys.Enter || e.Shift)
+        if (MessageBox.Show("Apply this edit?", "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
             return;
 
-        e.SuppressKeyPress = true;
         ApplyCurrentEdit();
     }
 
@@ -244,30 +248,39 @@ public class JsonConfigEditorForm : Form
             return;
 
         var token = node.Name == "root" ? _root as JToken : _root.SelectToken(node.Name.Replace("root.", ""));
+        if (token is not JObject and not JArray)
+        {
+            MessageBox.Show("Cannot add under a field entry.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
+
+        var addType = ShowDropdownDialog("اختر نوع الإضافة", "Add Type", new[] { "json", "obj", "array", "field" });
+        if (string.IsNullOrWhiteSpace(addType))
+            return;
+
+        var newToken = addType switch
+        {
+            "json" => PromptForJsonToken(),
+            "obj" => new JObject(),
+            "array" => new JArray(),
+            "field" => PromptForTypedFieldToken(),
+            _ => null
+        };
+
+        if (newToken == null)
+            return;
+
         if (token is JObject obj)
         {
             string key = ShowInputDialog("اسم المفتاح", "إضافة");
             if (string.IsNullOrWhiteSpace(key))
                 return;
 
-            var newToken = PromptForNewToken("القيمة أو JSON (obj/list/field)");
-            if (newToken == null)
-                return;
-
             obj[key] = newToken;
         }
         else if (token is JArray arr)
         {
-            var newToken = PromptForNewToken("أدخل قيمة أو JSON (obj/list/field)");
-            if (newToken == null)
-                return;
-
             arr.Add(newToken);
-        }
-        else
-        {
-            MessageBox.Show("يمكن الإضافة فقط داخل كائن (obj) أو قائمة (list).", "تنبيه", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            return;
         }
 
         _isDirty = true;
@@ -297,7 +310,7 @@ public class JsonConfigEditorForm : Form
     {
         if (!_isDirty)
         {
-            MessageBox.Show("لا توجد تغييرات للحفظ.");
+            MessageBox.Show("there is no changes", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
             return;
         }
 
@@ -311,10 +324,7 @@ public class JsonConfigEditorForm : Form
 
     private void ReloadWithConfirm()
     {
-        if (!ConfirmDiscardIfDirty())
-            return;
-
-        if (MessageBox.Show("سيتم تحميل البيانات الحالية من الملف. متابعة؟", "تأكيد", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+        if (_isDirty && MessageBox.Show("هناك تغييرات غير محفوظة. هل تريد المتابعة؟", "تأكيد", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
             return;
 
         LoadFromFile();
@@ -322,7 +332,7 @@ public class JsonConfigEditorForm : Form
 
     private void LoadFromExternalJson()
     {
-        if (!ConfirmDiscardIfDirty())
+        if (_isDirty && MessageBox.Show("هناك تغييرات غير محفوظة. هل تريد المتابعة؟", "تأكيد", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
             return;
 
         using var dialog = new OpenFileDialog { Filter = "JSON files (*.json)|*.json" };
@@ -341,8 +351,16 @@ public class JsonConfigEditorForm : Form
     {
         if (_isDirty)
         {
-            MessageBox.Show("لا يمكن الرجوع قبل حفظ التغييرات.", "تنبيه", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            return;
+            var result = MessageBox.Show("هناك تغييرات غير محفوظة. نعم = حفظ، لا = بدون حفظ، إلغاء = البقاء", "تأكيد", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+            if (result == DialogResult.Cancel)
+                return;
+
+            if (result == DialogResult.Yes)
+            {
+                SaveChanges();
+                if (_isDirty)
+                    return;
+            }
         }
 
         var form = new ConfigFilesMenuForm();
@@ -439,6 +457,103 @@ public class JsonConfigEditorForm : Form
         {
             return ParseValue(raw);
         }
+    }
+
+    private static JToken? PromptForJsonToken()
+    {
+        var raw = ShowInputDialog("أدخل JSON", "Add JSON");
+        if (string.IsNullOrWhiteSpace(raw))
+            return null;
+
+        try
+        {
+            return JToken.Parse(raw);
+        }
+        catch
+        {
+            MessageBox.Show("Invalid JSON value.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            return null;
+        }
+    }
+
+    private static JToken? PromptForTypedFieldToken()
+    {
+        var fieldType = ShowDropdownDialog("اختر نوع الحقل", "Field Type", new[] { "int", "float", "boolean", "string" });
+        if (string.IsNullOrWhiteSpace(fieldType))
+            return null;
+
+        var rawValue = ShowInputDialog("ادخل القيمة", "Field Value");
+        if (string.IsNullOrWhiteSpace(rawValue))
+            return null;
+
+        return fieldType switch
+        {
+            "int" when int.TryParse(rawValue, out var i) => new JValue(i),
+            "float" when double.TryParse(rawValue, out var d) => new JValue(d),
+            "boolean" when bool.TryParse(rawValue, out var b) => new JValue(b),
+            "string" => new JValue(rawValue),
+            _ => InvalidFieldTypeValue()
+        };
+    }
+
+    private static JToken? InvalidFieldTypeValue()
+    {
+        MessageBox.Show("Invalid value for selected field type.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        return null;
+    }
+
+    private static string ShowDropdownDialog(string text, string caption, IReadOnlyList<string> options)
+    {
+        var prompt = new Form
+        {
+            Width = 430,
+            Height = 185,
+            Text = caption,
+            StartPosition = FormStartPosition.CenterParent,
+            RightToLeft = RightToLeft.Yes,
+            RightToLeftLayout = true,
+            FormBorderStyle = FormBorderStyle.FixedDialog,
+            MaximizeBox = false,
+            MinimizeBox = false
+        };
+
+        var textLabel = new Label { Left = 20, Top = 20, Text = text, Width = 380 };
+        var comboBox = new ComboBox
+        {
+            Left = 20,
+            Top = 52,
+            Width = 380,
+            DropDownStyle = ComboBoxStyle.DropDownList
+        };
+        comboBox.Items.AddRange(options.Cast<object>().ToArray());
+        if (comboBox.Items.Count > 0)
+            comboBox.SelectedIndex = 0;
+
+        var confirmation = new Button { Text = "OK", Left = 320, Width = 80, Top = 95, DialogResult = DialogResult.OK };
+        prompt.Controls.AddRange(new Control[] { textLabel, comboBox, confirmation });
+        prompt.AcceptButton = confirmation;
+
+        return prompt.ShowDialog() == DialogResult.OK ? comboBox.SelectedItem?.ToString() ?? string.Empty : string.Empty;
+    }
+
+    private static string BuildNodeText(string name, JToken token)
+    {
+        var type = MapDisplayType(token);
+        var value = token.Type is JTokenType.Object or JTokenType.Array ? token.ToString(Formatting.None) : token.ToString();
+        return $"{name} = {value}, Type = {type}";
+    }
+
+    private static string MapDisplayType(JToken token)
+    {
+        return token.Type switch
+        {
+            JTokenType.Object => "obj",
+            JTokenType.Array => "list",
+            JTokenType.Integer => "int",
+            JTokenType.Float => "float",
+            JTokenType.Boolean => "boolean",
+            _ => "string"
+        };
     }
 
     private static JToken ParseValueForToken(string value, JTokenType originalType)
