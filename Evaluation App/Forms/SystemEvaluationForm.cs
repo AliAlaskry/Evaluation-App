@@ -1,4 +1,5 @@
 ﻿using Evaluation_App.Services;
+using System.Net.Security;
 using static Constants;
 
 namespace Evaluation_App.Forms
@@ -11,7 +12,6 @@ namespace Evaluation_App.Forms
         private SystemEvaluationrResult _evaluationResult;
         private SystemOptions _systemOptions;
         private EmployeeOptions _employeeOptions;
-        private bool _hasSavedAfterOpen;
 
         public SystemEvaluationForm()
         {
@@ -24,14 +24,15 @@ namespace Evaluation_App.Forms
             _evaluationResult = EvaluationService.LoadSystemEvaluation()
                 ?? new SystemEvaluationrResult(SYSTEM_EVALUATION_CODE, ConfigLoader.LoadSystemSections());
 
-            chkTeamLeadAssistant.Visible = _employeeOptions.AskPreferTeamLeaderAssistant 
-                && !AuthService.CurrentUser.IsTeamLead;
+            chkTeamLeadAssistant.Visible = !AuthService.CurrentUser.IsTeamLead 
+                && _employeeOptions.AskPreferTeamLeaderAssistant;
+            chkTeamLeadAssistant.Checked = _evaluationResult.RecommendAsTeamLead;
+
             LoadSections();
             LoadPreviousAnswers();
             LoadIssues();
 
             txtSuggestions.Text = _evaluationResult.FinalNote;
-            chkTeamLeadAssistant.Checked = _evaluationResult.RecommendAsTeamLead;
         }
 
         private void SystemEvaluationForm_FormClosing(object? sender, FormClosingEventArgs e)
@@ -214,9 +215,26 @@ namespace Evaluation_App.Forms
                 if (_inputControls.TryGetValue(question.Id, out var slider))
                     question.Score = slider.Value;
 
-            _evaluationResult.RecommendAsTeamLead = chkTeamLeadAssistant.Visible && chkTeamLeadAssistant.Checked;
+            _evaluationResult.RecommendAsTeamLead = chkTeamLeadAssistant.Checked;
             _evaluationResult.FinalNote = txtSuggestions.Text;
             _evaluationResult.SetTotalScore();
+        }
+
+        private bool HasChanges()
+        {
+            foreach (var section in _evaluationResult.Sections)
+                foreach (var question in section.Questions)
+                    if (_inputControls.TryGetValue(question.Id, out var slider))
+                        if (question.Score != slider.Value)
+                            return true;
+
+            if (_evaluationResult.RecommendAsTeamLead != chkTeamLeadAssistant.Checked)
+                return true;
+
+            if(!_evaluationResult.FinalNote.Equals(txtSuggestions.Text))
+                return true;
+
+            return false;
         }
 
         private void btnSave_Click(object sender, EventArgs e)
@@ -226,22 +244,28 @@ namespace Evaluation_App.Forms
 
             ApplyInputsToModel();
             EvaluationService.Save(_evaluationResult);
-            _hasSavedAfterOpen = true;
             MessageBox.Show("تم الحفظ بنجاح.");
         }
 
         private void btnReset_Click(object sender, EventArgs e)
         {
-            foreach (var section in _evaluationResult.Sections)
-            foreach (var question in section.Questions)
-                if (_inputControls.TryGetValue(question.Id, out var slider))
-                    slider.Value = Math.Clamp((int)Math.Round(question.Default), slider.Minimum, slider.Maximum);
+            var result = MessageBox.Show(
+             "هل انت متاكد من إعاده التعيين؟",
+             "تنبة قبل إعادة التعيين",
+             MessageBoxButtons.YesNo,
+             MessageBoxIcon.Warning);
 
-            txtSuggestions.Text = string.Empty;
-            chkTeamLeadAssistant.Checked = false;
-            EvaluationService.Reset(SYSTEM_EVALUATION_CODE);
-            _evaluationResult.Reset();
-            MessageBox.Show("تمت إعادة الضبط.");
+            if (result == DialogResult.Yes)
+            {
+                foreach (var section in _evaluationResult.Sections)
+                    foreach (var question in section.Questions)
+                        if (_inputControls.TryGetValue(question.Id, out var slider))
+                            slider.Value = Math.Clamp((int)Math.Round(question.Default), slider.Minimum, slider.Maximum);
+
+                txtSuggestions.Text = string.Empty;
+                chkTeamLeadAssistant.Checked = false;
+                MessageBox.Show("تمت إعادة الضبط.");
+            }
         }
 
         private void btnLoad_Click(object sender, EventArgs e)
@@ -264,12 +288,26 @@ namespace Evaluation_App.Forms
             LoadPreviousAnswers();
             txtSuggestions.Text = _evaluationResult.FinalNote;
             chkTeamLeadAssistant.Checked = _evaluationResult.RecommendAsTeamLead;
+            _evaluationResult.Reset();
             MessageBox.Show("تم التحميل بنجاح.");
         }
 
         private void btnGenerateExcel_Click(object sender, EventArgs e)
         {
+            if (HasChanges())
+            {
+                var result = MessageBox.Show(
+                 "لم يتم حفظ المعلومات. هل تريد الحفظ والمتابعه؟",
+                 "تنبة قبل التصدير",
+                 MessageBoxButtons.YesNo,
+                 MessageBoxIcon.Warning);
+
+                if (result == DialogResult.No)
+                    return;
+            }
+
             ApplyInputsToModel();
+            EvaluationService.Save(_evaluationResult);
 
             if (ExcelExportService.ExportSystemEvaluation())
                 MessageBox.Show("تم إنشاء تقرير Excel على سطح المكتب.");
@@ -289,7 +327,7 @@ namespace Evaluation_App.Forms
 
         private bool ConfirmSaveBeforeBack()
         {
-            if (_hasSavedAfterOpen)
+            if (!HasChanges())
                 return true;
 
             var result = MessageBox.Show("هل تريد حفظ التقييم قبل الرجوع؟", "تأكيد", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
@@ -304,7 +342,6 @@ namespace Evaluation_App.Forms
 
                 ApplyInputsToModel();
                 EvaluationService.Save(_evaluationResult);
-                _hasSavedAfterOpen = true;
             }
 
             return true;
@@ -316,10 +353,10 @@ namespace Evaluation_App.Forms
                 return true;
 
             var result = MessageBox.Show(
-                "هناك عناصر ما زالت على القيم الافتراضية. هل تريد المتابعة بالحفظ؟",
-                "تنبيه قبل الحفظ",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Warning);
+                 "هناك عناصر ما زالت على القيم الافتراضية. هل تريد المتابعة بالحفظ؟",
+                 "تنبيه قبل الحفظ",
+                 MessageBoxButtons.YesNo,
+                 MessageBoxIcon.Warning);
 
             return result == DialogResult.Yes;
         }

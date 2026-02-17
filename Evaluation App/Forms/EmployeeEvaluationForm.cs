@@ -10,7 +10,6 @@ namespace Evaluation_App.Forms
         private readonly Dictionary<string, Label> _valueLabels = new();
         private EvaluationResult _evaluationResult;
         private readonly EmployeeOptions _employeeOptions;
-        private bool _hasSavedAfterOpen;
 
         public EmployeeEvaluationForm(Employee employee)
         {
@@ -28,7 +27,8 @@ namespace Evaluation_App.Forms
             LoadSections();
             LoadPreviousAnswers();
 
-            chkTeamLead.Visible = _employeeOptions.AskPreferTeamLeaderAssistant && !_employee.IsTeamLead;
+            chkTeamLead.Visible = !employee.IsTeamLead
+                && _employeeOptions.AskPreferTeamLeaderAssistant;
             chkTeamLead.Checked = _evaluationResult.RecommendAsTeamLead;
 
             lblFinalNote.Text = AuthService.CurrentUser.IsTeamLead ? "ملاحظات قائد الفريق" : "كلمه لزميلك";
@@ -170,7 +170,6 @@ namespace Evaluation_App.Forms
             }
         }
 
-
         private static void UpdateValueLabelPosition(Label valueLabel, TrackBar slider)
         {
             valueLabel.Text = slider.Value.ToString();
@@ -192,8 +191,25 @@ namespace Evaluation_App.Forms
                     question.Score = slider.Value;
 
             _evaluationResult.FinalNote = txtFinalNote.Text;
-            _evaluationResult.RecommendAsTeamLead = chkTeamLead.Visible && chkTeamLead.Checked;
+            _evaluationResult.RecommendAsTeamLead = chkTeamLead.Checked;
             _evaluationResult.SetTotalScore();
+        }
+
+        private bool HasChanges()
+        {
+            foreach (var section in _evaluationResult.Sections)
+                foreach (var question in section.Questions)
+                    if (_inputControls.TryGetValue(question.Id, out var slider))
+                        if (question.Score != slider.Value)
+                            return true;
+
+            if (_evaluationResult.RecommendAsTeamLead != chkTeamLead.Checked)
+                return true;
+
+            if (!_evaluationResult.FinalNote.Equals(txtFinalNote.Text))
+                return true;
+
+            return false;
         }
 
         private void btnSave_Click(object sender, EventArgs e)
@@ -203,22 +219,31 @@ namespace Evaluation_App.Forms
 
             ApplyInputsToModel();
             EvaluationService.Save(_evaluationResult);
-            _hasSavedAfterOpen = true;
             MessageBox.Show("تم الحفظ بنجاح.");
         }
 
         private void btnReset_Click(object sender, EventArgs e)
         {
+            if (HasChanges())
+            {
+                var result = MessageBox.Show(
+                 "لم يتم حفظ المعلومات. هل تريد الحفظ والمتابعه؟",
+                 "تنبة قبل التصدير",
+                 MessageBoxButtons.YesNo,
+                 MessageBoxIcon.Warning);
+
+                if (result == DialogResult.No)
+                    return;
+
+            }
+
             foreach (var section in _evaluationResult.Sections)
-            foreach (var question in section.Questions)
-                if (_inputControls.TryGetValue(question.Id, out var slider))
-                    slider.Value = Math.Clamp((int)Math.Round(question.Default), slider.Minimum, slider.Maximum);
+                foreach (var question in section.Questions)
+                    if (_inputControls.TryGetValue(question.Id, out var slider))
+                        slider.Value = Math.Clamp((int)Math.Round(question.Default), slider.Minimum, slider.Maximum);
 
             chkTeamLead.Checked = false;
             txtFinalNote.Text = string.Empty;
-
-            EvaluationService.Reset(_employee.Code);
-            _evaluationResult.Reset();
             MessageBox.Show("تمت إعادة الضبط.");
         }
 
@@ -242,15 +267,26 @@ namespace Evaluation_App.Forms
             LoadPreviousAnswers();
             txtFinalNote.Text = _evaluationResult.FinalNote;
             chkTeamLead.Checked = _evaluationResult.RecommendAsTeamLead;
+            _evaluationResult.Reset();
             MessageBox.Show("تم التحميل بنجاح.");
         }
 
         private void btnGenerateExcel_Click(object sender, EventArgs e)
         {
-            ApplyInputsToModel();
+            var result = MessageBox.Show(
+             "لم يتم حفظ المعلومات. هل تريد الحفظ والمتابعه؟",
+             "تنبة قبل التصدير",
+             MessageBoxButtons.YesNo,
+             MessageBoxIcon.Warning);
 
-            if (ExcelExportService.ExportTeamMember(_employee))
-                MessageBox.Show("تم إنشاء تقرير Excel على سطح المكتب.");
+            if (result == DialogResult.Yes)
+            {
+                ApplyInputsToModel();
+                EvaluationService.Save(_evaluationResult);
+
+                if (ExcelExportService.ExportTeamMember(_employee))
+                    MessageBox.Show("تم إنشاء تقرير Excel على سطح المكتب.");
+            }
         }
 
         private void btnBack_Click(object sender, EventArgs e)
@@ -267,7 +303,7 @@ namespace Evaluation_App.Forms
 
         private bool ConfirmSaveBeforeBack()
         {
-            if (_hasSavedAfterOpen)
+            if (!HasChanges())
                 return true;
 
             var result = MessageBox.Show("هل تريد حفظ التقييم قبل الرجوع؟", "تأكيد", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
@@ -282,7 +318,6 @@ namespace Evaluation_App.Forms
 
                 ApplyInputsToModel();
                 EvaluationService.Save(_evaluationResult);
-                _hasSavedAfterOpen = true;
             }
 
             return true;

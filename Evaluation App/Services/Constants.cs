@@ -15,8 +15,8 @@
     public const string FULL_SURVEY_FILE_NAME = "Full Servey.xlsx";
     public const string SPRINT_FULL_SURVEY_FILE_NAME = "Sprint Full Survey.xlsx";
 
-    public const string WORKSHEET_SYSTEM_TITLE = "System Evaluation";
-    public const string WORKSHEET_EMPLOYEE_TITLE_PREFIX = "Employee Evaluation - ";
+    public const string WORKSHEET_SYSTEM_TITLE = "";
+    public const string WORKSHEET_EMPLOYEE_TITLE_PREFIX = "";
 
     public const string LABEL_SECTION_TOTAL = "Section Total";
     public const string LABEL_TOTAL = "Total";

@@ -23,6 +23,7 @@ namespace Evaluation_App.Services
             KeepLoggedIn = keepLoggedIn;
 
             SaveRememberedLogin();
+            EvaluationService.ResetAll();
         }
 
         public static bool TryAutoLogin()
@@ -43,6 +44,8 @@ namespace Evaluation_App.Services
 
                 currentUser = employee;
                 KeepLoggedIn = true;
+
+                EvaluationService.ResetAll();
                 return true;
             }
             catch
