@@ -23,7 +23,6 @@ public static class ConfigLoader
         return new SystemOptions
         {
             IssuesToResolve = options.IssuesToResolve,
-            Normalization = options.Normalization,
             Scoring = options.Scoring
         };
     }
@@ -34,7 +33,6 @@ public static class ConfigLoader
         return new EmployeeOptions
         {
             AskPreferTeamLeaderAssistant = options.AskPreferTeamLeaderAssistant,
-            Normalization = options.Normalization,
             IssuesToResolve = options.IssuesToResolve,
             Scoring = options.Scoring
         };
@@ -129,14 +127,12 @@ public class EvaluationOptions
 {
     public List<string> IssuesToResolve { get; set; } = new();
     public bool AskPreferTeamLeaderAssistant { get; set; } = false;
-    public NormalizationOptions Normalization { get; set; } = new();
     public ScoringOptions Scoring { get; set; } = new();
 }
 
 public class SystemOptions
 {
     public List<string> IssuesToResolve { get; set; } = new();
-    public NormalizationOptions Normalization { get; set; } = new();
     public ScoringOptions Scoring { get; set; } = new();
 }
 
@@ -156,10 +152,3 @@ public class ScoringOptions
 }
 
 public readonly record struct ScoringFormulaContext(ScoringOptions scoring, bool useCombinedFormulas);
-
-public class NormalizationOptions
-{
-    public double ScaleMin { get; set; } = 0;
-    public double ScaleMax { get; set; } = 100;
-    public bool HigherIsBetter { get; set; } = true;
-}

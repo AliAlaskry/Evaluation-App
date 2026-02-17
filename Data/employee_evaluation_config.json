@@ -1,7 +1,6 @@
 {
   "Options": {
-    "AskPreferTeamLeaderAssistant": false,
-    "Normalization": { "ScaleMin": 0, "ScaleMax": 100, "HigherIsBetter": true },
+    "AskPreferTeamLeaderAssistant": true,
     "Scoring": {
       "DefaultQuestionFormula": "QuestionScore = Value",
       "DefaultCombinedQuestionFormula": "QuestionScore = median(Scores)",
@@ -220,7 +219,7 @@
           "Min": 0,
           "Max": 10,
           "Default": 0,
-          "Formula": "QuestionScore = clamp(100 - (Value * 30), 0, 100)",
+          "Formula": "QuestionScore = clamp(100 - (Value * 25), 0, 100)",
           "MinMeaning": "لا توجد مخالفات",
           "MaxMeaning": "مخالفات متكررة"
         },
@@ -259,7 +258,7 @@
           "Min": 0,
           "Max": 20,
           "Default": 0,
-          "Formula": "QuestionScore = clamp(100 - (Value * 10), 0, 100)",
+          "Formula": "QuestionScore = clamp(100 - (Value * 20), 0, 100)",
           "MinMeaning": "تفاعل كامل",
           "MaxMeaning": "تجاهل متكرر"
         },
@@ -272,7 +271,7 @@
           "Min": 0,
           "Max": 20,
           "Default": 0,
-          "Formula": "QuestionScore = clamp(100 - (Value * 10), 0, 100)",
+          "Formula": "QuestionScore = clamp(100 - (Value * 15), 0, 100)",
           "MinMeaning": "تواريخ صحيحة دائماً",
           "MaxMeaning": "تواريخ غير منضبطة"
         },
@@ -285,7 +284,7 @@
           "Min": 0,
           "Max": 20,
           "Default": 0,
-          "Formula": "QuestionScore = clamp(100 - (Value * 8), 0, 100)",
+          "Formula": "QuestionScore = clamp(100 - (Value * 12), 0, 100)",
           "MinMeaning": "تحديث منتظم",
           "MaxMeaning": "إهمال متكرر"
         },
@@ -324,7 +323,7 @@
           "Min": 0,
           "Max": 20,
           "Default": 0,
-          "Formula": "QuestionScore = clamp(100 - (Value * 8), 0, 100)",
+          "Formula": "QuestionScore = clamp(100 - (Value * 12), 0, 100)",
           "MinMeaning": "توضيح كامل للتأخير",
           "MaxMeaning": "تأخير بلا تفسير"
         },
