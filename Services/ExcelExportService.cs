@@ -82,7 +82,7 @@ public static class ExcelExportService
 
     public static bool TryExportTeamLeadCombinedAllReports(string folderPath)
     {
-        return TryExportCombinedFullSurveyInternal(folderPath, includeAssistantReadinessSheet: true);
+        return TryExportCombinedFullSurveyInternal(folderPath, includeAssistantReadinessSheet: true, includeNotesSheet: true);
     }
 
     public static bool TryExportCombinedMemberFullSurvey(string systemEvaluationExcelPath, IReadOnlyList<string> employeeEvaluationExcelPaths)
@@ -121,10 +121,10 @@ public static class ExcelExportService
 
     public static bool TryExportCombinedFullSurvey(string folderPath)
     {
-        return TryExportCombinedFullSurveyInternal(folderPath, includeAssistantReadinessSheet: false);
+        return TryExportCombinedFullSurveyInternal(folderPath, includeAssistantReadinessSheet: false, includeNotesSheet: true);
     }
 
-    private static bool TryExportCombinedFullSurveyInternal(string folderPath, bool includeAssistantReadinessSheet)
+    private static bool TryExportCombinedFullSurveyInternal(string folderPath, bool includeAssistantReadinessSheet, bool includeNotesSheet)
     {
         if (!Directory.Exists(folderPath))
             return false;
@@ -157,6 +157,7 @@ public static class ExcelExportService
         }
 
         using var resultWorkbook = new XLWorkbook();
+        var notesRecords = new List<(string SourceFile, string SheetName, string Label, string Value)>();
 
         for (int sheetIndex = 1; sheetIndex <= sheetCount; sheetIndex++)
         {
@@ -169,7 +170,9 @@ public static class ExcelExportService
                 .SelectMany(s => s.Questions.Where(q => q.Include).Select(q => new { q.Text, SectionName = s.Name }))
                 .ToDictionary(x => x.Text, x => x.SectionName, StringComparer.OrdinalIgnoreCase);
 
-            var baseRows = GetSheetRows(baseSheet);
+            var baseRows = GetSheetRows(baseSheet)
+                .Where(r => !ShouldAggregateInNotesSheet(r.Key))
+                .ToList();
             for (int row = 0; row < baseRows.Count; row++)
                 resultSheet.Cell(row + 1, COLUMN_LABEL).Value = baseRows[row].Key;
 
@@ -179,6 +182,17 @@ public static class ExcelExportService
                 var sourceSheet = sourceWorkbook.Worksheet(sheetIndex);
                 var sourceRows = GetSheetRows(sourceSheet)
                     .ToDictionary(o => o.Key, o => o.Value, StringComparer.OrdinalIgnoreCase);
+
+                foreach (var rowEntry in sourceRows)
+                {
+                    if (!ShouldAggregateInNotesSheet(rowEntry.Key))
+                        continue;
+
+                    if (string.IsNullOrWhiteSpace(rowEntry.Value))
+                        continue;
+
+                    notesRecords.Add((Path.GetFileNameWithoutExtension(files[fileIndex]), sourceSheet.Name, rowEntry.Key, rowEntry.Value));
+                }
 
                 int targetColumn = fileIndex + 2;
                 resultSheet.Cell(1, targetColumn).Value = Path.GetFileNameWithoutExtension(files[fileIndex]);
@@ -251,6 +265,9 @@ public static class ExcelExportService
 
         if (includeAssistantReadinessSheet)
             AppendAssistantReadinessSheet(resultWorkbook);
+
+        if (includeNotesSheet)
+            AppendNotesAndSuggestionsSheet(resultWorkbook, notesRecords);
 
         resultWorkbook.SaveAs(BuildDesktopExportPath(SPRINT_FULL_SURVEY_FILE_NAME));
         return true;
@@ -493,10 +510,46 @@ public static class ExcelExportService
         sheet.Columns().AdjustToContents();
     }
 
+    private static bool ShouldAggregateInNotesSheet(string label)
+    {
+        if (string.IsNullOrWhiteSpace(label))
+            return false;
+
+        return label.Contains(LABEL_NOTES, StringComparison.OrdinalIgnoreCase)
+            || label.Contains("مقترحات")
+            || label.Contains("كلمة");
+    }
+
+    private static void AppendNotesAndSuggestionsSheet(XLWorkbook workbook, IReadOnlyList<(string SourceFile, string SheetName, string Label, string Value)> notesRecords)
+    {
+        var sheet = workbook.Worksheets.Add("Notes & Suggestions");
+        sheet.Cell(1, 1).Value = "Source";
+        sheet.Cell(1, 2).Value = "Sheet";
+        sheet.Cell(1, 3).Value = "Type";
+        sheet.Cell(1, 4).Value = "Text";
+        sheet.Row(1).Style.Font.Bold = true;
+
+        int row = 2;
+        foreach (var record in notesRecords)
+        {
+            sheet.Cell(row, 1).Value = record.SourceFile;
+            sheet.Cell(row, 2).Value = record.SheetName;
+            sheet.Cell(row, 3).Value = record.Label;
+            sheet.Cell(row, 4).Value = record.Value;
+            row++;
+        }
+
+        sheet.Columns().AdjustToContents();
+    }
+
     private static bool HasSameFirstColumn(IXLWorksheet firstSheet, IXLWorksheet secondSheet)
     {
-        var firstRows = GetSheetRows(firstSheet);
-        var secondRows = GetSheetRows(secondSheet);
+        var firstRows = GetSheetRows(firstSheet)
+            .Where(r => !ShouldAggregateInNotesSheet(r.Key))
+            .ToList();
+        var secondRows = GetSheetRows(secondSheet)
+            .Where(r => !ShouldAggregateInNotesSheet(r.Key))
+            .ToList();
 
         if (firstRows.Count != secondRows.Count)
             return false;
@@ -543,7 +596,7 @@ public static class ExcelExportService
                 if (cell.TryGetValue<double>(out var value))
                     question.Score = Math.Clamp(value, question.Min, question.Max);
             }
-            else if (label.Contains(LABEL_NOTES, StringComparison.OrdinalIgnoreCase) || label.Contains("مقترحات") || label.Contains("كلمة"))
+            else if (ShouldAggregateInNotesSheet(label))
             {
                 setNote(sheet.Cell(row, COLUMN_VALUE).GetString());
             }
