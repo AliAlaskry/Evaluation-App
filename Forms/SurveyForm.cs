@@ -13,6 +13,11 @@ namespace Evaluation_App.Forms
             Text = $"الإستبيان - {AuthService.CurrentUser.Name} ({AuthService.CurrentUser.Code})";
             btnMergeAllExcel.Visible = AuthService.CurrentUser.IsTeamLead;
             btnMergeAllExcel.Enabled = AuthService.CurrentUser.IsTeamLead;
+
+            if(!AuthService.CurrentUser.IsTeamLead)
+            {
+                btnBack.Location = btnMergeAllExcel.Location;
+            }
         }
 
         private void SurveyForm_FormClosing(object? sender, FormClosingEventArgs e)
@@ -49,6 +54,16 @@ namespace Evaluation_App.Forms
         {
             if (ExcelExportService.TryExportFullReport())
                 MessageBox.Show("تم إنشاء التقرير الكامل على سطح المكتب.");
+            else
+            {
+                DialogResult result = MessageBox.Show("هل تود انشاء تقرير بما تم الى الآن؟", "تأكيد",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                if(result == DialogResult.Yes)
+                {
+                    if(ExcelExportService.TryExportExistEvals())
+                        MessageBox.Show("تم إنشاء التقرير المطلوب على سطح المكتب.");
+                }
+            }
         }
 
         private void BtnMergeExcel_Click(object sender, EventArgs e)

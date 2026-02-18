@@ -44,8 +44,6 @@ namespace Evaluation_App.Services
 
                 currentUser = employee;
                 KeepLoggedIn = true;
-
-                EvaluationService.ResetAll();
                 return true;
             }
             catch

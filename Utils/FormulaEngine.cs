@@ -48,9 +48,6 @@ public static class FormulaEngine
         if (assignIndex >= 0)
             expr = expr[(assignIndex + 1)..].Trim();
 
-        expr = expr.Replace("where Include=true", string.Empty, StringComparison.OrdinalIgnoreCase)
-                   .Replace("where Include = true", string.Empty, StringComparison.OrdinalIgnoreCase);
-
         return expr;
     }
 

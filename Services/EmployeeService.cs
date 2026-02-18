@@ -4,38 +4,77 @@ using static Constants;
 
 public static class EmployeeService
 {
-    private static List<Employee> employees;
+    private static List<Employee> allEmployees;
+    private static List<Employee> otherEmployees;
 
-    public static List<Employee> LoadEmployees()
+    public static List<Employee> AllEmployees
     {
-        if (employees != null)
-            return employees;
+        get
+        {
+            allEmployees ??= new();
+            if (!allEmployees.Any())
+                Initialize();
+
+            return allEmployees;
+        }
+    }
+    public static List<Employee> OtherEmployees
+    {
+        get
+        {
+            otherEmployees ??= new();
+            if (!otherEmployees.Any())
+                SetOtherEmployees();
+
+            return otherEmployees;
+        }
+    }
+
+    private static void Initialize()
+    {
+        LoadEmployees();
+        SetOtherEmployees();
+    }
+    private static void SetOtherEmployees()
+    {
+        if (AuthService.CurrentUser == null)
+            return;
+
+        allEmployees ??= new();
+        otherEmployees = allEmployees.Where(e => !e.Code.Equals(AuthService.CurrentUser.Code)).ToList();
+    }
+
+    private static void LoadEmployees()
+    {
+        if (allEmployees != null && allEmployees.Count != 0)
+            return;
 
         try
         {
             if (!File.Exists(EMPLOYEE_FILE))
             {
                 MessageBox.Show("ملف الموظفين غير موجود:\n" + EMPLOYEE_FILE, "خطأ", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return new();
+                allEmployees = new();
+                return;
             }
 
             string json = File.ReadAllText(EMPLOYEE_FILE);
-            employees = JsonConvert.DeserializeObject<List<Employee>>(json);
+            allEmployees = JsonConvert.DeserializeObject<List<Employee>>(json);
 
-            if (employees == null)
-                employees = new();
-
-            return employees.Where(e => e.Include).ToList();
+            if (allEmployees == null)
+                allEmployees = new();
+            else
+                allEmployees = allEmployees.Where(e => e.Include).ToList();
         }
         catch (Exception ex)
         {
             MessageBox.Show("حدث خطأ أثناء تحميل ملف الموظفين:\n" + ex.Message, "خطأ", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            return new List<Employee>();
+            allEmployees = new List<Employee>();
         }
     }
 
     public static Employee GetEmployeeByCode(string code)
     {
-        return LoadEmployees().FirstOrDefault(e => e.Code == code);
+        return AllEmployees.FirstOrDefault(e => e.Code == code);
     }
 }

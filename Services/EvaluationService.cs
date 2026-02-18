@@ -3,50 +3,31 @@ using static Constants;
 
 public static class EvaluationService
 {
-    public static void Save(EmployeeEvaluationResult eval)
+    public static void Save(EvaluationBase eval)
     {
-        SaveEvaluation(eval.Employee.Code, eval);
+        SaveEvaluation(eval.Filename, eval);
     }
 
-    public static void Save(SystemEvaluationrResult eval)
-    {
-        SaveEvaluation(SYSTEM_EVALUATION_CODE, eval);
-    }
-
-    private static void SaveEvaluation(string code, object evaluation)
+    private static void SaveEvaluation(string filename, object evaluation)
     {
         if (!Directory.Exists(EvaluationPath))
             Directory.CreateDirectory(EvaluationPath);
 
-        string file = Path.Combine(EvaluationPath, $"{code}.json");
+        string file = Path.Combine(EvaluationPath, $"{filename}.json");
         File.WriteAllText(file, JsonConvert.SerializeObject(evaluation, Formatting.Indented));
     }
 
-    public static EmployeeEvaluationResult LoadEvaluation(string employeeCode)
+    public static T LoadEvaluation<T>(string filename) where T : EvaluationBase
     {
-        string file = Path.Combine(EvaluationPath, $"{employeeCode}.json");
+        string file = Path.Combine(EvaluationPath, $"{filename}.json");
         if (!File.Exists(file)) return null;
 
-        return JsonConvert.DeserializeObject<EmployeeEvaluationResult>(File.ReadAllText(file));
+        return JsonConvert.DeserializeObject<T>(File.ReadAllText(file));
     }
 
-    public static SystemEvaluationrResult LoadSystemEvaluation()
+    public static void Reset(EvaluationBase destination)
     {
-        string file = Path.Combine(EvaluationPath, $"{SYSTEM_EVALUATION_CODE}.json");
-        if (!File.Exists(file)) return null;
-
-        return JsonConvert.DeserializeObject<SystemEvaluationrResult>(File.ReadAllText(file));
-    }
-
-    public static bool HasSavedEvaluation(string employeeCode)
-    {
-        string file = Path.Combine(EvaluationPath, $"{employeeCode}.json");
-        return File.Exists(file);
-    }
-
-    public static void Reset(string employeeCode)
-    {
-        string file = Path.Combine(EvaluationPath, $"{employeeCode}.json");
+        string file = Path.Combine(EvaluationPath, $"{destination.Filename}.json");
         if (File.Exists(file))
             File.Delete(file);
     }

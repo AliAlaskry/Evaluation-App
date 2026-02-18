@@ -6,4 +6,6 @@
 
     // التحكم في المشاركة داخل عملية التقييم من ملف JSON بسهولة
     public bool Include { get; set; } = true;
+
+    public string Title => $"{Name} ({Code})";
 }

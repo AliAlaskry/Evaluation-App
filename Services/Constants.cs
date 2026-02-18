@@ -8,10 +8,10 @@
 
     public static string DesktopPath => Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
 
-    public const string SYSTEM_EVALUATION_CODE = "SYS_EVAL";
+    public const string SYSTEM_EVALUATION_CODE = "System";
 
-    public const string TEAM_MEMBERS_REPORT_FILE_NAME = "Team Members Report.xlsx";
-    public const string SYSTEM_EVALUATION_FILE_NAME = "System Evaluation.xlsx";
+    public const string TEAM_MEMBERS_REPORT_FILE_NAME = "Team Members.xlsx";
+    public const string SYSTEM_EVALUATION_FILE_NAME = "System.xlsx";
     public const string FULL_SURVEY_FILE_NAME = "Full Servey.xlsx";
     public const string SPRINT_FULL_SURVEY_FILE_NAME = "Sprint Full Survey.xlsx";
 
@@ -20,7 +20,7 @@
 
     public const string LABEL_SECTION_TOTAL = "Section Total";
     public const string LABEL_TOTAL = "Total";
-    public const string LABEL_NOTES = "Notes";
+    public const string LABEL_NOTES = "Suggestions / Notes";
     public const string LABEL_TEAM_LEADER_ASSISTANT_READY = "Ready to be team leader assistant";
     public const string LABEL_TEAM_LEADER_ASSISTANT_RECOMMENDATION = "Recommend as team leader assistant";
     public const string LABEL_TEAM_LEADER_ASSISTANT_YES = "Yes";

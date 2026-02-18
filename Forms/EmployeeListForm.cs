@@ -31,7 +31,7 @@ namespace Evaluation_App.Forms
 
         private void LoadEmployees()
         {
-            allEmployees = EmployeeService.LoadEmployees().Where(e => e.Code != AuthService.CurrentUser.Code).ToList();
+            allEmployees = EmployeeService.OtherEmployees;
 
             lstEmployees.DataSource = allEmployees;
             lstEmployees.DisplayMember = "Name";
@@ -67,7 +67,7 @@ namespace Evaluation_App.Forms
 
         private void exportExcel_Click(object sender, EventArgs e)
         {
-            if (ExcelExportService.ExportTeamMembers())
+            if (ExcelExportService.TryExportTeamMembers())
                 MessageBox.Show("تم إنشاء تقرير Excel على سطح المكتب.");
         }
     }

@@ -6,7 +6,6 @@ namespace Evaluation_App.Forms
         private System.Windows.Forms.Label lblTitle;
         private System.Windows.Forms.Button btnModifyConfig;
         private System.Windows.Forms.Button btnSurvey;
-        private System.Windows.Forms.Button btnCreateReport;
         private System.Windows.Forms.Button btnLogout;
         private System.Windows.Forms.Button btnExit;
 
@@ -24,7 +23,6 @@ namespace Evaluation_App.Forms
         {
             btnModifyConfig = new Button();
             btnSurvey = new Button();
-            btnCreateReport = new Button();
             btnLogout = new Button();
             btnExit = new Button();
             lblTitle = new Label();
@@ -52,21 +50,10 @@ namespace Evaluation_App.Forms
             btnSurvey.UseVisualStyleBackColor = true;
             btnSurvey.Click += BtnSurvey_Click;
             // 
-            // btnCreateReport
-            // 
-            btnCreateReport.Font = new Font("Segoe UI", 10F);
-            btnCreateReport.Location = new Point(100, 190);
-            btnCreateReport.Name = "btnCreateReport";
-            btnCreateReport.Size = new Size(220, 36);
-            btnCreateReport.TabIndex = 3;
-            btnCreateReport.Text = "التقرير";
-            btnCreateReport.UseVisualStyleBackColor = true;
-            btnCreateReport.Click += BtnCreateReport_Click;
-            // 
             // btnLogout
             // 
             btnLogout.Font = new Font("Segoe UI", 10F);
-            btnLogout.Location = new Point(100, 240);
+            btnLogout.Location = new Point(100, 195);
             btnLogout.Name = "btnLogout";
             btnLogout.Size = new Size(220, 36);
             btnLogout.TabIndex = 4;
@@ -77,7 +64,7 @@ namespace Evaluation_App.Forms
             // btnExit
             // 
             btnExit.Font = new Font("Segoe UI", 10F);
-            btnExit.Location = new Point(100, 290);
+            btnExit.Location = new Point(100, 249);
             btnExit.Name = "btnExit";
             btnExit.Size = new Size(220, 36);
             btnExit.TabIndex = 5;
@@ -103,15 +90,14 @@ namespace Evaluation_App.Forms
             ClientSize = new Size(420, 340);
             Controls.Add(btnExit);
             Controls.Add(btnLogout);
-            Controls.Add(btnCreateReport);
             Controls.Add(btnSurvey);
             Controls.Add(btnModifyConfig);
             Controls.Add(lblTitle);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
+            Name = "MainMenuForm";
             RightToLeft = RightToLeft.Yes;
             RightToLeftLayout = true;
-            Name = "MainMenuForm";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "القائمة الرئيسية";
             ResumeLayout(false);

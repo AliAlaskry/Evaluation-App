@@ -1,29 +1,30 @@
-public class Section
+public class Section : IEqualityComparer<Section>
 {
     public string Name { get; set; } = string.Empty;
-    public string NumberMeaning { get; set; } = string.Empty;
     public float Weight { get; set; } = 1.0f;
-    public bool ManagerOnly { get; set; } = false;
-    public bool TeamLeaderOnly { get; set; } = false;
     public bool Include { get; set; } = true;
-    public string? Formula { get; set; }
-    public List<Question> Questions { get; set; } = new List<Question>();
-    public double TotalScore { get; private set; }
+    public bool TeamLeaderOnly { get; set; } = false;
+    public double MinValue { get; set; } = 0;
+    public double MaxValue { get; set; } = 100;
+    public string ScoreFormula { get; set; }
+    public string ScoreMeaning { get; set; } = string.Empty;
 
-    public void SetTotalScore(ScoringOptions scoring)
+    public List<Question> Questions { get; set; } = new List<Question>();
+    public double Score { get; set; } = 0;
+
+    public void CalculateScore(ScoringOptions scoring)
     {
-        var activeQuestions = Questions.Where(q => q.Include && !q.TeamLeaderOnly).ToList();
-        var questionScores = activeQuestions.Select(q => q.Score).ToList();
-        var questionWeights = activeQuestions.Select(q => q.Weight).ToList();
+        var questionScores = Questions.Select(q => q.Value).ToList();
+        var questionWeights = Questions.Select(q => q.Weight).ToList();
 
         double defaultScore = 0;
         double sumWeights = questionWeights.Sum();
         if (sumWeights > 0)
-            defaultScore = activeQuestions.Sum(q => q.Score * q.Weight) / sumWeights;
+            defaultScore = Questions.Sum(q => q.Value * q.Weight) / sumWeights;
 
-        string? formula = Formula ?? scoring.SectionFormula;
+        string? formula = ScoreFormula ?? scoring.SectionFormula;
 
-        TotalScore = FormulaEngine.EvaluateToScalar(formula,
+        Score = FormulaEngine.EvaluateToScalar(formula,
             new Dictionary<string, FormulaEngine.Value>
             {
                 ["QuestionScore"] = new FormulaEngine.Value(questionScores),
@@ -32,5 +33,41 @@ public class Section
                 ["SectionWeight"] = new FormulaEngine.Value(Weight)
             },
             defaultScore);
+    }
+
+    public Section Clone()
+    {
+        return new Section
+        {
+            Name = Name,
+            Weight = Weight,
+            Include = Include,
+            TeamLeaderOnly = TeamLeaderOnly,
+            MinValue = MinValue,
+            MaxValue = MaxValue,
+            ScoreFormula = ScoreFormula,
+            ScoreMeaning = ScoreMeaning,
+            Questions = CloneQuestions(),
+            Score = Score,
+        };
+    }
+    public List<Question> CloneQuestions()
+    {
+        List<Question> list = new();
+        foreach (Question question in Questions)
+            list.Add(question.Clone());
+        return list;
+    }
+
+    public bool Equals(Section? x, Section? y)
+    {
+        if(x == null || y == null) return false;
+
+        return x.Name.Equals(y.Name);
+    }
+
+    public int GetHashCode(Section obj)
+    {
+        return base.GetHashCode();
     }
 }

@@ -9,9 +9,10 @@ namespace Evaluation_App.Forms
         private bool _isNavigating;
         private readonly Dictionary<string, TrackBar> _inputControls = new();
         private readonly Dictionary<string, Label> _valueLabels = new();
-        private SystemEvaluationrResult _evaluationResult;
-        private SystemOptions _systemOptions;
-        private EmployeeOptions _employeeOptions;
+        private SystemEvaluation _evaluation;
+
+        private SystemEvaluationOptions _systemOptions => ConfigLoader.SystemEvaluationConfig.Options;
+        private EmployeeEvaluationOptions _employeeOptions => ConfigLoader.EmployeeEvaluationConfig.Options;
 
         public SystemEvaluationForm()
         {
@@ -19,20 +20,20 @@ namespace Evaluation_App.Forms
             FormClosing += SystemEvaluationForm_FormClosing;
             Text = $"تقييم النظام - {AuthService.CurrentUser.Name} ({AuthService.CurrentUser.Code})";
 
-            _systemOptions = ConfigLoader.LoadSystemOptions();
-            _employeeOptions = ConfigLoader.LoadEmployeeOptions();
-            _evaluationResult = EvaluationService.LoadSystemEvaluation()
-                ?? new SystemEvaluationrResult(ConfigLoader.LoadSystemSections());
+            _evaluation = EvaluationService.LoadEvaluation<SystemEvaluation>
+                (EvaluationBase.BuildFilename(AuthService.CurrentUser))
+                ?? new SystemEvaluation(AuthService.CurrentUser,  
+                    ConfigLoader.SystemEvaluationConfig.FilteredSectionsForCurrentUser);
 
             chkTeamLeadAssistant.Visible = !AuthService.CurrentUser.IsTeamLead 
                 && _employeeOptions.AskPreferTeamLeaderAssistant;
-            chkTeamLeadAssistant.Checked = _evaluationResult.ReadyToBeAssistantTeamLeader;
+            chkTeamLeadAssistant.Checked = _evaluation.ReadyToBeAssistantTeamLeader;
 
             LoadSections();
             LoadPreviousAnswers();
             LoadIssues();
 
-            txtSuggestions.Text = _evaluationResult.FinalNote;
+            txtSuggestions.Text = _evaluation.FinalNote;
         }
 
         private void SystemEvaluationForm_FormClosing(object? sender, FormClosingEventArgs e)
@@ -55,7 +56,7 @@ namespace Evaluation_App.Forms
             _inputControls.Clear();
             _valueLabels.Clear();
 
-            foreach (var section in _evaluationResult.Sections)
+            foreach (var section in _evaluation.Sections)
             {
                 var sectionLabel = new Label
                 {
@@ -88,9 +89,9 @@ namespace Evaluation_App.Forms
                         TextAlign = ContentAlignment.MiddleRight
                     };
 
-                    int min = (int)Math.Round(question.Min);
-                    int max = (int)Math.Round(question.Max);
-                    int def = Math.Clamp((int)Math.Round(question.Default), min, max);
+                    int min = (int)Math.Round(question.MinValue);
+                    int max = (int)Math.Round(question.MaxValue);
+                    int def = Math.Clamp((int)Math.Round(question.DefaultValue), min, max);
 
                     var slider = new TrackBar
                     {
@@ -111,7 +112,7 @@ namespace Evaluation_App.Forms
 
                     var minLabel = new Label
                     {
-                        Text = question.MinMeaning,
+                        Text = question.MinValueMeaning,
                         AutoSize = false,
                         Width = hintLabelWidth,
                         Height = 30,
@@ -122,7 +123,7 @@ namespace Evaluation_App.Forms
 
                     var maxLabel = new Label
                     {
-                        Text = question.MaxMeaning,
+                        Text = question.MaxValueMeaning,
                         AutoSize = false,
                         Width = hintLabelWidth,
                         Height = 30,
@@ -187,9 +188,9 @@ namespace Evaluation_App.Forms
         {
             foreach (var kvp in _inputControls)
             {
-                if (_evaluationResult.Questions.TryGetValue(kvp.Key, out var value))
+                if (_evaluation.Questions.TryGetValue(kvp.Key, out var value))
                 {
-                    kvp.Value.Value = Math.Clamp((int)Math.Round(value.Score), kvp.Value.Minimum, kvp.Value.Maximum);
+                    kvp.Value.Value = Math.Clamp((int)Math.Round(value.Value), kvp.Value.Minimum, kvp.Value.Maximum);
                     UpdateValueLabelPosition(_valueLabels[kvp.Key], kvp.Value);
                 }
             }
@@ -210,28 +211,28 @@ namespace Evaluation_App.Forms
 
         private void ApplyInputsToModel()
         {
-            foreach (var section in _evaluationResult.Sections)
+            foreach (var section in _evaluation.Sections)
             foreach (var question in section.Questions)
                 if (_inputControls.TryGetValue(question.Id, out var slider))
-                    question.Score = slider.Value;
+                    question.Value = slider.Value;
 
-            _evaluationResult.ReadyToBeAssistantTeamLeader = chkTeamLeadAssistant.Checked;
-            _evaluationResult.FinalNote = txtSuggestions.Text;
-            _evaluationResult.SetTotalScore();
+            _evaluation.ReadyToBeAssistantTeamLeader = chkTeamLeadAssistant.Checked;
+            _evaluation.FinalNote = txtSuggestions.Text;
+            _evaluation.CalculateScore();
         }
 
         private bool HasChanges()
         {
-            foreach (var section in _evaluationResult.Sections)
+            foreach (var section in _evaluation.Sections)
                 foreach (var question in section.Questions)
                     if (_inputControls.TryGetValue(question.Id, out var slider))
-                        if (question.Score != slider.Value)
+                        if (question.Value != slider.Value)
                             return true;
 
-            if (_evaluationResult.ReadyToBeAssistantTeamLeader != chkTeamLeadAssistant.Checked)
+            if (_evaluation.ReadyToBeAssistantTeamLeader != chkTeamLeadAssistant.Checked)
                 return true;
 
-            if(!_evaluationResult.FinalNote.Equals(txtSuggestions.Text))
+            if(!_evaluation.FinalNote.Equals(txtSuggestions.Text))
                 return true;
 
             return false;
@@ -253,29 +254,34 @@ namespace Evaluation_App.Forms
                 return;
 
             ApplyInputsToModel();
-            EvaluationService.Save(_evaluationResult);
+            _evaluation.CalculateScore();
+            EvaluationService.Save(_evaluation);
             MessageBox.Show("تم الحفظ بنجاح.");
         }
 
         private void btnReset_Click(object sender, EventArgs e)
         {
-            var result = MessageBox.Show(
-             "هل انت متاكد من إعاده التعيين؟",
-             "تنبة قبل إعادة التعيين",
-             MessageBoxButtons.YesNo,
-             MessageBoxIcon.Warning);
-
-            if (result == DialogResult.Yes)
+            if (HasChanges())
             {
-                foreach (var section in _evaluationResult.Sections)
-                    foreach (var question in section.Questions)
-                        if (_inputControls.TryGetValue(question.Id, out var slider))
-                            slider.Value = Math.Clamp((int)Math.Round(question.Default), slider.Minimum, slider.Maximum);
+                var result = MessageBox.Show(
+                 "لم يتم حفظ المعلومات. هل تريد الحفظ والمتابعه؟",
+                 "تنبة قبل التصدير",
+                 MessageBoxButtons.YesNo,
+                 MessageBoxIcon.Warning);
 
-                txtSuggestions.Text = string.Empty;
-                chkTeamLeadAssistant.Checked = false;
-                MessageBox.Show("تمت إعادة الضبط.");
+                if (result == DialogResult.No)
+                    return;
             }
+
+            foreach (var section in _evaluation.Sections)
+                foreach (var question in section.Questions)
+                    if (_inputControls.TryGetValue(question.Id, out var slider))
+                        slider.Value = Math.Clamp((int)Math.Round(question.DefaultValue),
+                            slider.Minimum, slider.Maximum);
+
+            txtSuggestions.Text = string.Empty;
+            chkTeamLeadAssistant.Checked = false;
+            MessageBox.Show("تمت إعادة الضبط.");
         }
 
         private void btnLoad_Click(object sender, EventArgs e)
@@ -289,16 +295,20 @@ namespace Evaluation_App.Forms
             if (dialog.ShowDialog() != DialogResult.OK)
                 return;
 
-            if (!ExcelExportService.TryLoadSystemEvaluationFromExcel(dialog.FileName, _evaluationResult))
+            SystemEvaluation tempEval = _evaluation.Clone();
+            
+            if (!ExcelExportService.TryLoadSystemEvaluationFromExcel(dialog.FileName, _evaluation))
             {
                 MessageBox.Show("تعذر تحميل البيانات من ملف Excel المحدد.");
                 return;
             }
 
             LoadPreviousAnswers();
-            txtSuggestions.Text = _evaluationResult.FinalNote;
-            chkTeamLeadAssistant.Checked = _evaluationResult.ReadyToBeAssistantTeamLeader;
-            _evaluationResult.Reset();
+            txtSuggestions.Text = _evaluation.FinalNote;
+            chkTeamLeadAssistant.Checked = _evaluation.ReadyToBeAssistantTeamLeader;
+
+            _evaluation = tempEval;
+
             MessageBox.Show("تم التحميل بنجاح.");
         }
 
@@ -317,9 +327,10 @@ namespace Evaluation_App.Forms
             }
 
             ApplyInputsToModel();
-            EvaluationService.Save(_evaluationResult);
+            _evaluation.CalculateScore();
+            EvaluationService.Save(_evaluation);
 
-            if (ExcelExportService.ExportSystemEvaluation())
+            if (ExcelExportService.TryExportSystemEvaluation(_evaluation))
                 MessageBox.Show("تم إنشاء تقرير Excel على سطح المكتب.");
         }
 
@@ -351,7 +362,8 @@ namespace Evaluation_App.Forms
                     return false;
 
                 ApplyInputsToModel();
-                EvaluationService.Save(_evaluationResult);
+                _evaluation.CalculateScore();
+                EvaluationService.Save(_evaluation);
             }
 
             return true;
@@ -373,11 +385,12 @@ namespace Evaluation_App.Forms
 
         private bool HasAnyInputWithDefaultValue()
         {
-            foreach (var section in _evaluationResult.Sections)
+            foreach (var section in _evaluation.Sections)
             foreach (var question in section.Questions)
                 if (_inputControls.TryGetValue(question.Id, out var slider))
                 {
-                    int defaultValue = Math.Clamp((int)Math.Round(question.Default), slider.Minimum, slider.Maximum);
+                    int defaultValue = Math.Clamp((int)Math.Round(question.DefaultValue), 
+                        slider.Minimum, slider.Maximum);
                     if (slider.Value == defaultValue)
                         return true;
                 }

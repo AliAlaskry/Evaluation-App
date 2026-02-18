@@ -39,7 +39,7 @@ namespace Evaluation_App.Forms
             const int spacing = 50;
 
             int currentTop = startTop;
-            foreach (var button in new[] { btnModifyConfig, btnSurvey, btnCreateReport, btnLogout, btnExit })
+            foreach (var button in new[] { btnModifyConfig, btnSurvey, btnLogout, btnExit })
             {
                 if (!button.Enabled)
                     continue;

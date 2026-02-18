@@ -7,38 +7,39 @@ public static class ConfigLoader
     private static readonly string EmployeeEvaluationPath = Path.Combine(BasePath, "employee_evaluation_config.json");
     private static readonly string SystemConfigPath = Path.Combine(BasePath, "system_evaluation_config.json");
 
-    public static List<Section> LoadEmployeeSections(Employee? targetEmployee = null)
-    {
-        return LoadSectionsFromFile(EmployeeEvaluationPath, true, targetEmployee).Sections;
-    }
+    private static EvaluationConfig<SystemEvaluationOptions> systemEvaluationConfig;
+    private static EvaluationConfig<EmployeeEvaluationOptions> employeeEvaluationConfig;
 
-    public static List<Section> LoadSystemSections()
+    public static EvaluationConfig<SystemEvaluationOptions> SystemEvaluationConfig
     {
-        return LoadSectionsFromFile(SystemConfigPath, false, null).Sections;
-    }
-
-    public static SystemOptions LoadSystemOptions()
-    {
-        var options = LoadOptionsFromFile(SystemConfigPath).Options;
-        return new SystemOptions
+        get
         {
-            IssuesToResolve = options.IssuesToResolve,
-            Scoring = options.Scoring
-        };
-    }
+            systemEvaluationConfig ??= new();
+            if (!systemEvaluationConfig.Sections.Any())
+                Initialize();
 
-    public static EmployeeOptions LoadEmployeeOptions()
+            return systemEvaluationConfig.Clone();
+        }
+    }
+    public static EvaluationConfig<EmployeeEvaluationOptions> EmployeeEvaluationConfig
     {
-        var options = LoadOptionsFromFile(EmployeeEvaluationPath).Options;
-        return new EmployeeOptions
+        get
         {
-            AskPreferTeamLeaderAssistant = options.AskPreferTeamLeaderAssistant,
-            IssuesToResolve = options.IssuesToResolve,
-            Scoring = options.Scoring
-        };
+            employeeEvaluationConfig ??= new();
+            if (!employeeEvaluationConfig.Sections.Any())
+                Initialize();
+
+            return employeeEvaluationConfig.Clone();
+        }
     }
 
-    private static EvaluationConfig LoadSectionsFromFile(string path, bool isEmployeeEvaluation, Employee? targetEmployee)
+    private static void Initialize()
+    {
+        systemEvaluationConfig = LoadEvaluationConfig<SystemEvaluationOptions>(SystemConfigPath);
+        employeeEvaluationConfig = LoadEvaluationConfig<EmployeeEvaluationOptions>(EmployeeEvaluationPath);
+    }
+
+    private static EvaluationConfig<T> LoadEvaluationConfig<T>(string path) where T : EvaluationOptionsBase
     {
         try
         {
@@ -49,9 +50,19 @@ public static class ConfigLoader
             }
 
             var json = File.ReadAllText(path);
-            var config = JsonConvert.DeserializeObject<EvaluationConfig>(json) ?? new();
+            var config = JsonConvert.DeserializeObject<EvaluationConfig<T>>(json) ?? new();
 
-            return FilterSections(config, isEmployeeEvaluation, targetEmployee);
+            config.Sections = config.Sections
+                .Where(s => s.Include)
+                .Select(section =>
+                 {
+                     section.Questions = section.Questions.Where(q => q.Include).ToList();
+                     return section;
+                 })
+                .Where(section => section.Questions.Any())
+                .ToList();
+
+            return config;
         }
         catch (Exception ex)
         {
@@ -59,43 +70,24 @@ public static class ConfigLoader
             return new();
         }
     }
+}
 
-    private static EvaluationConfig LoadOptionsFromFile(string path)
+
+public class EvaluationConfig<T> where T : EvaluationOptionsBase
+{
+    public T Options { get; set; } = default;
+    public List<Section> Sections { get; set; } = new();
+    public List<Section> FilteredSectionsForCurrentUser { get; set; } = new();
+    public ScoringOptions Scoring { get; set; } = new();
+
+    public List<Section> FilterSectionsForEmployee(Employee employee)
     {
-        try
-        {
-            if (!File.Exists(path))
-            {
-                MessageBox.Show($"ملف الإعدادات غير موجود:\n{path}", "خطأ", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return new();
-            }
-
-            var json = File.ReadAllText(path);
-            var options = JsonConvert.DeserializeObject<EvaluationConfig>(json) ?? new();
-
-            return options;
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show("حدث خطأ أثناء تحميل ملف التقييم:\n" + ex.Message, "خطأ", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            return new();
-        }
-    }
-
-    private static EvaluationConfig FilterSections(EvaluationConfig config, bool isEmployeeEvaluation, Employee? targetEmployee)
-    {
-        var currentUser = AuthService.CurrentUser;
-        bool canSeeTeamLeaderOnly = isEmployeeEvaluation &&
-                                     currentUser.IsTeamLead &&
-                                     targetEmployee != null &&
-                                     !string.Equals(currentUser.Code, targetEmployee.Code, StringComparison.OrdinalIgnoreCase);
-
-        config.Sections = config.Sections
-            .Where(section => section.Include && (!section.ManagerOnly || currentUser.IsTeamLead) && (!section.TeamLeaderOnly || canSeeTeamLeaderOnly))
+        var sections = Sections
+            .Where(section => !section.TeamLeaderOnly || employee.IsTeamLead)
             .Select(section =>
             {
-                section.Questions = (section.Questions ?? new List<Question>())
-                    .Where(q => q.Include && (!q.ManagerOnly || currentUser.IsTeamLead) && (!q.TeamLeaderOnly || canSeeTeamLeaderOnly))
+                section.Questions = section.Questions
+                    .Where(q => !q.TeamLeaderOnly || employee.IsTeamLead)
                     .Select(NormalizeQuestion)
                     .ToList();
                 return section;
@@ -103,47 +95,47 @@ public static class ConfigLoader
             .Where(section => section.Questions.Any())
             .ToList();
 
-        return config;
+        return sections;
     }
 
-    private static Question NormalizeQuestion(Question question)
+    private Question NormalizeQuestion(Question question)
     {
-        if (question.Max < question.Min)
-            (question.Min, question.Max) = (question.Max, question.Min);
+        if (question.MaxValue < question.MinValue)
+            (question.MinValue, question.MaxValue) = (question.MaxValue, question.MinValue);
 
-        question.Default = Math.Clamp(question.Default, question.Min, question.Max);
-        question.Score = Math.Clamp(question.Score == 0 ? question.Default : question.Score, question.Min, question.Max);
+        question.DefaultValue = Math.Clamp(question.DefaultValue, question.MinValue, question.MaxValue);
+        question.Value = Math.Clamp(question.Value, question.MinValue, question.MaxValue);
         return question;
     }
+
+    public EvaluationConfig<T> Clone()
+    {
+        return new EvaluationConfig<T>
+        {
+            Options = this.Options,
+            Sections = this.Sections,
+            FilteredSectionsForCurrentUser = FilterSectionsForEmployee(AuthService.CurrentUser),
+            Scoring = this.Scoring
+        };
+    }
 }
 
-public class EvaluationConfig
-{
-    public EvaluationOptions Options { get; set; } = new();
-    public List<Section> Sections { get; set; } = new();
-}
-
-public class EvaluationOptions
+public abstract class EvaluationOptionsBase { }
+public class SystemEvaluationOptions : EvaluationOptionsBase
 {
     public List<string> IssuesToResolve { get; set; } = new();
-    public bool AskPreferTeamLeaderAssistant { get; set; } = false;
     public ScoringOptions Scoring { get; set; } = new();
 }
-
-public class SystemOptions
-{
-    public List<string> IssuesToResolve { get; set; } = new();
-    public ScoringOptions Scoring { get; set; } = new();
-}
-
-public class EmployeeOptions : SystemOptions
+public class EmployeeEvaluationOptions : EvaluationOptionsBase
 {
     public bool AskPreferTeamLeaderAssistant { get; set; } = false;
+    public ScoringOptions Scoring { get; set; } = new();
 }
 
 public class ScoringOptions
 {
-    public string DefaultQuestionFormula { get; set; } = "QuestionScore = Value";
-    public string SectionFormula { get; set; } = "SectionScore = sum(QuestionScore * QuestionWeight) / sum(QuestionWeight)";
-    public string TotalFormula { get; set; } = "TotalScore = sum(SectionScore * SectionWeight) / sum(SectionWeight)";
+    public string DefaultQuestionScoreFormula { get; set; }
+    public string DefaultCombinedQuestionScoreFormula { get; set; }
+    public string SectionFormula { get; set; }
+    public string TotalFormula { get; set; }
 }
