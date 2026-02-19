@@ -5,7 +5,7 @@
       "DefaultQuestionScoreFormula": "QuestionScore = Value",
       "DefaultCombinedQuestionScoreFormula": "QuestionScore = median(Scores)",
       "SectionFormula": "SectionScore = sum(QuestionScore * QuestionWeight) / sum(QuestionWeight)",
-      "TotalFormula": "TotalScore = sum(SectionScore * SectionWeight) / sum(SectionWeight)",
+      "TotalFormula": "TotalScore = sum(SectionScore * SectionWeight) / sum(SectionWeight)"
     }
   },
   "Sections": [
@@ -14,10 +14,10 @@
       "Weight": 36,
       "Include": true,
       "TeamLeaderOnly": false,
-      "MinScore":0,
-      "MaxScore":100,
+      "MinScore": 0,
+      "MaxScore": 100,
       "ScoreFormula": null,
-      "ScoreMeaning":"يعكس هذا القسم الأداء المهنى للموظف وتأثير عمله على المشروع",
+      "ScoreMeaning": "يعكس هذا القسم الأداء المهنى للموظف وتأثير عمله على المشروع",
       "Questions": [
         {
           "Id": "pro1",
@@ -42,7 +42,7 @@
           "MinValue": 0,
           "MaxValue": 100,
           "DefaultValue": 0,
-          "ScoreFormula":"QuestionScore = Value",
+          "ScoreFormula": "QuestionScore = Value",
           "CombinedScoreFormula": "QuestionScore = median(Scores)",
           "MinValueMeaning": "جودة منخفضة/أخطاء كثيرة/إعادة عمل",
           "MaxValueMeaning": "جودة عالية وثابتة وقليلة العيوب"
@@ -56,7 +56,7 @@
           "MinValue": 0,
           "MaxValue": 100,
           "DefaultValue": 0,
-          "ScoreFormula":"QuestionScore = Value",
+          "ScoreFormula": "QuestionScore = Value",
           "CombinedScoreFormula": "QuestionScore = median(Scores)",
           "MinValueMeaning": "قرارات ضعيفة/مقترحات تسبب إعادة عمل",
           "MaxValueMeaning": "قرارات جيدة تقلل المخاطر وتحسن المنتج"
@@ -70,7 +70,7 @@
           "MinValue": 0,
           "MaxValue": 100,
           "DefaultValue": 0,
-          "ScoreFormula":"QuestionScore = Value",
+          "ScoreFormula": "QuestionScore = Value",
           "CombinedScoreFormula": "QuestionScore = median(Scores)",
           "MinValueMeaning": "بطء في التحليل والحلول يزيد التعطيل",
           "MaxValueMeaning": "تشخيص سريع وحلول فعالة ومستقرة"
@@ -84,7 +84,7 @@
           "MinValue": 0,
           "MaxValue": 100,
           "DefaultValue": 0,
-          "ScoreFormula":"QuestionScore = Value",
+          "ScoreFormula": "QuestionScore = Value",
           "CombinedScoreFormula": "QuestionScore = median(Scores)",
           "MinValueMeaning": "تشتت/اختيار أعمال أقل قيمة",
           "MaxValueMeaning": "تركيز واضح على الأعلى قيمة والأكثر إلحاحاً"
@@ -96,10 +96,10 @@
       "Weight": 26,
       "Include": true,
       "TeamLeaderOnly": false,
-      "MinScore":0,
-      "MaxScore":100,
+      "MinScore": 0,
+      "MaxScore": 100,
       "ScoreFormula": null,
-      "ScoreMeaning":"يعكس هذا القسم الأداء السلوكي للموظف وتأثيره على المشروع وزملائه",
+      "ScoreMeaning": "يعكس هذا القسم الأداء السلوكي للموظف وتأثيره على المشروع وزملائه",
       "Questions": [
         {
           "Id": "beh1",
@@ -110,7 +110,7 @@
           "MinValue": 0,
           "MaxValue": 100,
           "DefaultValue": 0,
-          "ScoreFormula":"QuestionScore = Value",
+          "ScoreFormula": "QuestionScore = Value",
           "CombinedScoreFormula": "QuestionScore = avg(Scores)",
           "MinValueMeaning": "نقاشات حادة/تقليل احترام/توتر",
           "MaxValueMeaning": "احترام ثابت حتى مع الاختلاف"
@@ -124,7 +124,7 @@
           "MinValue": 0,
           "MaxValue": 100,
           "DefaultValue": 0,
-          "ScoreFormula":"QuestionScore = Value",
+          "ScoreFormula": "QuestionScore = Value",
           "CombinedScoreFormula": "QuestionScore = avg(Scores)",
           "MinValueMeaning": "تعاون منعدم ولا مبالاه",
           "MaxValueMeaning": "جاهزيه عاليه للمساعده وتعاون مستمر قدر المستطاع"
@@ -138,7 +138,7 @@
           "MinValue": 0,
           "MaxValue": 100,
           "DefaultValue": 0,
-          "ScoreFormula":"QuestionScore = Value",
+          "ScoreFormula": "QuestionScore = Value",
           "CombinedScoreFormula": "QuestionScore = avg(Scores)",
           "MinValueMeaning": "سلوك يخرق القواعد/يؤخر التدفق",
           "MaxValueMeaning": "سلوك منضبط يسهل العمل"
@@ -152,7 +152,7 @@
           "MinValue": 0,
           "MaxValue": 100,
           "DefaultValue": 0,
-          "ScoreFormula":"QuestionScore = Value",
+          "ScoreFormula": "QuestionScore = Value",
           "CombinedScoreFormula": "QuestionScore = avg(Scores)",
           "MinValueMeaning": "تصعيد/عناد/تحويل الخلاف لصراع",
           "MaxValueMeaning": "يحل الخلاف بهدوء ويصل لحلول عملية"
@@ -166,7 +166,7 @@
           "MinValue": 0,
           "MaxValue": 100,
           "DefaultValue": 0,
-          "ScoreFormula":"QuestionScore = Value",
+          "ScoreFormula": "QuestionScore = Value",
           "CombinedScoreFormula": "QuestionScore = avg(Scores)",
           "MinValueMeaning": "يرتبك مع التغييرات ويقلل الجودة",
           "MaxValueMeaning": "يتعامل مع التغيير بسلاسة ويحافظ على المستوى"
@@ -178,10 +178,10 @@
       "Weight": 26,
       "Include": true,
       "TeamLeaderOnly": false,
-      "MinScore":0,
-      "MaxScore":100,
+      "MinScore": 0,
+      "MaxScore": 100,
       "ScoreFormula": null,
-      "ScoreMeaning":"يعكس هذا القسم تطور الموظف لمواكبة التغيرات والمتطلبات",
+      "ScoreMeaning": "يعكس هذا القسم تطور الموظف لمواكبة التغيرات والمتطلبات",
       "Questions": [
         {
           "Id": "soft1",
@@ -192,7 +192,7 @@
           "MinValue": 0,
           "MaxValue": 100,
           "DefaultValue": 0,
-          "ScoreFormula":"QuestionScore = Value",
+          "ScoreFormula": "QuestionScore = Value",
           "CombinedScoreFormula": "QuestionScore = median(Scores)",
           "MinValueMeaning": "نمو بطيء/تكرار نفس الأخطاء",
           "MaxValueMeaning": "تحسن سريع وتعلم مستمر"
@@ -206,7 +206,7 @@
           "MinValue": 0,
           "MaxValue": 100,
           "DefaultValue": 0,
-          "ScoreFormula":"QuestionScore = Value",
+          "ScoreFormula": "QuestionScore = Value",
           "CombinedScoreFormula": "QuestionScore = median(Scores)",
           "MinValueMeaning": "لا يبادر بالمساعدة نهائيا",
           "MaxValueMeaning": "يبادر ويمنع التعطيل قبل حدوثه قبل حتى ان تطلب"
@@ -220,7 +220,7 @@
           "MinValue": 0,
           "MaxValue": 100,
           "DefaultValue": 0,
-          "ScoreFormula":"QuestionScore = Value",
+          "ScoreFormula": "QuestionScore = Value",
           "CombinedScoreFormula": "QuestionScore = median(Scores)",
           "MinValueMeaning": "دفاعية/رفض ملاحظات",
           "MaxValueMeaning": "يتقبل النقد ويحوّله لتحسين"
@@ -232,10 +232,10 @@
       "Weight": 12,
       "Include": true,
       "TeamLeaderOnly": true,
-      "MinScore":0,
-      "MaxScore":100,
+      "MinScore": 0,
+      "MaxScore": 100,
       "ScoreFormula": null,
-      "ScoreMeaning":"يعكس هذا القسم انضباط الموظف وفقا للقواعد المعتمده",
+      "ScoreMeaning": "يعكس هذا القسم انضباط الموظف وفقا للقواعد المعتمده",
       "Questions": [
         {
           "Id": "disc_wip",
@@ -246,7 +246,7 @@
           "MinValue": 0,
           "MaxValue": 10,
           "DefaultValue": 0,
-          "ScoreFormula":"QuestionScore = clamp(100 - (Value * (100 / 3)), 0, 100)",
+          "ScoreFormula": "QuestionScore = clamp(100 - (Value * (100 / 3)), 0, 100)",
           "CombinedScoreFormula": "QuestionScore = median(Scores)",
           "MinValueMeaning": "لا توجد مخالفات",
           "MaxValueMeaning": "مخالفات متكررة"
@@ -260,7 +260,7 @@
           "MinValue": 0,
           "MaxValue": 10,
           "DefaultValue": 0,
-          "ScoreFormula":"QuestionScore = clamp(100 - (Value * (100 / 4)), 0, 100)",
+          "ScoreFormula": "QuestionScore = clamp(100 - (Value * (100 / 4)), 0, 100)",
           "CombinedScoreFormula": "QuestionScore = median(Scores)",
           "MinValueMeaning": "نهائيا",
           "MaxValueMeaning": "متكررة كتيرا"
@@ -274,7 +274,7 @@
           "MinValue": 0,
           "MaxValue": 10,
           "DefaultValue": 0,
-          "ScoreFormula":"QuestionScore = clamp(100 - (Value * (100 / 4)), 0, 100)",
+          "ScoreFormula": "QuestionScore = clamp(100 - (Value * (100 / 4)), 0, 100)",
           "CombinedScoreFormula": "QuestionScore = median(Scores)",
           "MinValueMeaning": "إغلاق منضبط",
           "MaxValueMeaning": "محاولات خاطئة متكررة"
@@ -288,24 +288,24 @@
           "MinValue": 0,
           "MaxValue": 10,
           "DefaultValue": 0,
-          "ScoreFormula":"QuestionScore = clamp(100 - (Value * (100 / 6)), 0, 100)",
+          "ScoreFormula": "QuestionScore = clamp(100 - (Value * (100 / 6)), 0, 100)",
           "CombinedScoreFormula": "QuestionScore = median(Scores)",
           "MinValueMeaning": "تفاعل كامل",
           "MaxValueMeaning": "تجاهل متكرر"
         },
         {
-         "Id": "disc_questions_time",
-         "Text": "مدى التأخر فى الرد",
-         "Weight": 10,
-         "Include": true,
-         "TeamLeaderOnly": true,
-         "MinValue": 0,
-         "MaxValue": 100,
-         "DefaultValue": 0,
-         "ScoreFormula":"QuestionScore = Value",
-         "CombinedScoreFormula": "QuestionScore = median(Scores)",
-         "MinValueMeaning": "تفاعل كامل",
-         "MaxValueMeaning": "تجاهل طويل"
+          "Id": "disc_questions_time",
+          "Text": "مدى التأخر فى الرد على التعليقات",
+          "Weight": 10,
+          "Include": true,
+          "TeamLeaderOnly": true,
+          "MinValue": 0,
+          "MaxValue": 100,
+          "DefaultValue": 0,
+          "ScoreFormula": "QuestionScore = 100 - Value",
+          "CombinedScoreFormula": "QuestionScore = median(Scores)",
+          "MinValueMeaning": "تفاعل كامل",
+          "MaxValueMeaning": "تجاهل طويل"
         },
         {
           "Id": "disc_wrong_due_date",
@@ -316,7 +316,7 @@
           "MinValue": 0,
           "MaxValue": 10,
           "DefaultValue": 0,
-          "ScoreFormula":"QuestionScore = clamp(100 - (Value * (100 / 7)), 0, 100)",
+          "ScoreFormula": "QuestionScore = clamp(100 - (Value * (100 / 7)), 0, 100)",
           "CombinedScoreFormula": "QuestionScore = median(Scores)",
           "MinValueMeaning": "تواريخ صحيحة دائماً",
           "MaxValueMeaning": "تواريخ غير منضبطة"
@@ -330,7 +330,7 @@
           "MinValue": 0,
           "MaxValue": 10,
           "DefaultValue": 0,
-          "ScoreFormula":"QuestionScore = clamp(100 - (Value * (100 / 7)), 0, 100)",
+          "ScoreFormula": "QuestionScore = clamp(100 - (Value * (100 / 7)), 0, 100)",
           "CombinedScoreFormula": "QuestionScore = median(Scores)",
           "MinValueMeaning": "تحديث منتظم",
           "MaxValueMeaning": "إهمال متكرر"
@@ -344,7 +344,7 @@
           "MinValue": 0,
           "MaxValue": 10,
           "DefaultValue": 0,
-          "ScoreFormula":"QuestionScore = clamp(100 - (Value * (100 / 4)), 0, 100)",
+          "ScoreFormula": "QuestionScore = clamp(100 - (Value * (100 / 4)), 0, 100)",
           "CombinedScoreFormula": "QuestionScore = median(Scores)",
           "MinValueMeaning": "التزام كامل",
           "MaxValueMeaning": "تجاوز بدون تنسيق"
@@ -358,7 +358,7 @@
           "MinValue": 0,
           "MaxValue": 10,
           "DefaultValue": 0,
-          "ScoreFormula":"QuestionScore = clamp(100 - (Value * (100 / 8)), 0, 100)",
+          "ScoreFormula": "QuestionScore = clamp(100 - (Value * (100 / 8)), 0, 100)",
           "CombinedScoreFormula": "QuestionScore = median(Scores)",
           "MinValueMeaning": "تعليقات واضحة دائماً",
           "MaxValueMeaning": "غياب توضيح السبب"
@@ -372,7 +372,7 @@
           "MinValue": 0,
           "MaxValue": 10,
           "DefaultValue": 0,
-          "ScoreFormula":"QuestionScore = clamp(100 - (Value * (100 / 4)), 0, 100)",
+          "ScoreFormula": "QuestionScore = clamp(100 - (Value * (100 / 4)), 0, 100)",
           "CombinedScoreFormula": "QuestionScore = median(Scores)",
           "MinValueMeaning": "توضيح كامل للتأخير",
           "MaxValueMeaning": "تأخير بلا تفسير"
@@ -386,7 +386,7 @@
           "MinValue": 0,
           "MaxValue": 10,
           "DefaultValue": 0,
-          "ScoreFormula":"QuestionScore = clamp(100 - (Value * (100 / 10)), 0, 100)",
+          "ScoreFormula": "QuestionScore = clamp(100 - (Value * (100 / 10)), 0, 100)",
           "CombinedScoreFormula": "QuestionScore = median(Scores)",
           "MinValueMeaning": "تقدم واضح دائماً",
           "MaxValueMeaning": "غياب تقدم متكرر"

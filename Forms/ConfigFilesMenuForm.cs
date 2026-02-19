@@ -4,8 +4,9 @@ namespace Evaluation_App.Forms;
 
 public class ConfigFilesMenuForm : Form
 {
-    private readonly Button _btnSystem = new() { Text = "ملف تقييم النظام", Width = 250, Height = 40 };
-    private readonly Button _btnEmployee = new() { Text = "ملف تقييم الموظف", Width = 250, Height = 40 };
+    private readonly Button _btnSysEval = new() { Text = "ملف تقييم النظام", Width = 250, Height = 40 };
+    private readonly Button _btnEmpEval = new() { Text = "ملف تقييم الموظف", Width = 250, Height = 40 };
+    private readonly Button _btnEmployees = new() { Text = "ملف الموظفين", Width = 250, Height = 40 };
     private readonly Button _btnBack = new() { Text = "رجوع", Width = 250, Height = 40 };
     private bool _isNavigating;
 
@@ -29,7 +30,7 @@ public class ConfigFilesMenuForm : Form
             Anchor = AnchorStyles.None,
             Padding = new Padding(10)
         };
-        panel.Controls.AddRange(new Control[] { _btnSystem, _btnEmployee, _btnBack });
+        panel.Controls.AddRange(new Control[] { _btnSysEval, _btnEmpEval, _btnEmployees, _btnBack });
 
         var host = new TableLayoutPanel
         {
@@ -44,8 +45,12 @@ public class ConfigFilesMenuForm : Form
 
         string projectPath = Directory.GetParent(Application.StartupPath).Parent.Parent.Parent.FullName;
 
-        _btnSystem.Click += (_, _) => Navigate(new JsonConfigEditorForm("System Config", Path.Combine(projectPath, "Data", "system_evaluation_config.json")));
-        _btnEmployee.Click += (_, _) => Navigate(new JsonConfigEditorForm("Employee Config", Path.Combine(projectPath, "Data", "employee_evaluation_config.json")));
+        _btnSysEval.Click += (_, _) => Navigate(new JsonConfigEditorForm("System Evaluation Config", 
+            Path.Combine(projectPath, "Data", "system_evaluation_config.json")));
+        _btnEmpEval.Click += (_, _) => Navigate(new JsonConfigEditorForm("Employee Evaluation Config", 
+            Path.Combine(projectPath, "Data", "employee_evaluation_config.json")));
+        _btnEmployees.Click += (_, _) => Navigate(new JsonConfigEditorForm("Employees", 
+            Path.Combine(projectPath, "Data", "employees.json")));
         _btnBack.Click += (_, _) =>
         {
             var form = new MainMenuForm();
@@ -67,6 +72,17 @@ public class ConfigFilesMenuForm : Form
                 Application.Exit();
             }
         };
+    }
+
+    public override bool Equals(object? obj)
+    {
+        return obj is ConfigFilesMenuForm form &&
+               EqualityComparer<Button>.Default.Equals(_btnEmpEval, form._btnEmpEval);
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(_btnEmpEval);
     }
 
     private void Navigate(Form form)

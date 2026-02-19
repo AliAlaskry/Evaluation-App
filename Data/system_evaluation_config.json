@@ -5,7 +5,7 @@
     "Scoring": {
       "DefaultQuestionScoreFormula": "QuestionScore = Value",
       "DefaultCombinedQuestionScoreFormula": "QuestionScore = median(Scores)",
-      "SectionFormula": "SectionScore = sum(QuestionScore * QuestionWeighttrue) / sum(QuestionWeight)",
+      "SectionFormula": "SectionScore = sum(QuestionScore * QuestionWeight) / sum(QuestionWeight)",
       "TotalFormula": "TotalScore = sum(SectionScore * SectionWeight) / sum(SectionWeight)",
     }
   },

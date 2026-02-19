@@ -83,6 +83,7 @@ public class EvaluationConfig<T> where T : EvaluationOptionsBase
     public List<Section> FilterSectionsForEmployee(Employee employee)
     {
         var sections = Sections
+            .Select(o => o.Clone())
             .Where(section => !section.TeamLeaderOnly || employee.IsTeamLead)
             .Select(section =>
             {
@@ -113,7 +114,7 @@ public class EvaluationConfig<T> where T : EvaluationOptionsBase
         return new EvaluationConfig<T>
         {
             Options = this.Options,
-            Sections = this.Sections,
+            Sections = this.Sections.Select(o => o.Clone()).ToList(),
             FilteredSectionsForCurrentUser = FilterSectionsForEmployee(AuthService.CurrentUser),
             Scoring = this.Scoring
         };

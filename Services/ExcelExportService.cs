@@ -348,11 +348,11 @@ public static class ExcelExportService
 
 
         AppendSummaryColumn(systemWS, reports.Select(r => (EvaluationBase)r.SystemEvaluation).ToList(), 
-            defaultSystemEval.Sections);
+            defaultSystemEval.Sections, ConfigLoader.SystemEvaluationConfig.Scoring);
         foreach (var empWS in empWSs)
             AppendSummaryColumn(empWS.Value, reports
                 .SelectMany(r => r.EmployeeEvaluations.Where(e => e.Evaluated.Code.Equals(empWS.Key.Code))
-                .Cast<EvaluationBase>()).ToList(), defaultEmpEval.Sections);
+                .Cast<EvaluationBase>()).ToList(), defaultEmpEval.Sections, ConfigLoader.EmployeeEvaluationConfig.Scoring);
 
 
         if (includeAssistantReadinessSheet)
@@ -575,18 +575,19 @@ public static class ExcelExportService
         return title.Length <= 31 ? title : title[..31];
     }
 
-    private static void AppendSummaryColumn(IXLWorksheet ws, List<EvaluationBase> evaluations, List<Section> 
-        commonSections)
+    private static void AppendSummaryColumn(IXLWorksheet ws, List<EvaluationBase> evaluations,
+        List<Section> commonSections, ScoringOptions scoring)
     {
         int lastColumn = ws.LastColumnUsed()?.ColumnNumber() ?? COLUMN_VALUE;
         if (lastColumn < COLUMN_VALUE)
             return;
 
+
         foreach (var eval in evaluations)
             eval.CalculateScore();
 
 
-        EvaluationBase combinedEval = new SystemEvaluation(null, commonSections);
+        EvaluationBase combinedEval = new SystemEvaluation(null, commonSections); 
         foreach(var section in combinedEval.Sections)
         {
             foreach(var question in section.Questions)
@@ -597,13 +598,28 @@ public static class ExcelExportService
                     .Select(q => q.Score))
                     .ToList();
 
-                question.Score = Question.CalculateCombinedScore(question, scores);
+                question.Value = question.Score = Question.CalculateCombinedScore(question, scores);
             }
 
-            section.Score = section.Questions.Select(q => q.Score).Average();
+            section.CalculateScore(scoring);
         }
 
-        combinedEval.Score = combinedEval.Sections.Select(s => s.Score).Average();
+        var sectionScores = combinedEval.Sections.Select(s => s.Score).ToList();
+        var sectionWeights = combinedEval.Sections.Select(s => (double)s.Weight).ToList();
+
+        double defaultScore = 0;
+        double sumWeights = sectionWeights.Sum();
+        if (sumWeights > 0)
+            defaultScore = combinedEval.Sections.Sum(s => s.Score * s.Weight) / sumWeights;
+
+        combinedEval.Score = FormulaEngine.EvaluateToScalar(scoring.TotalFormula,
+            new Dictionary<string, FormulaEngine.Value>
+            {
+                ["SectionScore"] = new FormulaEngine.Value(sectionScores),
+                ["SectionWeight"] = new FormulaEngine.Value(sectionWeights),
+                ["SectionCount"] = new FormulaEngine.Value(sectionScores.Count)
+            },
+            defaultScore);
 
 
         int summaryColumn = lastColumn + 1;

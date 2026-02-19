@@ -1,5 +1,6 @@
 ﻿using Evaluation_App.Services;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using static Constants;
 
 public static class EmployeeService
@@ -59,7 +60,8 @@ public static class EmployeeService
             }
 
             string json = File.ReadAllText(EMPLOYEE_FILE);
-            allEmployees = JsonConvert.DeserializeObject<List<Employee>>(json);
+            JObject obj = JObject.Parse(json);
+            allEmployees = obj.SelectToken("Employees").ToObject<List<Employee>>();
 
             if (allEmployees == null)
                 allEmployees = new();

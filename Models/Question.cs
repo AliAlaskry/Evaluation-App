@@ -16,6 +16,12 @@ public class Question
     public double Value { get; set; } = 0;
     public double Score { get; set; } = 0;
 
+    public void Reset()
+    {   
+        Value = MinValue;
+        CalculateScore();
+    }
+
     public void CalculateScore()
     {
         var scoring = ConfigLoader.EmployeeEvaluationConfig.Scoring;

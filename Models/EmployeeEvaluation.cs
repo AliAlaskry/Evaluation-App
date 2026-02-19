@@ -25,19 +25,12 @@ public class EmployeeEvaluation : EvaluationBase, IEqualityComparer<EmployeeEval
 
     public EmployeeEvaluation Clone()
     {
-        return new EmployeeEvaluation(Evaluator, CloneSections(), Evaluated)
+        return new EmployeeEvaluation(Evaluator, Sections.Select(o => o.Clone()).ToList(), Evaluated)
         {
             FinalNote = FinalNote,
             RecommendAsTeamLead = RecommendAsTeamLead,
             Score = Score
         };
-    }
-    public List<Section> CloneSections()
-    {
-        List<Section> list = new();
-        foreach (Section section in Sections)
-            list.Add(section.Clone());
-        return list;
     }
 
     public bool Equals(EmployeeEvaluation? x, EmployeeEvaluation? y)

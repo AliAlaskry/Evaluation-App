@@ -12,6 +12,14 @@ public class Section : IEqualityComparer<Section>
     public List<Question> Questions { get; set; } = new List<Question>();
     public double Score { get; set; } = 0;
 
+    public void Reset(ScoringOptions scoring)
+    {
+        foreach (var question in Questions)
+            question.Reset();
+
+        CalculateScore(scoring);
+    }
+
     public void CalculateScore(ScoringOptions scoring)
     {
         var questionScores = Questions.Select(q => q.Value).ToList();
@@ -47,18 +55,10 @@ public class Section : IEqualityComparer<Section>
             MaxValue = MaxValue,
             ScoreFormula = ScoreFormula,
             ScoreMeaning = ScoreMeaning,
-            Questions = CloneQuestions(),
+            Questions = Questions.Select(o => o.Clone()).ToList(),
             Score = Score,
         };
     }
-    public List<Question> CloneQuestions()
-    {
-        List<Question> list = new();
-        foreach (Question question in Questions)
-            list.Add(question.Clone());
-        return list;
-    }
-
     public bool Equals(Section? x, Section? y)
     {
         if(x == null || y == null) return false;

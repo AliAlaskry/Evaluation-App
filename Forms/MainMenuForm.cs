@@ -13,7 +13,7 @@ namespace Evaluation_App.Forms
             InitializeComponent();
             FormClosing += MainMenuForm_FormClosing;
             Text = $"القائمة الرئيسية";
-            lblTitle.Text = $"مرحباً {AuthService.CurrentUser.Name} [{AuthService.CurrentUser.Code}]";
+            lblTitle.Text = $"مرحباً {AuthService.CurrentUser.Title}";
             ConfigureMenu();
         }
 

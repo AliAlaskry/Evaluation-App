@@ -18,7 +18,7 @@ public class SystemEvaluation : EvaluationBase, IEqualityComparer<SystemEvaluati
 
     public SystemEvaluation Clone()
     {
-        return new SystemEvaluation(Evaluator, Sections)
+        return new SystemEvaluation(Evaluator, Sections.Select(o => o.Clone()).ToList())
         {
             Score = Score,
             FinalNote = FinalNote,
