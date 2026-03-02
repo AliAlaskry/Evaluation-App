@@ -1,35 +1,57 @@
-﻿using Evaluation_App.Services;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
-public static class ConfigLoader
+internal static class ConfigLoader
 {
     private static readonly string BasePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data");
     private static readonly string EmployeeEvaluationPath = Path.Combine(BasePath, "employee_evaluation_config.json");
     private static readonly string SystemConfigPath = Path.Combine(BasePath, "system_evaluation_config.json");
 
-    private static EvaluationConfig<SystemEvaluationOptions> systemEvaluationConfig;
-    private static EvaluationConfig<EmployeeEvaluationOptions> employeeEvaluationConfig;
+    private static EvaluationConfig<SystemEvaluationOptions>? systemEvaluationConfig;
+    private static EvaluationConfig<EmployeeEvaluationOptions>? employeeEvaluationConfig;
 
-    public static EvaluationConfig<SystemEvaluationOptions> SystemEvaluationConfig
+    public static List<EntityBase> SystemEvaluationEntites
     {
         get
         {
             systemEvaluationConfig ??= new();
-            if (!systemEvaluationConfig.Sections.Any())
+            if (systemEvaluationConfig == null || systemEvaluationConfig.Entities.Count == 0)
                 Initialize();
 
-            return systemEvaluationConfig.Clone();
+            return [.. systemEvaluationConfig.Entities.Select(e => e.Clone())];
         }
     }
-    public static EvaluationConfig<EmployeeEvaluationOptions> EmployeeEvaluationConfig
+    public static List<EntityBase> EmployeeEvaluationEntites
     {
         get
         {
             employeeEvaluationConfig ??= new();
-            if (!employeeEvaluationConfig.Sections.Any())
+            if (employeeEvaluationConfig == null || employeeEvaluationConfig.Entities.Count == 0)
                 Initialize();
 
-            return employeeEvaluationConfig.Clone();
+            return [.. employeeEvaluationConfig.Entities.Select(e => e.Clone())];
+        }
+    }
+
+    public static SystemEvaluationOptions SystemEvaluationOptions
+    {
+        get
+        {
+            systemEvaluationConfig ??= new();
+            if (systemEvaluationConfig == null || systemEvaluationConfig.Entities.Count == 0)
+                Initialize();
+
+            return systemEvaluationConfig.Options;
+        }
+    }
+    public static EmployeeEvaluationOptions EmployeeEvaluationOptions
+    {
+        get
+        {
+            employeeEvaluationConfig ??= new();
+            if (employeeEvaluationConfig == null || employeeEvaluationConfig.Entities.Count == 0)
+                Initialize();
+
+            return employeeEvaluationConfig.Options;
         }
     }
 
@@ -52,15 +74,8 @@ public static class ConfigLoader
             var json = File.ReadAllText(path);
             var config = JsonConvert.DeserializeObject<EvaluationConfig<T>>(json) ?? new();
 
-            config.Sections = config.Sections
-                .Where(s => s.Include)
-                .Select(section =>
-                 {
-                     section.Questions = section.Questions.Where(q => q.Include).ToList();
-                     return section;
-                 })
-                .Where(section => section.Questions.Any())
-                .ToList();
+            foreach (var entity in config.Entities)
+                entity.Normalize();
 
             return config;
         }
@@ -73,67 +88,25 @@ public static class ConfigLoader
 }
 
 
-public class EvaluationConfig<T> where T : EvaluationOptionsBase
+internal class EvaluationConfig<T> where T : EvaluationOptionsBase
 {
     public T Options { get; set; } = default;
-    public List<Section> Sections { get; set; } = new();
-    public List<Section> FilteredSectionsForCurrentUser { get; set; } = new();
-    public ScoringOptions Scoring { get; set; } = new();
-
-    public List<Section> FilterSectionsForEmployee(Employee employee)
-    {
-        var sections = Sections
-            .Select(o => o.Clone())
-            .Where(section => !section.TeamLeaderOnly || employee.IsTeamLead)
-            .Select(section =>
-            {
-                section.Questions = section.Questions
-                    .Where(q => !q.TeamLeaderOnly || employee.IsTeamLead)
-                    .Select(NormalizeQuestion)
-                    .ToList();
-                return section;
-            })
-            .Where(section => section.Questions.Any())
-            .ToList();
-
-        return sections;
-    }
-
-    private Question NormalizeQuestion(Question question)
-    {
-        if (question.MaxValue < question.MinValue)
-            (question.MinValue, question.MaxValue) = (question.MaxValue, question.MinValue);
-
-        question.DefaultValue = Math.Clamp(question.DefaultValue, question.MinValue, question.MaxValue);
-        question.Value = Math.Clamp(question.Value, question.MinValue, question.MaxValue);
-        return question;
-    }
-
-    public EvaluationConfig<T> Clone()
-    {
-        return new EvaluationConfig<T>
-        {
-            Options = this.Options,
-            Sections = this.Sections.Select(o => o.Clone()).ToList(),
-            FilteredSectionsForCurrentUser = FilterSectionsForEmployee(AuthService.CurrentUser),
-            Scoring = this.Scoring
-        };
-    }
+    public List<EntityBase> Entities { get; set; } = new();
 }
 
-public abstract class EvaluationOptionsBase { }
-public class SystemEvaluationOptions : EvaluationOptionsBase
+internal abstract class EvaluationOptionsBase { }
+internal class SystemEvaluationOptions : EvaluationOptionsBase
 {
     public List<string> IssuesToResolve { get; set; } = new();
     public ScoringOptions Scoring { get; set; } = new();
 }
-public class EmployeeEvaluationOptions : EvaluationOptionsBase
+internal class EmployeeEvaluationOptions : EvaluationOptionsBase
 {
     public bool AskPreferTeamLeaderAssistant { get; set; } = false;
     public ScoringOptions Scoring { get; set; } = new();
 }
 
-public class ScoringOptions
+internal struct ScoringOptions
 {
     public string DefaultQuestionScoreFormula { get; set; }
     public string DefaultCombinedQuestionScoreFormula { get; set; }

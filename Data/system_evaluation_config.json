@@ -1,164 +1,179 @@
 {
-  "Options": {
-    "IssuesToResolve": [
-    ],
-    "Scoring": {
-      "DefaultQuestionScoreFormula": "QuestionScore = Value",
-      "DefaultCombinedQuestionScoreFormula": "QuestionScore = median(Scores)",
-      "SectionFormula": "SectionScore = sum(QuestionScore * QuestionWeight) / sum(QuestionWeight)",
-      "TotalFormula": "TotalScore = sum(SectionScore * SectionWeight) / sum(SectionWeight)",
-    }
-  },
-  "Sections": [
-    {
-      "Name": "أداء القواعد الحالية (System Rules Fitness)",
-      "Weight": 50,
-      "Include": true,
-      "TeamLeaderOnly": false,
-      "MinScore":0,
-      "MaxScore":100,
-      "ScoreFormula": null,
-      "ScoreMeaning":"يعكس هذا القسم ملائمه ودقه النظام فى توفير الافضل للمشروع والفريق",
-      "Questions": [
-        {
-          "Id": "sys1",
-          "Text": "وضوح القواعد وسهولة فهمها بدون اختلاف تفسير",
-          "Weight": 20,
-          "Include": true,
-          "TeamLeaderOnly": false,
-          "MinValue": 0,
-          "MaxValue": 100,
-          "DefaultValue": 0,
-          "ScoreFormula": "QuestionScore = Value",
-          "CombinedScoreFormula": "QuestionScore = avg(Scores)",
-          "MinValueMeaning": "القواعد تسبب لَبس واختلافات تفسير",
-          "MaxValueMeaning": "القواعد واضحة ومفهومة للجميع"
-        },
-        {
-          "Id": "sys2",
-          "Text": "سهولة تطبيق القواعد عملياً يومياً بدون عبء زائد",
-          "Weight": 20,
-          "Include": true,
-          "TeamLeaderOnly": false,
-          "MinValue": 0,
-          "MaxValue": 100,
-          "DefaultValue": 0,
-          "ScoreFormula": "QuestionScore = Value",
-          "CombinedScoreFormula": "QuestionScore = avg(Scores)",
-          "MinValueMeaning": "تطبيقها مرهق ويضيع وقت",
-          "MaxValueMeaning": "تطبيقها سهل وطبيعي ضمن الروتين"
-        },
-        {
-          "Id": "sys3",
-          "Text": "عدالة القواعد وتوازنها بين التخصصات",
-          "Weight": 20,
-          "Include": true,
-          "TeamLeaderOnly": false,
-          "MinValue": 0,
-          "MaxValue": 100,
-          "DefaultValue": 0,
-          "ScoreFormula": "QuestionScore = Value",
-          "CombinedScoreFormula": "QuestionScore = avg(Scores)",
-          "MinValueMeaning": "بعض التخصصات متضررة",
-          "MaxValueMeaning": "القواعد عادلة للجميع"
-        },
-        {
-          "Id": "sys4",
-          "Text": "مرونة القواعد مع الحالات الاستثنائية بدون كسر النظام",
-          "Weight": 20,
-          "Include": true,
-          "TeamLeaderOnly": false,
-          "MinValue": 0,
-          "MaxValue": 100,
-          "DefaultValue": 0,
-          "ScoreFormula": "QuestionScore = Value",
-          "CombinedScoreFormula": "QuestionScore = avg(Scores)",
-          "MinValueMeaning": "القواعد جامدة وتمنع الحلول",
-          "MaxValueMeaning": "القواعد مرنة باستثناءات مضبوطة"
-        },
-        {
-          "Id": "sys5",
-          "Text": "تأثير القواعد على روح الفريق والتعاون والثقة",
-          "Weight": 20,
-          "Include": true,
-          "TeamLeaderOnly": false,
-          "MinValue": 0,
-          "MaxValue": 100,
-          "DefaultValue": 0,
-          "ScoreFormula": "QuestionScore = Value",
-          "CombinedScoreFormula": "QuestionScore = avg(Scores)",
-          "MinValueMeaning": "توتر واحتكاك داخل الفريق",
-          "MaxValueMeaning": "تعزيز قوي للتعاون والثقة"
+    "Options": {
+        "IssuesToResolve": [
+            "تطوير هيكليه وضع الـ due date لتكون اكثر دقه وتوضح موعد محدد لانتهاء التاسك بالتحديد  بدلا من مجرد اليوم. مثلا، انت ممكن تشتغل على مهمه فى بدايه اليوم تاخد 8 ساعات وميعاد تسليمها بكره ولكن فعلا انت هتخلصها بكره الساعه 10 ومش هتاخد فيها اليوم كله.",
+            "توضيح سبب تقسيم مهمه بين two sprints للحصول على رؤيه تحليله افضل ومعالجة أى عقبات. اسباب مثل: تقدير خاطئ للوقت، تقدير خاطئ لأوليه المهام أدى الى ظهور مهام طارئه، ... وغيره.",
+            "دعوة الشركة لحضور يوم الـ sprint بما فى ذلك الإدارة ليشاروكنا فعاليتنا."
+        ],
+        "Scoring": {
+            "DefaultQuestionScoreFormula": "Value",
+            "DefaultCombinedQuestionScoreFormula": "median(Scores)",
+            "SectionFormula": "sum(ChildScore * ChildWeight) / sum(ChildWeight)",
+            "TotalFormula": "sum(EntityScore * EntityWeight) / sum(EntityWeight)"
         }
-      ]
     },
-    {
-      "Name": "تأثير النظام على الإنتاجية والجودة (Outcome Impact)",
-      "Weight": 50,
-      "Include": true,
-      "TeamLeaderOnly": false,
-      "MinScore":-100,
-      "MaxScore":200,
-      "ScoreFormula": null,
-      "ScoreMeaning":"يعكس هذا القسم تاثير النظام على معدل الانتاج وجودته",
-      "Questions": [
+    "Entities": [
         {
-          "Id": "out1",
-          "Text": "تأثير القواعد على التركيز وإنهاء المهام",
-          "Weight": 25,
-          "Include": true,
-          "TeamLeaderOnly": false,
-          "MinValue": -100,
-          "MaxValue": 200,
-          "DefaultValue": 0,
-          "ScoreFormula": "QuestionScore = Value",
-          "CombinedScoreFormula": "QuestionScore = avg(Scores)",
-          "MinValueMeaning": "تسبب تعطيل العمل نهائيا",
-          "MaxValueMeaning": "تحسن العمل 2 ضعف الوضع السابق"
+            "Base": {
+                "Id": "sec_system_rules_fitness",
+                "Weight": 50
+            },
+            "Root": {
+                "Title": "أداء القواعد الحالية (System Rules Fitness)",
+                "ScoreMeaning": "يعكس هذا القسم ملائمه ودقه النظام فى توفير الافضل للمشروع والفريق",
+                "Entites": [
+                    {
+                        "Base": {
+                            "Id": "sys1",
+                            "Weight": 20
+                        },
+                        "Value": {
+                            "Body": "وضوح القواعد وسهولة فهمها بدون اختلاف تفسير",
+                            "MinValueMeaning": "القواعد تسبب لَبس واختلافات تفسير",
+                            "MaxValueMeaning": "القواعد واضحة ومفهومة للجميع"
+                        },
+                        "Addons": {
+                            "CombinedScoreFormula": "avg(Scores)"
+                        }
+                    },
+                    {
+                        "Base": {
+                            "Id": "sys2",
+                            "Weight": 20
+                        },
+                        "Value": {
+                            "Body": "سهولة تطبيق القواعد عملياً يومياً بدون عبء زائد",
+                            "MinValueMeaning": "تطبيقها مرهق ويضيع وقت",
+                            "MaxValueMeaning": "تطبيقها سهل وطبيعي ضمن الروتين"
+                        },
+                        "Addons": {
+                            "CombinedScoreFormula": "avg(Scores)"
+                        }
+                    },
+                    {
+                        "Base": {
+                            "Id": "sys3",
+                            "Weight": 20
+                        },
+                        "Value": {
+                            "Body": "عدالة القواعد وتوازنها بين التخصصات",
+                            "MinValueMeaning": "بعض التخصصات متضررة",
+                            "MaxValueMeaning": "القواعد عادلة للجميع"
+                        },
+                        "Addons": {
+                            "CombinedScoreFormula": "avg(Scores)"
+                        }
+                    },
+                    {
+                        "Base": {
+                            "Id": "sys4",
+                            "Weight": 20
+                        },
+                        "Value": {
+                            "Body": "مرونة القواعد مع الحالات الاستثنائية بدون كسر النظام",
+                            "MinValueMeaning": "القواعد جامدة وتمنع الحلول",
+                            "MaxValueMeaning": "القواعد مرنة باستثناءات مضبوطة"
+                        },
+                        "Addons": {
+                            "CombinedScoreFormula": "avg(Scores)"
+                        }
+                    },
+                    {
+                        "Base": {
+                            "Id": "sys5",
+                            "Weight": 20
+                        },
+                        "Value": {
+                            "Body": "تأثير القواعد على روح الفريق والتعاون والثقة",
+                            "MinValueMeaning": "توتر واحتكاك داخل الفريق",
+                            "MaxValueMeaning": "تعزيز قوي للتعاون والثقة"
+                        },
+                        "Addons": {
+                            "CombinedScoreFormula": "avg(Scores)"
+                        }
+                    }
+                ]
+            }
         },
         {
-          "Id": "out2",
-          "Text": "تأثير حد 14 ساعة على جودة التقسيم وتقليل المفاجآت",
-          "Weight": 25,
-          "Include": true,
-          "TeamLeaderOnly": false,
-          "MinValue": -100,
-          "MaxValue": 200,
-          "DefaultValue": 0,
-          "ScoreFormula": "QuestionScore = Value",
-          "CombinedScoreFormula": "QuestionScore = avg(Scores)",
-          "MinValueMeaning": "تسبب تعطل العمل نهائيا",
-          "MaxValueMeaning": "تحسن العمل 2 ضعف الوضع السابق"
-        },
-        {
-          "Id": "out3",
-          "Text": "تأثير صرامة تعريف الإغلاق (DoD) على الجودة وتقليل إعادة العمل",
-          "Weight": 25,
-          "Include": true,
-          "TeamLeaderOnly": false,
-          "MinValue": -100,
-          "MaxValue": 200,
-          "DefaultValue": 0,
-          "ScoreFormula": "QuestionScore = Value",
-          "CombinedScoreFormula": "QuestionScore = avg(Scores)",
-          "MinValueMeaning": "تسبب تعطيل العمل نهائيا",
-          "MaxValueMeaning": "تحسن العمل 2 ضعف الوضع السابق"
-        },
-        {
-          "Id": "out5",
-          "Text": "وضوح هدف السبرنت وتأثيره على تقليل التشتت",
-          "Weight": 25,
-          "Include": false,
-          "TeamLeaderOnly": false,
-          "MinValue": -100,
-          "MaxValue": 200,
-          "DefaultValue": 0,
-          "ScoreFormula": "QuestionScore = Value",
-          "CombinedScoreFormula": "QuestionScore = avg(Scores)",
-          "MinValueMeaning": "تسبب تعطيل العمل نهائيا",
-          "MaxValueMeaning": "تحسن العمل 2 ضعف الوضع السابق"
+            "Base": {
+                "Id": "sec_outcome_impact",
+                "Weight": 50
+            },
+            "Root": {
+                "Title": "تأثير النظام على الإنتاجية والجودة (Outcome Impact)",
+                "ScoreMeaning": "يعكس هذا القسم تاثير النظام على معدل الانتاج وجودته",
+                "Entites": [
+                    {
+                        "Base": {
+                            "Id": "out1",
+                            "Weight": 25
+                        },
+                        "Value": {
+                            "Body": "تأثير القواعد على التركيز وإنهاء المهام",
+                            "MinValueMeaning": "تسبب تعطيل العمل نهائيا",
+                            "MaxValueMeaning": "تحسن العمل 2 ضعف الوضع السابق",
+                            "MinValue": -100,
+                            "MaxValue": 200,
+                            "DefaultValue": 0
+                        },
+                        "Addons": {
+                            "CombinedScoreFormula": "avg(Scores)"
+                        }
+                    },
+                    {
+                        "Base": {
+                            "Id": "out2",
+                            "Weight": 25
+                        },
+                        "Value": {
+                            "Body": "تأثير حد 14 ساعة على جودة التقسيم وتقليل المفاجآت",
+                            "MinValueMeaning": "تسبب تعطل العمل نهائيا",
+                            "MaxValueMeaning": "تحسن العمل 2 ضعف الوضع السابق",
+                            "MinValue": -100,
+                            "MaxValue": 200,
+                            "DefaultValue": 0
+                        },
+                        "Addons": {
+                            "CombinedScoreFormula": "avg(Scores)"
+                        }
+                    },
+                    {
+                        "Base": {
+                            "Id": "out3",
+                            "Weight": 25
+                        },
+                        "Value": {
+                            "Body": "تأثير صرامة تعريف الإغلاق (DoD) على الجودة وتقليل إعادة العمل",
+                            "MinValueMeaning": "تسبب تعطيل العمل نهائيا",
+                            "MaxValueMeaning": "تحسن العمل 2 ضعف الوضع السابق",
+                            "MinValue": -100,
+                            "MaxValue": 200,
+                            "DefaultValue": 0
+                        },
+                        "Addons": {
+                            "CombinedScoreFormula": "avg(Scores)"
+                        }
+                    },
+                    {
+                        "Base": {
+                            "Id": "out5",
+                            "Weight": 25
+                        },
+                        "Value": {
+                            "Body": "وضوح هدف السبرنت وتأثيره على تقليل التشتت",
+                            "MinValueMeaning": "تسبب تعطيل العمل نهائيا",
+                            "MaxValueMeaning": "تحسن العمل 2 ضعف الوضع السابق",
+                            "MinValue": -100,
+                            "MaxValue": 200,
+                            "DefaultValue": 0
+                        },
+                        "Addons": {
+                            "CombinedScoreFormula": "avg(Scores)"
+                        }
+                    }
+                ]
+            }
         }
-      ]
-    }
-  ]
+    ]
 }

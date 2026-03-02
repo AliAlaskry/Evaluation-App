@@ -1,9 +1,7 @@
-﻿using Evaluation_App.Services;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 using static Constants;
 
-public static class EmployeeService
+internal static class EmployeeService
 {
     private static List<Employee> allEmployees;
     private static List<Employee> otherEmployees;
@@ -24,6 +22,10 @@ public static class EmployeeService
         get
         {
             otherEmployees ??= new();
+
+            if (!allEmployees.Any())
+                Initialize();
+
             if (!otherEmployees.Any())
                 SetOtherEmployees();
 
@@ -43,6 +45,12 @@ public static class EmployeeService
 
         allEmployees ??= new();
         otherEmployees = allEmployees.Where(e => !e.Code.Equals(AuthService.CurrentUser.Code)).ToList();
+    }
+
+    public static void ClearOtherEmployees()
+    {
+        otherEmployees ??= new();
+        otherEmployees.Clear();
     }
 
     private static void LoadEmployees()

@@ -1,397 +1,412 @@
 {
-  "Options": {
-    "AskPreferTeamLeaderAssistant": true,
-    "Scoring": {
-      "DefaultQuestionScoreFormula": "QuestionScore = Value",
-      "DefaultCombinedQuestionScoreFormula": "QuestionScore = median(Scores)",
-      "SectionFormula": "SectionScore = sum(QuestionScore * QuestionWeight) / sum(QuestionWeight)",
-      "TotalFormula": "TotalScore = sum(SectionScore * SectionWeight) / sum(SectionWeight)"
-    }
-  },
-  "Sections": [
-    {
-      "Name": "المهارات المهنية",
-      "Weight": 36,
-      "Include": true,
-      "TeamLeaderOnly": false,
-      "MinScore": 0,
-      "MaxScore": 100,
-      "ScoreFormula": null,
-      "ScoreMeaning": "يعكس هذا القسم الأداء المهنى للموظف وتأثير عمله على المشروع",
-      "Questions": [
-        {
-          "Id": "pro1",
-          "Text": "نسبه المهام Overdue",
-          "Weight": 20,
-          "Include": false,
-          "TeamLeaderOnly": true,
-          "MinValue": 0,
-          "MaxValue": 100,
-          "DefaultValue": 0,
-          "ScoreFormula": "QuestionScore = Value",
-          "CombinedScoreFormula": "QuestionScore = median(Scores)",
-          "MinValueMeaning": "لا مهام مقدره خطأ",
-          "MaxValueMeaning": "كل المهام مقدره خطأ"
-        },
-        {
-          "Id": "pro2",
-          "Text": "جودة العمل المنجز",
-          "Weight": 20,
-          "Include": true,
-          "TeamLeaderOnly": false,
-          "MinValue": 0,
-          "MaxValue": 100,
-          "DefaultValue": 0,
-          "ScoreFormula": "QuestionScore = Value",
-          "CombinedScoreFormula": "QuestionScore = median(Scores)",
-          "MinValueMeaning": "جودة منخفضة/أخطاء كثيرة/إعادة عمل",
-          "MaxValueMeaning": "جودة عالية وثابتة وقليلة العيوب"
-        },
-        {
-          "Id": "pro4",
-          "Text": "صحة القرارات وفعالية المقترحات",
-          "Weight": 20,
-          "Include": true,
-          "TeamLeaderOnly": false,
-          "MinValue": 0,
-          "MaxValue": 100,
-          "DefaultValue": 0,
-          "ScoreFormula": "QuestionScore = Value",
-          "CombinedScoreFormula": "QuestionScore = median(Scores)",
-          "MinValueMeaning": "قرارات ضعيفة/مقترحات تسبب إعادة عمل",
-          "MaxValueMeaning": "قرارات جيدة تقلل المخاطر وتحسن المنتج"
-        },
-        {
-          "Id": "pro5",
-          "Text": "القدرة على حل المشاكل والتصحيح بسرعة",
-          "Weight": 20,
-          "Include": true,
-          "TeamLeaderOnly": false,
-          "MinValue": 0,
-          "MaxValue": 100,
-          "DefaultValue": 0,
-          "ScoreFormula": "QuestionScore = Value",
-          "CombinedScoreFormula": "QuestionScore = median(Scores)",
-          "MinValueMeaning": "بطء في التحليل والحلول يزيد التعطيل",
-          "MaxValueMeaning": "تشخيص سريع وحلول فعالة ومستقرة"
-        },
-        {
-          "Id": "pro6",
-          "Text": "ترتيب الأولويات بفعالية",
-          "Weight": 20,
-          "Include": true,
-          "TeamLeaderOnly": false,
-          "MinValue": 0,
-          "MaxValue": 100,
-          "DefaultValue": 0,
-          "ScoreFormula": "QuestionScore = Value",
-          "CombinedScoreFormula": "QuestionScore = median(Scores)",
-          "MinValueMeaning": "تشتت/اختيار أعمال أقل قيمة",
-          "MaxValueMeaning": "تركيز واضح على الأعلى قيمة والأكثر إلحاحاً"
+    "Options": {
+        "AskPreferTeamLeaderAssistant": true,
+        "Scoring": {
+            "DefaultQuestionScoreFormula": "Value",
+            "DefaultCombinedQuestionScoreFormula": "median(Scores)",
+            "SectionFormula": "sum(ChildScore * ChildWeight) / sum(ChildWeight)",
+            "TotalFormula": "sum(EntityScore * EntityWeight) / sum(EntityWeight)"
         }
-      ]
     },
-    {
-      "Name": "المهارات السلوكية",
-      "Weight": 26,
-      "Include": true,
-      "TeamLeaderOnly": false,
-      "MinScore": 0,
-      "MaxScore": 100,
-      "ScoreFormula": null,
-      "ScoreMeaning": "يعكس هذا القسم الأداء السلوكي للموظف وتأثيره على المشروع وزملائه",
-      "Questions": [
+    "Entities": [
         {
-          "Id": "beh1",
-          "Text": "الاحترام المتبادل أثناء النقاشات",
-          "Weight": 20,
-          "Include": true,
-          "TeamLeaderOnly": false,
-          "MinValue": 0,
-          "MaxValue": 100,
-          "DefaultValue": 0,
-          "ScoreFormula": "QuestionScore = Value",
-          "CombinedScoreFormula": "QuestionScore = avg(Scores)",
-          "MinValueMeaning": "نقاشات حادة/تقليل احترام/توتر",
-          "MaxValueMeaning": "احترام ثابت حتى مع الاختلاف"
+            "Base": {
+                "Id": "sec_professional_skills",
+                "Weight": 36
+            },
+            "Root": {
+                "Title": "المهارات المهنية",
+                "ScoreMeaning": "يعكس هذا القسم الأداء المهنى للموظف وتأثير عمله على المشروع",
+                "Entites": [
+                    {
+                        "Base": {
+                            "Id": "pro1",
+                            "Weight": 20
+                        },
+                        "Value": {
+                            "Body": "نسبه المهام Overdue",
+                            "MinValueMeaning": "لا مهام مقدره خطأ",
+                            "MaxValueMeaning": "كل المهام مقدره خطأ"
+                        },
+                        "Addons": {
+                            "Include": false
+                        }
+                    },
+                    {
+                        "Base": {
+                            "Id": "pro2",
+                            "Weight": 20
+                        },
+                        "Value": {
+                            "Body": "جودة العمل المنجز",
+                            "MinValueMeaning": "جودة منخفضة/أخطاء كثيرة/إعادة عمل",
+                            "MaxValueMeaning": "جودة عالية وثابتة وقليلة العيوب"
+                        }
+                    },
+                    {
+                        "Base": {
+                            "Id": "pro4",
+                            "Weight": 20
+                        },
+                        "Value": {
+                            "Body": "صحة القرارات وفعالية المقترحات",
+                            "MinValueMeaning": "قرارات ضعيفة/مقترحات تسبب إعادة عمل",
+                            "MaxValueMeaning": "قرارات جيدة تقلل المخاطر وتحسن المنتج"
+                        }
+                    },
+                    {
+                        "Base": {
+                            "Id": "pro5",
+                            "Weight": 20
+                        },
+                        "Value": {
+                            "Body": "القدرة على حل المشاكل والتصحيح بسرعة",
+                            "MinValueMeaning": "بطء في التحليل والحلول يزيد التعطيل",
+                            "MaxValueMeaning": "تشخيص سريع وحلول فعالة ومستقرة"
+                        }
+                    },
+                    {
+                        "Base": {
+                            "Id": "pro6",
+                            "Weight": 20
+                        },
+                        "Value": {
+                            "Body": "ترتيب الأولويات بفعالية",
+                            "MinValueMeaning": "تشتت/اختيار أعمال أقل قيمة",
+                            "MaxValueMeaning": "تركيز واضح على الأعلى قيمة والأكثر إلحاحاً"
+                        }
+                    }
+                ]
+            }
         },
         {
-          "Id": "beh2",
-          "Text": "التعاون وتقديم الدعم للفريق عند الطلب",
-          "Weight": 20,
-          "Include": true,
-          "TeamLeaderOnly": false,
-          "MinValue": 0,
-          "MaxValue": 100,
-          "DefaultValue": 0,
-          "ScoreFormula": "QuestionScore = Value",
-          "CombinedScoreFormula": "QuestionScore = avg(Scores)",
-          "MinValueMeaning": "تعاون منعدم ولا مبالاه",
-          "MaxValueMeaning": "جاهزيه عاليه للمساعده وتعاون مستمر قدر المستطاع"
+            "Base": {
+                "Id": "sec_behavioral_skills",
+                "Weight": 26
+            },
+            "Root": {
+                "Title": "المهارات السلوكية",
+                "ScoreMeaning": "يعكس هذا القسم الأداء السلوكي للموظف وتأثيره على المشروع وزملائه",
+                "Entites": [
+                    {
+                        "Base": {
+                            "Id": "beh1",
+                            "Weight": 20
+                        },
+                        "Value": {
+                            "Body": "الاحترام المتبادل أثناء النقاشات",
+                            "MinValueMeaning": "نقاشات حادة/تقليل احترام/توتر",
+                            "MaxValueMeaning": "احترام ثابت حتى مع الاختلاف"
+                        },
+                        "Addons": {
+                            "CombinedScoreFormula": "avg(Scores)"
+                        }
+                    },
+                    {
+                        "Base": {
+                            "Id": "beh2",
+                            "Weight": 20
+                        },
+                        "Value": {
+                            "Body": "التعاون وتقديم الدعم للفريق عند الطلب",
+                            "MinValueMeaning": "تعاون منعدم ولا مبالاه",
+                            "MaxValueMeaning": "جاهزيه عاليه للمساعده وتعاون مستمر قدر المستطاع"
+                        },
+                        "Addons": {
+                            "CombinedScoreFormula": "avg(Scores)"
+                        }
+                    },
+                    {
+                        "Base": {
+                            "Id": "beh3",
+                            "Weight": 20
+                        },
+                        "Value": {
+                            "Body": "الانضباط والالتزام بالقواعد (سلوكياً)",
+                            "MinValueMeaning": "سلوك يخرق القواعد/يؤخر التدفق",
+                            "MaxValueMeaning": "سلوك منضبط يسهل العمل"
+                        },
+                        "Addons": {
+                            "CombinedScoreFormula": "avg(Scores)"
+                        }
+                    },
+                    {
+                        "Base": {
+                            "Id": "beh4",
+                            "Weight": 20
+                        },
+                        "Value": {
+                            "Body": "التعامل مع الخلافات بشكل بنّاء",
+                            "MinValueMeaning": "تصعيد/عناد/تحويل الخلاف لصراع",
+                            "MaxValueMeaning": "يحل الخلاف بهدوء ويصل لحلول عملية"
+                        },
+                        "Addons": {
+                            "CombinedScoreFormula": "avg(Scores)"
+                        }
+                    },
+                    {
+                        "Base": {
+                            "Id": "beh5",
+                            "Weight": 20
+                        },
+                        "Value": {
+                            "Body": "التكيف مع تغير متطلبات المشروع بدون كسر الجودة",
+                            "MinValueMeaning": "يرتبك مع التغييرات ويقلل الجودة",
+                            "MaxValueMeaning": "يتعامل مع التغيير بسلاسة ويحافظ على المستوى"
+                        },
+                        "Addons": {
+                            "CombinedScoreFormula": "avg(Scores)"
+                        }
+                    }
+                ]
+            }
         },
         {
-          "Id": "beh3",
-          "Text": "الانضباط والالتزام بالقواعد (سلوكياً)",
-          "Weight": 20,
-          "Include": true,
-          "TeamLeaderOnly": false,
-          "MinValue": 0,
-          "MaxValue": 100,
-          "DefaultValue": 0,
-          "ScoreFormula": "QuestionScore = Value",
-          "CombinedScoreFormula": "QuestionScore = avg(Scores)",
-          "MinValueMeaning": "سلوك يخرق القواعد/يؤخر التدفق",
-          "MaxValueMeaning": "سلوك منضبط يسهل العمل"
+            "Base": {
+                "Id": "sec_soft_skills",
+                "Weight": 26
+            },
+            "Root": {
+                "Title": "المهارات الشخصية (Soft Skills)",
+                "ScoreMeaning": "يعكس هذا القسم تطور الموظف لمواكبة التغيرات والمتطلبات",
+                "Entites": [
+                    {
+                        "Base": {
+                            "Id": "soft1",
+                            "Weight": 34
+                        },
+                        "Value": {
+                            "Body": "مدى تطور الخبرة وسرعة التعلم",
+                            "MinValueMeaning": "نمو بطيء/تكرار نفس الأخطاء",
+                            "MaxValueMeaning": "تحسن سريع وتعلم مستمر"
+                        }
+                    },
+                    {
+                        "Base": {
+                            "Id": "soft2",
+                            "Weight": 33
+                        },
+                        "Value": {
+                            "Body": "المبادرة في تقديم المساعدة دون طلب",
+                            "MinValueMeaning": "لا يبادر بالمساعدة نهائيا",
+                            "MaxValueMeaning": "يبادر ويمنع التعطيل قبل حدوثه قبل حتى ان تطلب"
+                        }
+                    },
+                    {
+                        "Base": {
+                            "Id": "soft3",
+                            "Weight": 33
+                        },
+                        "Value": {
+                            "Body": "تقبل النقد البناء واختلاف وجهات النظر",
+                            "MinValueMeaning": "دفاعية/رفض ملاحظات",
+                            "MaxValueMeaning": "يتقبل النقد ويحوّله لتحسين"
+                        }
+                    }
+                ]
+            }
         },
         {
-          "Id": "beh4",
-          "Text": "التعامل مع الخلافات بشكل بنّاء",
-          "Weight": 20,
-          "Include": true,
-          "TeamLeaderOnly": false,
-          "MinValue": 0,
-          "MaxValue": 100,
-          "DefaultValue": 0,
-          "ScoreFormula": "QuestionScore = Value",
-          "CombinedScoreFormula": "QuestionScore = avg(Scores)",
-          "MinValueMeaning": "تصعيد/عناد/تحويل الخلاف لصراع",
-          "MaxValueMeaning": "يحل الخلاف بهدوء ويصل لحلول عملية"
-        },
-        {
-          "Id": "beh5",
-          "Text": "التكيف مع تغير متطلبات المشروع بدون كسر الجودة",
-          "Weight": 20,
-          "Include": true,
-          "TeamLeaderOnly": false,
-          "MinValue": 0,
-          "MaxValue": 100,
-          "DefaultValue": 0,
-          "ScoreFormula": "QuestionScore = Value",
-          "CombinedScoreFormula": "QuestionScore = avg(Scores)",
-          "MinValueMeaning": "يرتبك مع التغييرات ويقلل الجودة",
-          "MaxValueMeaning": "يتعامل مع التغيير بسلاسة ويحافظ على المستوى"
+            "Base": {
+                "Id": "sec_discipline",
+                "Weight": 12
+            },
+            "Root": {
+                "Title": "الانضباط التراكمي",
+                "ScoreMeaning": "يعكس هذا القسم انضباط الموظف وفقا للقواعد المعتمده",
+                "Entites": [
+                    {
+                        "Base": {
+                            "Id": "disc_wip",
+                            "Weight": 12
+                        },
+                        "Value": {
+                            "Body": "عدد مخالفات قاعدة: لا يوجد مهمتان قيد التنفيذ (WIP=1)",
+                            "MinValueMeaning": "لا توجد مخالفات",
+                            "MaxValueMeaning": "مخالفات متكررة",
+                            "MinValue": 0,
+                            "MaxValue": 10,
+                            "DefaultValue": 0
+                        },
+                        "Addons": {
+                            "ScoreFormula": "clamp(100 - (Value * (100 / 3)), 0, 100)"
+                        }
+                    },
+                    {
+                        "Base": {
+                            "Id": "disc_14h",
+                            "Weight": 12
+                        },
+                        "Value": {
+                            "Body": "عدد مرات اغلاق مهمه غير مسؤول عن مراجعتها وإغلاقها",
+                            "MinValueMeaning": "نهائيا",
+                            "MaxValueMeaning": "متكررة كتيرا",
+                            "MinValue": 0,
+                            "MaxValue": 10,
+                            "DefaultValue": 0
+                        },
+                        "Addons": {
+                            "ScoreFormula": "clamp(100 - (Value * (100 / 4)), 0, 100)"
+                        }
+                    },
+                    {
+                        "Base": {
+                            "Id": "disc_dod",
+                            "Weight": 16
+                        },
+                        "Value": {
+                            "Body": "عدد محاولات إغلاق غير مطابق لتعريف Done",
+                            "MinValueMeaning": "إغلاق منضبط",
+                            "MaxValueMeaning": "محاولات خاطئة متكررة",
+                            "MinValue": 0,
+                            "MaxValue": 10,
+                            "DefaultValue": 0
+                        },
+                        "Addons": {
+                            "ScoreFormula": "clamp(100 - (Value * (100 / 4)), 0, 100)"
+                        }
+                    },
+                    {
+                        "Base": {
+                            "Id": "disc_questions_unanswered",
+                            "Weight": 10
+                        },
+                        "Value": {
+                            "Body": "عدد الأسئلة داخل ملاحظات اليوم بدون رد",
+                            "MinValueMeaning": "تفاعل كامل",
+                            "MaxValueMeaning": "تجاهل متكرر",
+                            "MinValue": 0,
+                            "MaxValue": 10,
+                            "DefaultValue": 0
+                        },
+                        "Addons": {
+                            "ScoreFormula": "clamp(100 - (Value * (100 / 6)), 0, 100)"
+                        }
+                    },
+                    {
+                        "Base": {
+                            "Id": "disc_questions_time",
+                            "Weight": 10
+                        },
+                        "Value": {
+                            "Body": "مدى التأخر فى الرد على التعليقات",
+                            "MinValueMeaning": "تفاعل كامل",
+                            "MaxValueMeaning": "تجاهل طويل",
+                            "MinValue": 0,
+                            "MaxValue": 100,
+                            "DefaultValue": 0
+                        },
+                        "Addons": {
+                            "ScoreFormula": "100 - Value"
+                        }
+                    },
+                    {
+                        "Base": {
+                            "Id": "disc_wrong_due_date",
+                            "Weight": 10
+                        },
+                        "Value": {
+                            "Body": "عدد مرات وضع Due Date غير صحيح أو غير موجود عند بدء المهمة",
+                            "MinValueMeaning": "تواريخ صحيحة دائماً",
+                            "MaxValueMeaning": "تواريخ غير منضبطة",
+                            "MinValue": 0,
+                            "MaxValue": 10,
+                            "DefaultValue": 0
+                        },
+                        "Addons": {
+                            "ScoreFormula": "clamp(100 - (Value * (100 / 7)), 0, 100)"
+                        }
+                    },
+                    {
+                        "Base": {
+                            "Id": "disc_workspace_not_updated",
+                            "Weight": 8
+                        },
+                        "Value": {
+                            "Body": "عدد مرات عدم تحديث الـ Workspace في موعده",
+                            "MinValueMeaning": "تحديث منتظم",
+                            "MaxValueMeaning": "إهمال متكرر",
+                            "MinValue": 0,
+                            "MaxValue": 10,
+                            "DefaultValue": 0
+                        },
+                        "Addons": {
+                            "ScoreFormula": "clamp(100 - (Value * (100 / 7)), 0, 100)"
+                        }
+                    },
+                    {
+                        "Base": {
+                            "Id": "disc_reserve_overuse_no_permission",
+                            "Weight": 12
+                        },
+                        "Value": {
+                            "Body": "عدد مرات استخدام ساعات احتياطية فوق المتفق عليه بدون تنسيق",
+                            "MinValueMeaning": "التزام كامل",
+                            "MaxValueMeaning": "تجاوز بدون تنسيق",
+                            "MinValue": 0,
+                            "MaxValue": 10,
+                            "DefaultValue": 0
+                        },
+                        "Addons": {
+                            "ScoreFormula": "clamp(100 - (Value * (100 / 4)), 0, 100)"
+                        }
+                    },
+                    {
+                        "Base": {
+                            "Id": "disc_reserve_no_comment",
+                            "Weight": 8
+                        },
+                        "Value": {
+                            "Body": "عدد مرات استخدام ساعات احتياطية بدون تعليق بالسبب",
+                            "MinValueMeaning": "تعليقات واضحة دائماً",
+                            "MaxValueMeaning": "غياب توضيح السبب",
+                            "MinValue": 0,
+                            "MaxValue": 10,
+                            "DefaultValue": 0
+                        },
+                        "Addons": {
+                            "ScoreFormula": "clamp(100 - (Value * (100 / 8)), 0, 100)"
+                        }
+                    },
+                    {
+                        "Base": {
+                            "Id": "disc_overdue_no_comment",
+                            "Weight": 8
+                        },
+                        "Value": {
+                            "Body": "عدد المهام المتأخرة بدون تعليق توضيحي",
+                            "MinValueMeaning": "توضيح كامل للتأخير",
+                            "MaxValueMeaning": "تأخير بلا تفسير",
+                            "MinValue": 0,
+                            "MaxValue": 10,
+                            "DefaultValue": 0
+                        },
+                        "Addons": {
+                            "ScoreFormula": "clamp(100 - (Value * (100 / 4)), 0, 100)"
+                        }
+                    },
+                    {
+                        "Base": {
+                            "Id": "disc_no_progress_review",
+                            "Weight": 4
+                        },
+                        "Value": {
+                            "Body": "عدد مرات عدم وجود تقدم في Progress Bar وقت المراجعة",
+                            "MinValueMeaning": "تقدم واضح دائماً",
+                            "MaxValueMeaning": "غياب تقدم متكرر",
+                            "MinValue": 0,
+                            "MaxValue": 10,
+                            "DefaultValue": 0
+                        },
+                        "Addons": {
+                            "ScoreFormula": "clamp(100 - (Value * (100 / 10)), 0, 100)"
+                        }
+                    }
+                ]
+            },
+            "Addons": {
+                "ByTeamLeaderOnly": true
+            }
         }
-      ]
-    },
-    {
-      "Name": "المهارات الشخصية (Soft Skills)",
-      "Weight": 26,
-      "Include": true,
-      "TeamLeaderOnly": false,
-      "MinScore": 0,
-      "MaxScore": 100,
-      "ScoreFormula": null,
-      "ScoreMeaning": "يعكس هذا القسم تطور الموظف لمواكبة التغيرات والمتطلبات",
-      "Questions": [
-        {
-          "Id": "soft1",
-          "Text": "مدى تطور الخبرة وسرعة التعلم",
-          "Weight": 34,
-          "Include": true,
-          "TeamLeaderOnly": false,
-          "MinValue": 0,
-          "MaxValue": 100,
-          "DefaultValue": 0,
-          "ScoreFormula": "QuestionScore = Value",
-          "CombinedScoreFormula": "QuestionScore = median(Scores)",
-          "MinValueMeaning": "نمو بطيء/تكرار نفس الأخطاء",
-          "MaxValueMeaning": "تحسن سريع وتعلم مستمر"
-        },
-        {
-          "Id": "soft2",
-          "Text": "المبادرة في تقديم المساعدة دون طلب",
-          "Weight": 33,
-          "Include": true,
-          "TeamLeaderOnly": false,
-          "MinValue": 0,
-          "MaxValue": 100,
-          "DefaultValue": 0,
-          "ScoreFormula": "QuestionScore = Value",
-          "CombinedScoreFormula": "QuestionScore = median(Scores)",
-          "MinValueMeaning": "لا يبادر بالمساعدة نهائيا",
-          "MaxValueMeaning": "يبادر ويمنع التعطيل قبل حدوثه قبل حتى ان تطلب"
-        },
-        {
-          "Id": "soft3",
-          "Text": "تقبل النقد البناء واختلاف وجهات النظر",
-          "Weight": 33,
-          "Include": true,
-          "TeamLeaderOnly": false,
-          "MinValue": 0,
-          "MaxValue": 100,
-          "DefaultValue": 0,
-          "ScoreFormula": "QuestionScore = Value",
-          "CombinedScoreFormula": "QuestionScore = median(Scores)",
-          "MinValueMeaning": "دفاعية/رفض ملاحظات",
-          "MaxValueMeaning": "يتقبل النقد ويحوّله لتحسين"
-        }
-      ]
-    },
-    {
-      "Name": "الانضباط التراكمي",
-      "Weight": 12,
-      "Include": true,
-      "TeamLeaderOnly": true,
-      "MinScore": 0,
-      "MaxScore": 100,
-      "ScoreFormula": null,
-      "ScoreMeaning": "يعكس هذا القسم انضباط الموظف وفقا للقواعد المعتمده",
-      "Questions": [
-        {
-          "Id": "disc_wip",
-          "Text": "عدد مخالفات قاعدة: لا يوجد مهمتان قيد التنفيذ (WIP=1)",
-          "Weight": 12,
-          "Include": true,
-          "TeamLeaderOnly": true,
-          "MinValue": 0,
-          "MaxValue": 10,
-          "DefaultValue": 0,
-          "ScoreFormula": "QuestionScore = clamp(100 - (Value * (100 / 3)), 0, 100)",
-          "CombinedScoreFormula": "QuestionScore = median(Scores)",
-          "MinValueMeaning": "لا توجد مخالفات",
-          "MaxValueMeaning": "مخالفات متكررة"
-        },
-        {
-          "Id": "disc_14h",
-          "Text": "عدد مرات اغلاق مهمه غير مسؤول عن مراجعتها وإغلاقها",
-          "Weight": 12,
-          "Include": true,
-          "TeamLeaderOnly": true,
-          "MinValue": 0,
-          "MaxValue": 10,
-          "DefaultValue": 0,
-          "ScoreFormula": "QuestionScore = clamp(100 - (Value * (100 / 4)), 0, 100)",
-          "CombinedScoreFormula": "QuestionScore = median(Scores)",
-          "MinValueMeaning": "نهائيا",
-          "MaxValueMeaning": "متكررة كتيرا"
-        },
-        {
-          "Id": "disc_dod",
-          "Text": "عدد محاولات إغلاق غير مطابق لتعريف Done",
-          "Weight": 16,
-          "Include": true,
-          "TeamLeaderOnly": true,
-          "MinValue": 0,
-          "MaxValue": 10,
-          "DefaultValue": 0,
-          "ScoreFormula": "QuestionScore = clamp(100 - (Value * (100 / 4)), 0, 100)",
-          "CombinedScoreFormula": "QuestionScore = median(Scores)",
-          "MinValueMeaning": "إغلاق منضبط",
-          "MaxValueMeaning": "محاولات خاطئة متكررة"
-        },
-        {
-          "Id": "disc_questions_unanswered",
-          "Text": "عدد الأسئلة داخل ملاحظات اليوم بدون رد",
-          "Weight": 10,
-          "Include": true,
-          "TeamLeaderOnly": true,
-          "MinValue": 0,
-          "MaxValue": 10,
-          "DefaultValue": 0,
-          "ScoreFormula": "QuestionScore = clamp(100 - (Value * (100 / 6)), 0, 100)",
-          "CombinedScoreFormula": "QuestionScore = median(Scores)",
-          "MinValueMeaning": "تفاعل كامل",
-          "MaxValueMeaning": "تجاهل متكرر"
-        },
-        {
-          "Id": "disc_questions_time",
-          "Text": "مدى التأخر فى الرد على التعليقات",
-          "Weight": 10,
-          "Include": true,
-          "TeamLeaderOnly": true,
-          "MinValue": 0,
-          "MaxValue": 100,
-          "DefaultValue": 0,
-          "ScoreFormula": "QuestionScore = 100 - Value",
-          "CombinedScoreFormula": "QuestionScore = median(Scores)",
-          "MinValueMeaning": "تفاعل كامل",
-          "MaxValueMeaning": "تجاهل طويل"
-        },
-        {
-          "Id": "disc_wrong_due_date",
-          "Text": "عدد مرات وضع Due Date غير صحيح أو غير موجود عند بدء المهمة",
-          "Weight": 10,
-          "Include": true,
-          "TeamLeaderOnly": true,
-          "MinValue": 0,
-          "MaxValue": 10,
-          "DefaultValue": 0,
-          "ScoreFormula": "QuestionScore = clamp(100 - (Value * (100 / 7)), 0, 100)",
-          "CombinedScoreFormula": "QuestionScore = median(Scores)",
-          "MinValueMeaning": "تواريخ صحيحة دائماً",
-          "MaxValueMeaning": "تواريخ غير منضبطة"
-        },
-        {
-          "Id": "disc_workspace_not_updated",
-          "Text": "عدد مرات عدم تحديث الـ Workspace في موعده",
-          "Weight": 8,
-          "Include": true,
-          "TeamLeaderOnly": true,
-          "MinValue": 0,
-          "MaxValue": 10,
-          "DefaultValue": 0,
-          "ScoreFormula": "QuestionScore = clamp(100 - (Value * (100 / 7)), 0, 100)",
-          "CombinedScoreFormula": "QuestionScore = median(Scores)",
-          "MinValueMeaning": "تحديث منتظم",
-          "MaxValueMeaning": "إهمال متكرر"
-        },
-        {
-          "Id": "disc_reserve_overuse_no_permission",
-          "Text": "عدد مرات استخدام ساعات احتياطية فوق المتفق عليه بدون تنسيق",
-          "Weight": 12,
-          "Include": true,
-          "TeamLeaderOnly": true,
-          "MinValue": 0,
-          "MaxValue": 10,
-          "DefaultValue": 0,
-          "ScoreFormula": "QuestionScore = clamp(100 - (Value * (100 / 4)), 0, 100)",
-          "CombinedScoreFormula": "QuestionScore = median(Scores)",
-          "MinValueMeaning": "التزام كامل",
-          "MaxValueMeaning": "تجاوز بدون تنسيق"
-        },
-        {
-          "Id": "disc_reserve_no_comment",
-          "Text": "عدد مرات استخدام ساعات احتياطية بدون تعليق بالسبب",
-          "Weight": 8,
-          "Include": true,
-          "TeamLeaderOnly": true,
-          "MinValue": 0,
-          "MaxValue": 10,
-          "DefaultValue": 0,
-          "ScoreFormula": "QuestionScore = clamp(100 - (Value * (100 / 8)), 0, 100)",
-          "CombinedScoreFormula": "QuestionScore = median(Scores)",
-          "MinValueMeaning": "تعليقات واضحة دائماً",
-          "MaxValueMeaning": "غياب توضيح السبب"
-        },
-        {
-          "Id": "disc_overdue_no_comment",
-          "Text": "عدد المهام المتأخرة بدون تعليق توضيحي",
-          "Weight": 8,
-          "Include": true,
-          "TeamLeaderOnly": true,
-          "MinValue": 0,
-          "MaxValue": 10,
-          "DefaultValue": 0,
-          "ScoreFormula": "QuestionScore = clamp(100 - (Value * (100 / 4)), 0, 100)",
-          "CombinedScoreFormula": "QuestionScore = median(Scores)",
-          "MinValueMeaning": "توضيح كامل للتأخير",
-          "MaxValueMeaning": "تأخير بلا تفسير"
-        },
-        {
-          "Id": "disc_no_progress_review",
-          "Text": "عدد مرات عدم وجود تقدم في Progress Bar وقت المراجعة",
-          "Weight": 4,
-          "Include": true,
-          "TeamLeaderOnly": true,
-          "MinValue": 0,
-          "MaxValue": 10,
-          "DefaultValue": 0,
-          "ScoreFormula": "QuestionScore = clamp(100 - (Value * (100 / 10)), 0, 100)",
-          "CombinedScoreFormula": "QuestionScore = median(Scores)",
-          "MinValueMeaning": "تقدم واضح دائماً",
-          "MaxValueMeaning": "غياب تقدم متكرر"
-        }
-      ]
-    }
-  ]
+    ]
 }

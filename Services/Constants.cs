@@ -8,17 +8,19 @@
 
     public static string DesktopPath => Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
 
+    public const string ExcelPostfix = ".xlsx";
+    public const string EvaluationSperator = "Evaulated";
+
     public const string SYSTEM_EVALUATION_CODE = "System";
 
-    public const string TEAM_MEMBERS_REPORT_FILE_NAME = "Team Members.xlsx";
-    public const string SYSTEM_EVALUATION_FILE_NAME = "System.xlsx";
-    public const string FULL_SURVEY_FILE_NAME = "Full Servey.xlsx";
-    public const string SPRINT_FULL_SURVEY_FILE_NAME = "Sprint Full Survey.xlsx";
+    public const string TEAM_MEMBERS_REPORT_FILE_NAME = "Team Members";
+    public const string FULL_SURVEY_FILE_NAME = "Full Servey";
+    public const string SPRINT_FULL_SURVEY_FILE_NAME = "Sprint Full Survey";
 
     public const string WORKSHEET_SYSTEM_TITLE = "System Evaluation";
     public const string WORKSHEET_EMPLOYEE_TITLE_PREFIX = "Employee Evaluation - ";
 
-    public const string LABEL_SECTION_TOTAL = "Section Total";
+    public const string POSTFIX_ENTITY_TOTAL = " - Total";
     public const string LABEL_TOTAL = "Total";
     public const string LABEL_NOTES = "Suggestions / Notes";
     public const string LABEL_TEAM_LEADER_ASSISTANT_READY = "Ready to be team leader assistant";
@@ -26,6 +28,11 @@
     public const string LABEL_TEAM_LEADER_ASSISTANT_YES = "Yes";
     public const string LABEL_TEAM_LEADER_ASSISTANT_NO = "No";
 
-    public const int COLUMN_LABEL = 1;
-    public const int COLUMN_VALUE = 2;
+    public const int ROW_HEADER_VISIBLE = 1;
+    public const int ROW_EVALUATOR_META = 2; 
+
+    public const int COLUMN_ID = 1;
+    public const int COLUMN_LABEL = 2;
+    public const int COLUMN_MEANING= 3;
+    public const int COLUMN_START_VALUE = 4;
 }

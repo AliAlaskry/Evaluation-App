@@ -1,6 +1,4 @@
-﻿using Evaluation_App.Services;
-using System.Net.Security;
-using static Constants;
+﻿using static EvaluationFormHelper;
 
 namespace Evaluation_App.Forms
 {
@@ -9,10 +7,9 @@ namespace Evaluation_App.Forms
         private bool _isNavigating;
         private readonly Dictionary<string, TrackBar> _inputControls = new();
         private readonly Dictionary<string, Label> _valueLabels = new();
-        private SystemEvaluation _evaluation;
+        private EvaluationInstance _evaluationInstance;
 
-        private SystemEvaluationOptions _systemOptions => ConfigLoader.SystemEvaluationConfig.Options;
-        private EmployeeEvaluationOptions _employeeOptions => ConfigLoader.EmployeeEvaluationConfig.Options;
+        private SystemEvaluationOptions _systemOptions => ConfigLoader.SystemEvaluationOptions;
 
         public SystemEvaluationForm()
         {
@@ -20,20 +17,24 @@ namespace Evaluation_App.Forms
             FormClosing += SystemEvaluationForm_FormClosing;
             Text = $"تقييم النظام - {AuthService.CurrentUser.Name} ({AuthService.CurrentUser.Code})";
 
-            _evaluation = EvaluationService.LoadEvaluation<SystemEvaluation>
-                (EvaluationBase.BuildFilename(AuthService.CurrentUser))
-                ?? new SystemEvaluation(AuthService.CurrentUser,  
-                    ConfigLoader.SystemEvaluationConfig.FilteredSectionsForCurrentUser);
+            _evaluationInstance = EvaluationService.LoadEvaluation
+                (ExcelExportService.GetFileName(AuthService.CurrentUser))
+                ?? new EvaluationInstance(AuthService.CurrentUser);
 
-            chkTeamLeadAssistant.Visible = !AuthService.CurrentUser.IsTeamLead 
-                && _employeeOptions.AskPreferTeamLeaderAssistant;
-            chkTeamLeadAssistant.Checked = _evaluation.ReadyToBeAssistantTeamLeader;
+            chkTeamLeadAssistant.Visible =_evaluationInstance.AssistantSectionEnabled();
+            chkTeamLeadAssistant.Checked = _evaluationInstance.ReadyToBeAssistantTeamLeader;
+
+            lstIssues.MeasureItem += lstIssues_MeasureItem;
+            lstIssues.DrawItem += lstIssues_DrawItem;
+
+            Initialize(flowLayoutPanel1, _inputControls, _valueLabels, chkTeamLeadAssistant,
+                txtSuggestions, _evaluationInstance);
 
             LoadSections();
-            LoadPreviousAnswers();
+            LoadValues(_evaluationInstance);
             LoadIssues();
 
-            txtSuggestions.Text = _evaluation.FinalNote;
+            txtSuggestions.Text = _evaluationInstance.FinalNote;
         }
 
         private void SystemEvaluationForm_FormClosing(object? sender, FormClosingEventArgs e)
@@ -50,118 +51,10 @@ namespace Evaluation_App.Forms
             }
         }
 
-        private void LoadSections()
-        {
-            flowLayoutPanel1.Controls.Clear();
-            _inputControls.Clear();
-            _valueLabels.Clear();
-
-            foreach (var section in _evaluation.Sections)
-            {
-                var sectionLabel = new Label
-                {
-                    Text = section.Name,
-                    AutoSize = false,
-                    Width = flowLayoutPanel1.Width - 25,
-                    Font = new Font("Segoe UI", 10, FontStyle.Bold),
-                    TextAlign = ContentAlignment.MiddleRight,
-                    Margin = new Padding(3, 10, 3, 3)
-                };
-                flowLayoutPanel1.Controls.Add(sectionLabel);
-
-                foreach (var question in section.Questions)
-                {
-                    var panel = new Panel
-                    {
-                        Width = flowLayoutPanel1.Width - 25,
-                        Height = 116,
-                        Margin = new Padding(3),
-                        RightToLeft = RightToLeft.Yes
-                    };
-
-                    var qLabel = new Label
-                    {
-                        Text = question.Text,
-                        AutoSize = false,
-                        Width = panel.Width,
-                        Height = 24,
-                        Location = new Point(0, 0),
-                        TextAlign = ContentAlignment.MiddleRight
-                    };
-
-                    int min = (int)Math.Round(question.MinValue);
-                    int max = (int)Math.Round(question.MaxValue);
-                    int def = Math.Clamp((int)Math.Round(question.DefaultValue), min, max);
-
-                    var slider = new TrackBar
-                    {
-                        Minimum = min,
-                        Maximum = max,
-                        Value = def,
-                        TickStyle = TickStyle.None,
-                        AutoSize = false,
-                        Width = panel.Width - 20,
-                        Height = 30,
-                        Name = question.Id,
-                        Location = new Point(10, 42),
-                        RightToLeft = RightToLeft.No
-                    };
-
-                    const int hintLabelY = 76;
-                    int hintLabelWidth = (slider.Width / 2) - 4;
-
-                    var minLabel = new Label
-                    {
-                        Text = question.MinValueMeaning,
-                        AutoSize = false,
-                        Width = hintLabelWidth,
-                        Height = 30,
-                        Location = new Point(slider.Left, hintLabelY),
-                        TextAlign = ContentAlignment.TopLeft,
-                        ForeColor = Color.DimGray
-                    };
-
-                    var maxLabel = new Label
-                    {
-                        Text = question.MaxValueMeaning,
-                        AutoSize = false,
-                        Width = hintLabelWidth,
-                        Height = 30,
-                        Location = new Point(slider.Right - hintLabelWidth, hintLabelY),
-                        TextAlign = ContentAlignment.TopRight,
-                        ForeColor = Color.DimGray
-                    };
-
-                    var valueLabel = new Label
-                    {
-                        Text = string.Empty,
-                        AutoSize = false,
-                        Width = 48,
-                        Height = 20,
-                        Location = new Point(slider.Left, slider.Top - 18),
-                        TextAlign = ContentAlignment.MiddleCenter,
-                        Font = new Font("Segoe UI", 9F, FontStyle.Bold)
-                    };
-
-                    slider.ValueChanged += (_, _) => UpdateValueLabelPosition(valueLabel, slider);
-
-                    panel.Controls.Add(qLabel);
-                    panel.Controls.Add(slider);
-                    panel.Controls.Add(minLabel);
-                    panel.Controls.Add(maxLabel);
-                    panel.Controls.Add(valueLabel);
-                    UpdateValueLabelPosition(valueLabel, slider);
-                    flowLayoutPanel1.Controls.Add(panel);
-
-                    _inputControls[question.Id] = slider;
-                    _valueLabels[question.Id] = valueLabel;
-                }
-            }
-        }
-
         private void LoadIssues()
         {
             lstIssues.Items.Clear();
+            lstIssues.Enabled = false;
 
             if (_systemOptions.IssuesToResolve == null || !_systemOptions.IssuesToResolve.Any())
             {
@@ -176,226 +69,144 @@ namespace Evaluation_App.Forms
             lblIssues.Visible = true;
             lstIssues.Visible = true;
 
-            int i = 1;
+            lstIssues.Items.Clear();
             foreach (var issue in _systemOptions.IssuesToResolve)
-            {
-                lstIssues.Items.Add($"{i}. {issue}");
-                i++;
-            }
+                lstIssues.Items.Add(issue);
         }
 
-        private void LoadPreviousAnswers()
+        private int PrefixWidth(Graphics g)
         {
-            foreach (var kvp in _inputControls)
-            {
-                if (_evaluation.Questions.TryGetValue(kvp.Key, out var value))
-                {
-                    kvp.Value.Value = Math.Clamp((int)Math.Round(value.Value), kvp.Value.Minimum, kvp.Value.Maximum);
-                    UpdateValueLabelPosition(_valueLabels[kvp.Key], kvp.Value);
-                }
-            }
+            int maxN = Math.Max(1, lstIssues.Items.Count);
+            string prefix = $"{maxN}. ";
+            return TextRenderer.MeasureText(g, prefix, lstIssues.Font).Width;
         }
 
-        private static void UpdateValueLabelPosition(Label valueLabel, TrackBar slider)
+        private void lstIssues_MeasureItem(object? sender, MeasureItemEventArgs e)
         {
-            valueLabel.Text = slider.Value.ToString();
+            if (e.Index < 0) return;
 
-            int valueRange = Math.Max(1, slider.Maximum - slider.Minimum);
-            int trackWidth = Math.Max(1, slider.Width - 16);
-            double ratio = (slider.Value - slider.Minimum) / (double)valueRange;
-            int thumbX = slider.Left + 8 + (int)Math.Round(trackWidth * ratio);
+            using var g = lstIssues.CreateGraphics();
+            int prefixW = PrefixWidth(g);
 
-            valueLabel.Left = Math.Clamp(thumbX - (valueLabel.Width / 2), slider.Left, slider.Right - valueLabel.Width);
-            valueLabel.Top = slider.Top - 18;
+            int textWidth = Math.Max(1, lstIssues.ClientSize.Width - prefixW - 6);
+            string text = lstIssues.Items[e.Index]?.ToString() ?? "";
+
+            var size = TextRenderer.MeasureText(
+                g,
+                text,
+                lstIssues.Font,
+                new Size(textWidth, int.MaxValue),
+                TextFormatFlags.WordBreak | TextFormatFlags.TextBoxControl | TextFormatFlags.RightToLeft
+            );
+
+            e.ItemHeight = Math.Max(lstIssues.Font.Height + 4, size.Height + 4);
         }
 
-        private void ApplyInputsToModel()
+        private void lstIssues_DrawItem(object? sender, DrawItemEventArgs e)
         {
-            foreach (var section in _evaluation.Sections)
-            foreach (var question in section.Questions)
-                if (_inputControls.TryGetValue(question.Id, out var slider))
-                    question.Value = slider.Value;
+            if (e.Index < 0) return;
 
-            _evaluation.ReadyToBeAssistantTeamLeader = chkTeamLeadAssistant.Checked;
-            _evaluation.FinalNote = txtSuggestions.Text;
-            _evaluation.CalculateScore();
-        }
+            e.DrawBackground();
 
-        private bool HasChanges()
-        {
-            foreach (var section in _evaluation.Sections)
-                foreach (var question in section.Questions)
-                    if (_inputControls.TryGetValue(question.Id, out var slider))
-                        if (question.Value != slider.Value)
-                            return true;
+            string text = lstIssues.Items[e.Index]?.ToString() ?? "";
+            string prefix = $"{e.Index + 1}. ";
 
-            if (_evaluation.ReadyToBeAssistantTeamLeader != chkTeamLeadAssistant.Checked)
-                return true;
+            int fixedPrefixW = PrefixWidth(e.Graphics);
 
-            if(!_evaluation.FinalNote.Equals(txtSuggestions.Text))
-                return true;
+            // في RTL: الرقم على اليمين
+            var prefixRect = new Rectangle(
+                e.Bounds.Right - fixedPrefixW - 2,
+                e.Bounds.Y + 2,
+                fixedPrefixW,
+                e.Bounds.Height - 4
+            );
 
-            return false;
+            // النص على يسار الرقم ويُلف (wrap)
+            var textRect = new Rectangle(
+                e.Bounds.X + 2,
+                e.Bounds.Y + 2,
+                e.Bounds.Width - fixedPrefixW - 6,
+                e.Bounds.Height - 4
+            );
+
+            var prefixFlags = TextFormatFlags.Right | TextFormatFlags.Top | TextFormatFlags.RightToLeft;
+            var textFlags = TextFormatFlags.WordBreak | TextFormatFlags.TextBoxControl
+                            | TextFormatFlags.RightToLeft | TextFormatFlags.Right;
+
+            TextRenderer.DrawText(e.Graphics, prefix, lstIssues.Font, prefixRect, e.ForeColor, prefixFlags);
+            TextRenderer.DrawText(e.Graphics, text, lstIssues.Font, textRect, e.ForeColor, textFlags);
+
+            e.DrawFocusRectangle();
         }
 
         private void btnSave_Click(object sender, EventArgs e)
         {
-            if (!HasChanges())
-            {
-                MessageBox.Show("لا توجد تغييرات للحفظ.");
-                return;
-            }
-
-            var confirm = MessageBox.Show("هل تريد حفظ التغييرات؟", "تأكيد الحفظ", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-            if (confirm != DialogResult.Yes)
-                return;
-
-            if (!ConfirmSaveWithDefaultValuesWarning())
-                return;
-
-            ApplyInputsToModel();
-            _evaluation.CalculateScore();
-            EvaluationService.Save(_evaluation);
-            MessageBox.Show("تم الحفظ بنجاح.");
+            Save();
         }
 
         private void btnReset_Click(object sender, EventArgs e)
         {
-            if (HasChanges())
-            {
-                var result = MessageBox.Show(
-                 "لم يتم حفظ المعلومات. هل تريد الحفظ والمتابعه؟",
-                 "تنبة قبل التصدير",
-                 MessageBoxButtons.YesNo,
-                 MessageBoxIcon.Warning);
-
-                if (result == DialogResult.No)
-                    return;
-            }
-
-            foreach (var section in _evaluation.Sections)
-                foreach (var question in section.Questions)
-                    if (_inputControls.TryGetValue(question.Id, out var slider))
-                        slider.Value = Math.Clamp((int)Math.Round(question.DefaultValue),
-                            slider.Minimum, slider.Maximum);
-
-            txtSuggestions.Text = string.Empty;
-            chkTeamLeadAssistant.Checked = false;
-            MessageBox.Show("تمت إعادة الضبط.");
+            Reset();
         }
 
         private void btnLoad_Click(object sender, EventArgs e)
         {
-            using var dialog = new OpenFileDialog
-            {
-                Filter = "Excel files (*.xlsx)|*.xlsx",
-                Title = "تحميل تقييم النظام من ملف Excel"
-            };
-
-            if (dialog.ShowDialog() != DialogResult.OK)
-                return;
-
-            SystemEvaluation tempEval = _evaluation.Clone();
-            
-            if (!ExcelExportService.TryLoadSystemEvaluationFromExcel(dialog.FileName, _evaluation))
-            {
-                MessageBox.Show("تعذر تحميل البيانات من ملف Excel المحدد.");
-                return;
-            }
-
-            LoadPreviousAnswers();
-            txtSuggestions.Text = _evaluation.FinalNote;
-            chkTeamLeadAssistant.Checked = _evaluation.ReadyToBeAssistantTeamLeader;
-
-            _evaluation = tempEval;
-
-            MessageBox.Show("تم التحميل بنجاح.");
+            EvaluationFormHelper.Load("تحميل تقييم النظام من ملف Excel");
         }
 
         private void btnGenerateExcel_Click(object sender, EventArgs e)
         {
-            if (HasChanges())
-            {
-                var result = MessageBox.Show(
-                 "لم يتم حفظ المعلومات. هل تريد الحفظ والمتابعه؟",
-                 "تنبة قبل التصدير",
-                 MessageBoxButtons.YesNo,
-                 MessageBoxIcon.Warning);
-
-                if (result == DialogResult.No)
-                    return;
-            }
-
-            ApplyInputsToModel();
-            _evaluation.CalculateScore();
-            EvaluationService.Save(_evaluation);
-
-            if (ExcelExportService.TryExportSystemEvaluation(_evaluation))
-                MessageBox.Show("تم إنشاء تقرير Excel على سطح المكتب.");
+            Generate();
         }
 
         private void btnBack_Click(object sender, EventArgs e)
         {
-            var shouldNavigate = ConfirmSaveBeforeBack();
-            if (!shouldNavigate)
-                return;
+            if (HasChanges())
+            {
+                var result = MessageBox.Show(
+                     "هل تريد حفظ التقييم قبل الرجوع؟",
+                     "تنبيه قبل العوده!",
+                     MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+
+                if (result == DialogResult.Cancel)
+                    return;
+
+                if (result == DialogResult.Yes)
+                {
+                    if (HasAnyInputWithDefaultValue())
+                    {
+                        var confirm = MessageBox.Show(
+                            "هناك عناصر ما زالت على القيم الافتراضية. هل تريد المتابعة بالحفظ؟",
+                            "تنبيه قبل الحفظ",
+                            MessageBoxButtons.YesNo,
+                            MessageBoxIcon.Warning);
+
+                        if (confirm != DialogResult.Yes)
+                            return;
+                    }
+                    else
+                    {
+                        var confirm = MessageBox.Show(
+                            "هناك عناصر ما زالت على القيم الافتراضية. هل تريد المتابعة بالحفظ؟",
+                            "تنبيه قبل الحفظ",
+                            MessageBoxButtons.YesNo,
+                            MessageBoxIcon.Question);
+
+                        if (confirm != DialogResult.Yes)
+                            return;
+                    }
+
+                    ApplyInputsToModel();
+                    _evaluationInstance.CalculateScore();
+                    EvaluationService.Save(_evaluationInstance);
+                    MessageBox.Show("تم الحفظ بنجاح.");
+                }
+            }
 
             var surveyForm = new SurveyForm();
             surveyForm.Show();
             _isNavigating = true;
             Hide();
-        }
-
-        private bool ConfirmSaveBeforeBack()
-        {
-            if (!HasChanges())
-                return true;
-
-            var result = MessageBox.Show("هل تريد حفظ التقييم قبل الرجوع؟", "تأكيد", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
-
-            if (result == DialogResult.Cancel)
-                return false;
-
-            if (result == DialogResult.Yes)
-            {
-                if (!ConfirmSaveWithDefaultValuesWarning())
-                    return false;
-
-                ApplyInputsToModel();
-                _evaluation.CalculateScore();
-                EvaluationService.Save(_evaluation);
-            }
-
-            return true;
-        }
-
-        private bool ConfirmSaveWithDefaultValuesWarning()
-        {
-            if (!HasAnyInputWithDefaultValue())
-                return true;
-
-            var result = MessageBox.Show(
-                 "هناك عناصر ما زالت على القيم الافتراضية. هل تريد المتابعة بالحفظ؟",
-                 "تنبيه قبل الحفظ",
-                 MessageBoxButtons.YesNo,
-                 MessageBoxIcon.Warning);
-
-            return result == DialogResult.Yes;
-        }
-
-        private bool HasAnyInputWithDefaultValue()
-        {
-            foreach (var section in _evaluation.Sections)
-            foreach (var question in section.Questions)
-                if (_inputControls.TryGetValue(question.Id, out var slider))
-                {
-                    int defaultValue = Math.Clamp((int)Math.Round(question.DefaultValue), 
-                        slider.Minimum, slider.Maximum);
-                    if (slider.Value == defaultValue)
-                        return true;
-                }
-
-            return false;
         }
     }
 }

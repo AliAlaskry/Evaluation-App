@@ -1,5 +1,3 @@
-using Evaluation_App.Services;
-
 namespace Evaluation_App.Forms;
 
 public class ConfigFilesMenuForm : Form
@@ -45,11 +43,11 @@ public class ConfigFilesMenuForm : Form
 
         string projectPath = Directory.GetParent(Application.StartupPath).Parent.Parent.Parent.FullName;
 
-        _btnSysEval.Click += (_, _) => Navigate(new JsonConfigEditorForm("System Evaluation Config", 
+        _btnSysEval.Click += (_, _) => Navigate(new JsonConfigEditorForm("System Evaluation Config",
             Path.Combine(projectPath, "Data", "system_evaluation_config.json")));
-        _btnEmpEval.Click += (_, _) => Navigate(new JsonConfigEditorForm("Employee Evaluation Config", 
+        _btnEmpEval.Click += (_, _) => Navigate(new JsonConfigEditorForm("Employee Evaluation Config",
             Path.Combine(projectPath, "Data", "employee_evaluation_config.json")));
-        _btnEmployees.Click += (_, _) => Navigate(new JsonConfigEditorForm("Employees", 
+        _btnEmployees.Click += (_, _) => Navigate(new JsonConfigEditorForm("Employees",
             Path.Combine(projectPath, "Data", "employees.json")));
         _btnBack.Click += (_, _) =>
         {

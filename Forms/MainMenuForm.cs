@@ -1,7 +1,3 @@
-using DocumentFormat.OpenXml.Wordprocessing;
-using Evaluation_App.Services;
-using System.Diagnostics;
-
 namespace Evaluation_App.Forms
 {
     public partial class MainMenuForm : Form
@@ -59,15 +55,16 @@ namespace Evaluation_App.Forms
 
         private void BtnSurvey_Click(object? sender, EventArgs e)
         {
+            if (MessageBox.Show("هل تريد بدء الإستبيان من جديد؟", "تأكيد؟", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
+                == DialogResult.Yes)
+            {
+                EvaluationService.ResetAll();
+            }
+
             var surveyForm = new SurveyForm();
             surveyForm.Show();
             _isNavigating = true;
             Hide();
-        }
-
-        private void BtnCreateReport_Click(object? sender, EventArgs e)
-        {
-            
         }
 
         private void BtnLogout_Click(object? sender, EventArgs e)

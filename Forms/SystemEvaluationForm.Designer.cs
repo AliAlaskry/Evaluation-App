@@ -78,7 +78,7 @@
             lblIssues.Name = "lblIssues";
             lblIssues.Size = new Size(106, 15);
             lblIssues.TabIndex = 8;
-            lblIssues.Text = "قضايا بحاجة لمعالجة";
+            lblIssues.Text = "قول رايك فى الآتى";
             // 
             // lstIssues
             // 
@@ -86,7 +86,10 @@
             lstIssues.Name = "lstIssues";
             lstIssues.SelectionMode = SelectionMode.None;
             lstIssues.Size = new Size(736, 94);
+            lstIssues.RightToLeft = RightToLeft.Yes;
             lstIssues.TabIndex = 7;
+            lstIssues.DrawMode = DrawMode.OwnerDrawVariable;
+            lstIssues.HorizontalScrollbar = false;
             // 
             // lblSuggestions
             // 

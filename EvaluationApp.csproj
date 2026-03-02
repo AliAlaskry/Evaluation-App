@@ -21,10 +21,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Utils\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Content Include="Data\**\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

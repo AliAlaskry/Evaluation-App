@@ -1,6 +1,4 @@
-﻿using Evaluation_App.Services;
-
-namespace Evaluation_App.Forms
+﻿namespace Evaluation_App.Forms
 {
     public partial class EmployeeListForm : Form
     {
@@ -34,7 +32,7 @@ namespace Evaluation_App.Forms
             allEmployees = EmployeeService.OtherEmployees;
 
             lstEmployees.DataSource = allEmployees;
-            lstEmployees.DisplayMember = "Name";
+            lstEmployees.DisplayMember = "Title";
             lstEmployees.ValueMember = "Code";
         }
 

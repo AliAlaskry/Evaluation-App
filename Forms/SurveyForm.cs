@@ -1,6 +1,4 @@
-﻿using Evaluation_App.Services;
-
-namespace Evaluation_App.Forms
+﻿namespace Evaluation_App.Forms
 {
     public partial class SurveyForm : Form
     {
@@ -14,7 +12,7 @@ namespace Evaluation_App.Forms
             btnMergeAllExcel.Visible = AuthService.CurrentUser.IsTeamLead;
             btnMergeAllExcel.Enabled = AuthService.CurrentUser.IsTeamLead;
 
-            if(!AuthService.CurrentUser.IsTeamLead)
+            if (!AuthService.CurrentUser.IsTeamLead)
             {
                 btnBack.Location = btnMergeAllExcel.Location;
             }
@@ -58,9 +56,9 @@ namespace Evaluation_App.Forms
             {
                 DialogResult result = MessageBox.Show("هل تود انشاء تقرير بما تم الى الآن؟", "تأكيد",
                     MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-                if(result == DialogResult.Yes)
+                if (result == DialogResult.Yes)
                 {
-                    if(ExcelExportService.TryExportExistEvals())
+                    if (ExcelExportService.TryExportExistEvals())
                         MessageBox.Show("تم إنشاء التقرير المطلوب على سطح المكتب.");
                 }
             }
