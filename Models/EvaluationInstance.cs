@@ -111,6 +111,10 @@ internal class EvaluationInstance
     #endregion
 
     #region Public Methods
+    public List<EntityBase> GetAllRootEntities()
+    {
+        return GetAllRootEntities(entities);
+    }
     public EntityBase? SearchFor(Func<EntityBase, bool> predicate)
     {
         return SearchFor(Entities, predicate);
@@ -185,6 +189,19 @@ internal class EvaluationInstance
             {"EntityScore", new FormulaEngine.Value(EntityScores) },
             {"EntityWeight", new FormulaEngine.Value(EntityWeights) },
         };
+    }
+    private List<EntityBase> GetAllRootEntities(List<EntityBase> entities)
+    {
+        var list = new List<EntityBase>();
+        foreach (var entity in entities)
+        {
+            if(entity.RootConfig.HasValue)
+            {
+                list.Add(entity.Clone());
+                list.AddRange(GetAllRootEntities(entity.RootConfig.Value.Childs));
+            }
+        }
+        return list;
     }
     private EntityBase? SearchFor(List<EntityBase> entities, Func<EntityBase, bool> predicate)
     {

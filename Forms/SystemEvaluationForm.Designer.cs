@@ -99,7 +99,7 @@
             lblSuggestions.Name = "lblSuggestions";
             lblSuggestions.Size = new Size(104, 15);
             lblSuggestions.TabIndex = 6;
-            lblSuggestions.Text = "ملاحظات / اقتراحات";
+            lblSuggestions.Text = "سمعنا حلولك، ضيف افكارك، قول ملاحظاتك، ثم وجه كلمه للفريق.";
             // 
             // txtSuggestions
             // 

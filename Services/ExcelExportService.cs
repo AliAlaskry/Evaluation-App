@@ -12,8 +12,6 @@ internal static class ExcelExportService
 
         string fileName = eval.FileNameWithExension.BuildDesktopExportPath();
 
-        eval.CalculateScore();
-
         using var workbook = new XLWorkbook();
         WriteAndFillEvaluationSheet(workbook, eval, WriteConfig.FullWrite());
 
@@ -41,7 +39,6 @@ internal static class ExcelExportService
             if (eval == null)
                 continue;
 
-            eval.CalculateScore();
             WriteAndFillEvaluationSheet(workbook, eval, WriteConfig.FullWrite());
         }
 
@@ -60,8 +57,6 @@ internal static class ExcelExportService
 
         if (eval == null)
             return false;
-
-        eval.CalculateScore();
 
         using var workbook = new XLWorkbook();
         WriteAndFillEvaluationSheet(workbook, eval, WriteConfig.FullWrite());
@@ -85,8 +80,6 @@ internal static class ExcelExportService
         if (systemEval == null)
             return false;
 
-        systemEval.CalculateScore();
-
         using var workbook = new XLWorkbook();
         WriteAndFillEvaluationSheet(workbook, systemEval, WriteConfig.FullWrite());
 
@@ -98,8 +91,6 @@ internal static class ExcelExportService
 
             if (eval == null)
                 return false;
-
-            eval.CalculateScore();
 
             WriteAndFillEvaluationSheet(workbook, eval, WriteConfig.FullWrite());
         }
@@ -123,10 +114,7 @@ internal static class ExcelExportService
         using var workbook = new XLWorkbook();
 
         if (systemEval != null)
-        {
-            systemEval.CalculateScore();
             WriteAndFillEvaluationSheet(workbook, systemEval, WriteConfig.FullWrite());
-        }
 
         var evaluteds = EmployeeService.OtherEmployees;
 
@@ -135,10 +123,7 @@ internal static class ExcelExportService
             var eval = EvaluationService.LoadEvaluation(GetFileName(AuthService.CurrentUser, evaluated));
 
             if (eval != null)
-            {
-                eval.CalculateScore();
                 WriteAndFillEvaluationSheet(workbook, eval, WriteConfig.FullWrite());
-            }
         }
 
         if (workbook.Worksheets.Count == 0)
@@ -255,8 +240,6 @@ internal static class ExcelExportService
             return false;
         Employee evaluator = systemEval.FirstEvaluator;
 
-        systemEval.CalculateScore();
-
         var employees = EmployeeService.AllEmployees;
         var employeeEvals = new Dictionary<Employee, EvaluationInstance>();
         foreach (var employeeFile in employeeEvaluationExcelPaths.Where(File.Exists))
@@ -273,10 +256,7 @@ internal static class ExcelExportService
             if (!eval.FirstEvaluator.Code.Equals(evaluator.Code) || eval.BeingEvaluated == null)
                 return false;
 
-            if (employeeEvals.TryAdd(eval.BeingEvaluated, eval))
-            {
-                eval.CalculateScore();
-            }
+            employeeEvals.TryAdd(eval.BeingEvaluated, eval);
         }
 
         if (employeeEvals.Count == 0)
@@ -322,8 +302,6 @@ internal static class ExcelExportService
             {
                 if (!TryLoadEvaluationInstanceFromExcel(file, employee, out var eval))
                     continue;
-
-                eval.CalculateScore();
 
                 if (!beingEvaluedEvals.ContainsKey(employee))
                     beingEvaluedEvals.Add(employee, []);
@@ -376,7 +354,7 @@ internal static class ExcelExportService
             FillEvaluationSheet(systemWS, columnIndex, sysEval, WriteConfig.AggregateWrite());
             columnIndex++;
         }
-        FillEvaluationSheet(systemWS, columnIndex, fullSysEval, WriteConfig.AggregateWrite());
+        FillEvaluationSheet(systemWS, columnIndex, fullSysEval, WriteConfig.AggregateWrite(true));
 
         foreach (var empEval in beingEvaluedEvals)
         {
@@ -398,13 +376,16 @@ internal static class ExcelExportService
                 }
 
                 FillEvaluationSheet(empWSs[empEval.Key], columnIndex, eval,
-                    WriteConfig.AggregateWrite());
+                    WriteConfig.ParialWrite());
                 columnIndex++;
             }
 
             FillEvaluationSheet(empWSs[empEval.Key], columnIndex, fullBeingEvaluatedEval[empEval.Key],
-                WriteConfig.AggregateWrite());
+                WriteConfig.AggregateWrite(true));
         }
+
+        var goat = fullBeingEvaluatedEval.MaxBy(e => e.Value.TotalScore);
+        GoatSheetStyling.CreateGoatSheetWithSummary(resultWorkbook, goat.Key, goat.Value);
 
         AppendAssistantReadinessSheet(resultWorkbook, assistants.Values.ToList());
         AppendNotesAndSuggestionsSheet(resultWorkbook, notes);
@@ -440,7 +421,6 @@ internal static class ExcelExportService
         }
         ws.Row(row).Style.Font.Bold = true;
 
-        ws.Row(ROW_EVALUATOR_META).Hide();
         row = 3;
 
         WriteEntities(ws, ref row, eval.Entities);
@@ -505,8 +485,6 @@ internal static class ExcelExportService
     private static void FillEvaluationSheet(IXLWorksheet ws, int columnIndex, EvaluationInstance eval,
         WriteConfig writeConfig)
     {
-        eval.CalculateScore();
-
         ws.Row(ROW_EVALUATOR_META).Hide();
         ws.Cell(ROW_EVALUATOR_META, columnIndex).Value =
             EvalCodeMarker(eval.Evaluators.Count > 1 ? "AGG" : eval.FirstEvaluator.Code);
@@ -592,7 +570,7 @@ internal static class ExcelExportService
             }
 
             if (entity.ValueConfig.HasValue)
-                ws.Cell(row, columnIndex).Value = entity.Value;
+                ws.Cell(row, columnIndex).Value = writeConfig.WriteScore ? entity.Score : entity.Value;
 
             if (entity.RootConfig.HasValue)
             {
@@ -903,35 +881,39 @@ internal static class ExcelExportService
         public required bool WriteEvaluatorTitle;
         public required bool WriteAssistant;
         public required bool WriteNotes;
+        public required bool WriteScore;
 
-        public static WriteConfig FullWrite()
+        public static WriteConfig FullWrite(bool writeScore = false)
         {
             return new WriteConfig
             {
                 WriteTitleInFirstColumn = true,
                 WriteEvaluatorTitle = true,
                 WriteAssistant = true,
-                WriteNotes = true
+                WriteNotes = true,
+                WriteScore = writeScore
             };
         }
-        public static WriteConfig ParialWrite()
+        public static WriteConfig ParialWrite(bool writeScore = false)
         {
             return new WriteConfig
             {
                 WriteTitleInFirstColumn = true,
                 WriteEvaluatorTitle = true,
                 WriteAssistant = false,
-                WriteNotes = true
+                WriteNotes = true,
+                WriteScore = writeScore
             };
         }
-        public static WriteConfig AggregateWrite()
+        public static WriteConfig AggregateWrite(bool writeScore = false)
         {
             return new WriteConfig
             {
                 WriteTitleInFirstColumn = true,
                 WriteEvaluatorTitle = true,
                 WriteAssistant = false,
-                WriteNotes = false
+                WriteNotes = false,
+                WriteScore = writeScore
             };
         }
     }

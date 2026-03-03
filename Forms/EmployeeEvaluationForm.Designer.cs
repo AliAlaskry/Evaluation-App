@@ -73,7 +73,7 @@
             lblFinalNote.Name = "lblFinalNote";
             lblFinalNote.Size = new Size(52, 15);
             lblFinalNote.TabIndex = 6;
-            lblFinalNote.Text = "ملاحظات";
+            lblFinalNote.Text = "وجه كلمه ليه تشجعه، تفوقه، او حتى تفرحه.";
             // 
             // txtFinalNote
             // 

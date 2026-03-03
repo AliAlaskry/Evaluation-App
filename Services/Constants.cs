@@ -22,7 +22,7 @@
 
     public const string POSTFIX_ENTITY_TOTAL = " - Total";
     public const string LABEL_TOTAL = "Total";
-    public const string LABEL_NOTES = "Suggestions / Notes";
+    public const string LABEL_NOTES = "Suggestions / Notes / General";
     public const string LABEL_TEAM_LEADER_ASSISTANT_READY = "Ready to be team leader assistant";
     public const string LABEL_TEAM_LEADER_ASSISTANT_RECOMMENDATION = "Recommend as team leader assistant";
     public const string LABEL_TEAM_LEADER_ASSISTANT_YES = "Yes";
