@@ -5,7 +5,7 @@ internal static class EvaluationService
 {
     public static void Save(EvaluationInstance eval)
     {
-        SaveEvaluation(eval.FileNameWithExension, eval);
+        SaveEvaluation(eval.FileName, eval);
     }
 
     private static void SaveEvaluation(string filename, object evaluation)
@@ -22,12 +22,14 @@ internal static class EvaluationService
         string file = Path.Combine(EvaluationPath, $"{filename}.json");
         if (!File.Exists(file)) return null;
 
-        return JsonConvert.DeserializeObject<EvaluationInstance>(File.ReadAllText(file));
+        var temp = JsonConvert.DeserializeObject<EvaluationInstance>(File.ReadAllText(file));
+        temp?.PostJsonParsing();
+        return temp;
     }
 
     public static void Reset(EvaluationInstance destination)
     {
-        string file = Path.Combine(EvaluationPath, $"{destination.FileNameWithExension}.json");
+        string file = Path.Combine(EvaluationPath, $"{destination.FileName}.json");
         if (File.Exists(file))
             File.Delete(file);
     }

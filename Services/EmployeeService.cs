@@ -83,8 +83,8 @@ internal static class EmployeeService
         }
     }
 
-    public static Employee GetEmployeeByCode(string code)
+    public static Employee? GetEmployeeByCode(string code)
     {
-        return AllEmployees.FirstOrDefault(e => e.Code == code);
+        return AllEmployees.FirstOrDefault(e => e.Code.Equals(code));
     }
 }

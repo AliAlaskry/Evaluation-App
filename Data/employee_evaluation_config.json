@@ -12,7 +12,7 @@
         {
             "Base": {
                 "Id": "sec_professional_skills",
-                "Weight": 36
+                "Weight": 35
             },
             "Root": {
                 "Title": "المهارات المهنية",
@@ -20,25 +20,11 @@
                 "Entites": [
                     {
                         "Base": {
-                            "Id": "pro1",
-                            "Weight": 20
-                        },
-                        "Value": {
-                            "Body": "نسبه المهام Overdue",
-                            "MinValueMeaning": "لا مهام مقدره خطأ",
-                            "MaxValueMeaning": "كل المهام مقدره خطأ"
-                        },
-                        "Addons": {
-                            "Include": false
-                        }
-                    },
-                    {
-                        "Base": {
                             "Id": "pro2",
                             "Weight": 20
                         },
                         "Value": {
-                            "Body": "جودة العمل المنجز",
+                            "Body": "جودة الأداء والعمل المنجز بالنسبه لأقصى ما يمكن انتاجه",
                             "MinValueMeaning": "جودة منخفضة/أخطاء كثيرة/إعادة عمل",
                             "MaxValueMeaning": "جودة عالية وثابتة وقليلة العيوب"
                         }
@@ -52,6 +38,9 @@
                             "Body": "صحة القرارات وفعالية المقترحات",
                             "MinValueMeaning": "قرارات ضعيفة/مقترحات تسبب إعادة عمل",
                             "MaxValueMeaning": "قرارات جيدة تقلل المخاطر وتحسن المنتج"
+                        },
+                        "Addons": {
+                            "ForTeamLeaderOnly": true
                         }
                     },
                     {
@@ -63,6 +52,9 @@
                             "Body": "القدرة على حل المشاكل والتصحيح بسرعة",
                             "MinValueMeaning": "بطء في التحليل والحلول يزيد التعطيل",
                             "MaxValueMeaning": "تشخيص سريع وحلول فعالة ومستقرة"
+                        },
+                        "Addons": {
+                            "Include": false
                         }
                     },
                     {
@@ -74,6 +66,9 @@
                             "Body": "ترتيب الأولويات بفعالية",
                             "MinValueMeaning": "تشتت/اختيار أعمال أقل قيمة",
                             "MaxValueMeaning": "تركيز واضح على الأعلى قيمة والأكثر إلحاحاً"
+                        },
+                        "Addons": {
+                            "ByTeamLeaderOnly": true
                         }
                     }
                 ]
@@ -82,7 +77,7 @@
         {
             "Base": {
                 "Id": "sec_behavioral_skills",
-                "Weight": 26
+                "Weight": 25
             },
             "Root": {
                 "Title": "المهارات السلوكية",
@@ -94,7 +89,7 @@
                             "Weight": 20
                         },
                         "Value": {
-                            "Body": "الاحترام المتبادل أثناء النقاشات",
+                            "Body": "الاحترام المتبادل أثناء النقاشات بشكل بناء وغير مهدر للوقت",
                             "MinValueMeaning": "نقاشات حادة/تقليل احترام/توتر",
                             "MaxValueMeaning": "احترام ثابت حتى مع الاختلاف"
                         },
@@ -127,6 +122,7 @@
                             "MaxValueMeaning": "سلوك منضبط يسهل العمل"
                         },
                         "Addons": {
+                            "ByTeamLeaderOnly": true,
                             "CombinedScoreFormula": "avg(Scores)"
                         }
                     },
@@ -164,7 +160,7 @@
         {
             "Base": {
                 "Id": "sec_soft_skills",
-                "Weight": 26
+                "Weight": 25
             },
             "Root": {
                 "Title": "المهارات الشخصية (Soft Skills)",
@@ -179,6 +175,9 @@
                             "Body": "مدى تطور الخبرة وسرعة التعلم",
                             "MinValueMeaning": "نمو بطيء/تكرار نفس الأخطاء",
                             "MaxValueMeaning": "تحسن سريع وتعلم مستمر"
+                        },
+                        "Addons": {
+                            "Include": false
                         }
                     },
                     {
@@ -187,7 +186,7 @@
                             "Weight": 33
                         },
                         "Value": {
-                            "Body": "المبادرة في تقديم المساعدة دون طلب",
+                            "Body": "المبادرة في تقديم الدعم والتشجيع بين الحين والآخر",
                             "MinValueMeaning": "لا يبادر بالمساعدة نهائيا",
                             "MaxValueMeaning": "يبادر ويمنع التعطيل قبل حدوثه قبل حتى ان تطلب"
                         }
@@ -209,7 +208,7 @@
         {
             "Base": {
                 "Id": "sec_discipline",
-                "Weight": 12
+                "Weight": 15
             },
             "Root": {
                 "Title": "الانضباط التراكمي",
@@ -230,6 +229,40 @@
                         },
                         "Addons": {
                             "ScoreFormula": "clamp(100 - (Value * (100 / 3)), 0, 100)"
+                        }
+                    },
+                    {
+                        "Base": {
+                            "Id": "invalid_update",
+                            "Weight": 7
+                        },
+                        "Value": {
+                            "Body": "تحديث غير صالح لحاله المهمة",
+                            "MinValueMeaning": "لا توجد مخالفات",
+                            "MaxValueMeaning": "مخالفات متكررة",
+                            "MinValue": 0,
+                            "MaxValue": 10,
+                            "DefaultValue": 0
+                        },
+                        "Addons": {
+                            "ScoreFormula": "clamp(100 - (Value * (100 / 5)), 0, 100)"
+                        }
+                    },
+                    {
+                        "Base": {
+                            "Id": "disc_no_tasks",
+                            "Weight": 16
+                        },
+                        "Value": {
+                            "Body": "عدد مرات عدم وجود مهمه In Progress",
+                            "MinValueMeaning": "نهائيا",
+                            "MaxValueMeaning": "متكررة كتيرا",
+                            "MinValue": 0,
+                            "MaxValue": 10,
+                            "DefaultValue": 0
+                        },
+                        "Addons": {
+                            "ScoreFormula": "clamp(100 - (Value * (100 / 2)), 0, 100)"
                         }
                     },
                     {
@@ -286,10 +319,10 @@
                     {
                         "Base": {
                             "Id": "disc_questions_time",
-                            "Weight": 10
+                            "Weight": 7
                         },
                         "Value": {
-                            "Body": "مدى التأخر فى الرد على التعليقات",
+                            "Body": "مدى التأخر فى الرد على التعليقات بالساعات",
                             "MinValueMeaning": "تفاعل كامل",
                             "MaxValueMeaning": "تجاهل طويل",
                             "MinValue": 0,
@@ -297,7 +330,7 @@
                             "DefaultValue": 0
                         },
                         "Addons": {
-                            "ScoreFormula": "100 - Value"
+                            "ScoreFormula": "clamp(100 - (Value * (100 / 14)), 0, 100)"
                         }
                     },
                     {
@@ -314,6 +347,7 @@
                             "DefaultValue": 0
                         },
                         "Addons": {
+                            "Include": false,
                             "ScoreFormula": "clamp(100 - (Value * (100 / 7)), 0, 100)"
                         }
                     },
