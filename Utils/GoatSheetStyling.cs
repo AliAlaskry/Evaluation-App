@@ -2,7 +2,7 @@
 
 internal static class GoatSheetStyling
 {
-    public static void CreateGoatSheetWithSummary(XLWorkbook wb, Employee employee, EvaluationInstance evaluation)
+    public static void CreateGoatSheetWithSummary(XLWorkbook wb, Employee employee, IEvaluation evaluation)
     {
         // Replace existing THE GOAT sheet (so reruns are clean)
         if (wb.Worksheets.Contains("THE GOAT"))
@@ -82,7 +82,7 @@ internal static class GoatSheetStyling
 
         // Data rows
         int r = startRow + 1;
-        var entities = evaluation.GetAllRootEntities();
+        var entities = evaluation.ReadonlyEntities;
         for (int i = 0; i < entities.Count; i++)
         {
             var s = entities[i];

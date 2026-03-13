@@ -3,59 +3,31 @@ using static Constants;
 
 internal static class EmployeeService
 {
-    private static List<Employee> allEmployees;
-    private static List<Employee> otherEmployees;
+    public static List<Employee> AllEmployees { get; private set; } = new();
+    public static List<Employee> OtherEmployees { get; private set; } = new();
 
-    public static List<Employee> AllEmployees
-    {
-        get
-        {
-            allEmployees ??= new();
-            if (!allEmployees.Any())
-                Initialize();
-
-            return allEmployees;
-        }
-    }
-    public static List<Employee> OtherEmployees
-    {
-        get
-        {
-            otherEmployees ??= new();
-
-            if (!allEmployees.Any())
-                Initialize();
-
-            if (!otherEmployees.Any())
-                SetOtherEmployees();
-
-            return otherEmployees;
-        }
-    }
-
-    private static void Initialize()
+    public static void Initialize()
     {
         LoadEmployees();
-        SetOtherEmployees();
     }
-    private static void SetOtherEmployees()
+    public static void SetOtherEmployees()
     {
         if (AuthService.CurrentUser == null)
             return;
 
-        allEmployees ??= new();
-        otherEmployees = allEmployees.Where(e => !e.Code.Equals(AuthService.CurrentUser.Code)).ToList();
+        AllEmployees ??= new();
+        OtherEmployees = AllEmployees.Where(e => !e.Code.Equals(AuthService.CurrentUser.Code)).ToList();
     }
 
     public static void ClearOtherEmployees()
     {
-        otherEmployees ??= new();
-        otherEmployees.Clear();
+        OtherEmployees ??= new();
+        OtherEmployees.Clear();
     }
 
     private static void LoadEmployees()
     {
-        if (allEmployees != null && allEmployees.Count != 0)
+        if (AllEmployees != null && AllEmployees.Count != 0)
             return;
 
         try
@@ -63,23 +35,23 @@ internal static class EmployeeService
             if (!File.Exists(EMPLOYEE_FILE))
             {
                 MessageBox.Show("ملف الموظفين غير موجود:\n" + EMPLOYEE_FILE, "خطأ", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                allEmployees = new();
+                AllEmployees = new();
                 return;
             }
 
             string json = File.ReadAllText(EMPLOYEE_FILE);
             JObject obj = JObject.Parse(json);
-            allEmployees = obj.SelectToken("Employees").ToObject<List<Employee>>();
+            AllEmployees = obj.SelectToken("Employees").ToObject<List<Employee>>();
 
-            if (allEmployees == null)
-                allEmployees = new();
+            if (AllEmployees == null)
+                AllEmployees = new();
             else
-                allEmployees = allEmployees.Where(e => e.Include).ToList();
+                AllEmployees = AllEmployees.Where(e => e.Include).ToList();
         }
         catch (Exception ex)
         {
             MessageBox.Show("حدث خطأ أثناء تحميل ملف الموظفين:\n" + ex.Message, "خطأ", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            allEmployees = new List<Employee>();
+            AllEmployees = new List<Employee>();
         }
     }
 

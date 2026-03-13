@@ -50,48 +50,47 @@
 
         private void BtnGenerateExcel_Click(object sender, EventArgs e)
         {
-            if (ExcelExportService.TryExportFullReport())
-                MessageBox.Show("تم إنشاء التقرير الكامل على سطح المكتب.");
-            else
+            List<EvaluationInstance> evals = new();
+            if (EvaluationService.TryLoadEvaluation(AuthService.CurrentUser, out var sysEval))
+                evals.Add(sysEval);
+
+            foreach (var beingEvaluted in EmployeeService.OtherEmployees)
+                if (EvaluationService.TryLoadEvaluation(AuthService.CurrentUser, out var temp,
+                    beingEvaluted))
+                    evals.Add(temp);
+
+            if (evals.Count != EmployeeService.OtherEmployees.Count + 1)
             {
                 DialogResult result = MessageBox.Show("هل تود انشاء تقرير بما تم الى الآن؟", "تأكيد",
                     MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-                if (result == DialogResult.Yes)
-                {
-                    if (ExcelExportService.TryExportExistEvals())
-                        MessageBox.Show("تم إنشاء التقرير المطلوب على سطح المكتب.");
-                }
+                if (result != DialogResult.Yes)
+                    return;
             }
+
+            if (ExcelExportService.TryExportMultiEvaluations(
+                AuthService.CurrentUser.Title + " " + Constants.FULL_SURVEY_FILE_NAME, evals))
+                MessageBox.Show("تم إنشاء التقرير الكامل على سطح المكتب.");
         }
 
         private void BtnMergeExcel_Click(object sender, EventArgs e)
         {
-            using var systemDialog = new OpenFileDialog
+            using var dialog = new OpenFileDialog
             {
                 Filter = "Excel files (*.xlsx)|*.xlsx",
-                Title = "اختر ملف تقييم النظام"
-            };
-
-            if (systemDialog.ShowDialog() != DialogResult.OK)
-                return;
-
-            using var employeesDialog = new OpenFileDialog
-            {
-                Filter = "Excel files (*.xlsx)|*.xlsx",
-                Title = "اختر ملفات تقييم الموظفين",
+                Title = "اختر المفات للدمج",
                 Multiselect = true
             };
 
-            if (employeesDialog.ShowDialog() != DialogResult.OK)
+            if (dialog.ShowDialog() != DialogResult.OK)
                 return;
 
-            if (employeesDialog.FileNames.Length == 0)
+            if (dialog.FileNames.Length == 0)
             {
                 MessageBox.Show("يجب اختيار ملف موظف واحد على الأقل.");
                 return;
             }
 
-            if (!ExcelExportService.TryExportCombinedMemberFullSurvey(systemDialog.FileName, employeesDialog.FileNames.ToList()))
+            if (!ExcelExportService.TryExportCombinedMemberFullSurvey(dialog.FileNames))
             {
                 MessageBox.Show("تعذر إنشاء التقرير. تأكد أن الملفات مطابقة لنفس الهيكل والأسئلة.");
                 return;
@@ -105,15 +104,17 @@
             if (!AuthService.CurrentUser.IsTeamLead)
                 return;
 
-            using var folderDialog = new FolderBrowserDialog
+            using var dialog = new OpenFileDialog
             {
-                Description = "اختر مجلد يحتوي ملفات Full Servey المراد دمجها"
+                Filter = "Excel files (*.xlsx)|*.xlsx",
+                Title = "Choose Team Members' Reports",
+                Multiselect = true
             };
 
-            if (folderDialog.ShowDialog() != DialogResult.OK)
+            if (dialog.ShowDialog() != DialogResult.OK)
                 return;
 
-            if (!ExcelExportService.TryExportTeamLeadCombinedAllReports(folderDialog.SelectedPath))
+            if (!ExcelExportService.TryExportTeamLeadCombinedAllReports(dialog.FileNames))
             {
                 MessageBox.Show("تعذر دمج الملفات. تأكد أن الملفات لها نفس الهيكل.");
                 return;

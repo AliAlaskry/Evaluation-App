@@ -1,92 +1,81 @@
 ﻿using Newtonsoft.Json;
 
-internal class EvaluationInstance
+public class EvaluationInstance : IEvaluation
 {
     #region Constructors
     [JsonConstructor]
-    public EvaluationInstance(Employee evaluator)
+    private EvaluationInstance() { }
+    public EvaluationInstance(Employee evaluator, Employee? beingEvaluated = null)
     {
-        this.Evaluators = [evaluator];
-        this.BeingEvaluated = null;
-        this.entities = EntityBase.FilterEntities(ConfigLoader.SystemEvaluationEntites, this) ?? [];
-        this.scoringOptions = ConfigLoader.SystemEvaluationOptions.Scoring;
-      
-        RefereshEntitiesDict();
+        Evaluator = evaluator;
+        evaluatorCode = Evaluator.Code;
 
-        foreach (var entity in entities)
-            entity.SetEvaluationInstance(this);
+        BeingEvaluated = beingEvaluated;
+        beingEvaluatedCode = beingEvaluated?.Code;
 
-        CalculateScore();
-    }
-    public EvaluationInstance(Employee evaluator, Employee beingEvaluated)
-    {
-        this.Evaluators = [evaluator];
-        this.BeingEvaluated = beingEvaluated;
-        this.entities = EntityBase.FilterEntities(ConfigLoader.EmployeeEvaluationEntites, this) ?? [];
-        this.scoringOptions = ConfigLoader.EmployeeEvaluationOptions.Scoring;
-       
-        RefereshEntitiesDict();
-
-        foreach (var entity in entities)
-            entity.SetEvaluationInstance(this);
-
-        CalculateScore();
-    }
-    public EvaluationInstance(List<EvaluationInstance> evals, string filename)
-    {
-        this.Evaluators = [.. evals.SelectMany(o => o.Evaluators)];
-        this.BeingEvaluated = evals[0].BeingEvaluated;
-        this.EntitiesDict = new();
-        this.scoringOptions = evals[0].scoringOptions;
-        this.filename = filename;
-
-        foreach (var eval in evals)
-        {
-            eval.CalculateScore();
-            AppendEntities(EntitiesDict, eval.Entities);
-        }
-
-        this.entities = EntitiesDict.Values.ToList();
-        CalculateScore();
+        entities = [];
+        foreach (var entity in FilteredConfigEntities)
+            this.entities.Add(new EntityNode(entity, ScoringOptions));
+        entitiesDict = entities.ToDictionary(o => o.ConfigEntityId, o => o);
     }
     #endregion
 
     #region Private Fields
+    [JsonProperty("Evaluator Code")]
+    private string evaluatorCode;
+
+    [JsonProperty("Being Evaluated Code")]
+    private string? beingEvaluatedCode;
+
     [JsonProperty("Entities")]
-    private List<EntityBase> entities;
+    private List<EntityNode> entities;
 
-    private ScoringOptions scoringOptions;
-
-    private string? filename;
+    private Dictionary<string, EntityNode> entitiesDict;
     #endregion
 
     #region Private Getonly Props
     private List<double> EntityScores => [.. Entities.Select(e => e.Score)];
     private List<double> EntityWeights => [.. Entities.Select(e => e.BaseConfig.Weight)];
+
+    private ScoringOptions ScoringOptions => IsSystemEvaluation ?
+        ConfigLoader.SystemEvaluationOptions.Scoring :
+        ConfigLoader.EmployeeEvaluationOptions.Scoring;
     #endregion
 
     #region Public Get Private Set Props
-    [JsonProperty("Evaluator")]
-    public List<Employee> Evaluators { get; private set; }
-    [JsonProperty("BeingEvaluated")]
-    public Employee? BeingEvaluated { get; private set; }
+    [JsonIgnore]
+    public List<Employee> Evaluators => throw new NullReferenceException();
 
     [JsonIgnore]
-    public Dictionary<string, EntityBase> EntitiesDict { get; private set; } = new();
+    public Employee Evaluator { get; private set; }
+
+    [JsonIgnore]
+    public Employee? BeingEvaluated { get; private set; }
     #endregion
 
     #region Public Getonly Props
     [JsonIgnore]
-    public Employee FirstEvaluator => Evaluators[0];
+    public bool IsCombined => false;
 
     [JsonIgnore]
-    public ScoringOptions ScoringOptions => scoringOptions;
+    public List<EntityNode> Entities => entities;
 
     [JsonIgnore]
-    public List<EntityBase> Entities => entities;
+    public IReadOnlyDictionary<string, EntityNode> EntitiesDict => entitiesDict;
 
     [JsonIgnore]
-    public bool IsSystemEvaluationInstance => BeingEvaluated == null;
+    public IReadOnlyList<IEntityNode> ReadonlyEntities => entities;
+
+    [JsonIgnore]
+    public bool IsSystemEvaluation => BeingEvaluated == null;
+
+    [JsonIgnore]
+    public List<ConfigEntity> ConfigEntities => IsSystemEvaluation ?
+        ConfigLoader.SystemEvaluationEntites : ConfigLoader.EmployeeEvaluationEntites;
+
+    [JsonIgnore]
+    public List<ConfigEntity> FilteredConfigEntities =>
+        ConfigEntity.FilterConfigEntities(ConfigEntities, this);
     #endregion
 
     #region Public Props
@@ -96,47 +85,46 @@ internal class EvaluationInstance
 
     [JsonIgnore]
     public double TotalScore { get; set; }
+
     [JsonIgnore]
-    public string FileNameWithoutExension
-    {
-        get
-        {
-            if (Evaluators.Count > 1)
-                return filename ?? "";
-            return this.GetFileName();
-        }
-    }
-    [JsonIgnore]
-    public string FileNameWithExension => FileNameWithoutExension.AppendExcelExtension();
+    public string FileName => this.GetFileName();
     #endregion
 
     #region Public Methods
-    public List<EntityBase> GetAllRootEntities()
+    public void PostJsonParsing()
     {
-        return GetAllRootEntities(entities);
+        Evaluator = EmployeeService.GetEmployeeByCode(evaluatorCode);
+        BeingEvaluated = string.IsNullOrEmpty(beingEvaluatedCode) ? null :
+            EmployeeService.GetEmployeeByCode(beingEvaluatedCode);
+
+        foreach (var entity in entities)
+        {
+            var configEntity = FilteredConfigEntities
+                .Find(o => o.BaseConfig.ID.Equals(entity.ConfigEntityId));
+            entity.PostJsonParsing(configEntity, ScoringOptions);
+        }
+
+        entitiesDict = entities.ToDictionary(o => o.ConfigEntityId, o => o);
     }
-    public EntityBase? SearchFor(Func<EntityBase, bool> predicate)
+
+    public IEntityNode? SearchFor(Predicate<IEntityNode> predicate)
     {
         return SearchFor(Entities, predicate);
     }
+
     public bool AssistantSectionEnabled()
     {
-        bool assistantEnabled = ConfigLoader.EmployeeEvaluationOptions.AskPreferTeamLeaderAssistant;
-        if (BeingEvaluated == null) assistantEnabled &= Evaluators.Count == 1
-                && !FirstEvaluator.IsTeamLead;
-        else assistantEnabled &= !BeingEvaluated.IsTeamLead;
+        bool assistantEnabled = !Evaluator.IsTeamLead &
+            ConfigLoader.EmployeeEvaluationOptions.AskPreferTeamLeaderAssistant;
+        if (BeingEvaluated != null) assistantEnabled &= !BeingEvaluated.IsTeamLead;
         return assistantEnabled;
-    }
-    public void RefereshEntitiesDict()
-    {
-        EntitiesDict = this.Entities.ToDictionary(c => c.BaseConfig.ID, c => c);
     }
     public void CalculateScore()
     {
         foreach (var entity in entities)
             entity.CalculateScore();
 
-        TotalScore = FormulaEngine.EvaluateToScalar(scoringOptions.TotalFormula, Variables(),
+        TotalScore = FormulaEngine.EvaluateToScalar(ScoringOptions.TotalFormula, Variables(),
             TotalScore);
     }
     public void Reset()
@@ -144,44 +132,44 @@ internal class EvaluationInstance
         foreach (var entity in entities)
             entity.Reset();
     }
+
+    public void RandomizeValues(Random? rnd = null)
+    {
+        rnd ??= new Random();
+
+        FinalNote = RandomShortString(rnd);
+        RecommendAsTeamLead = rnd.Next(0, 2) == 1;
+        ReadyToBeAssistantTeamLeader = rnd.Next(0, 2) == 1;
+
+        foreach (var entity in entities)
+            entity.RandomizeValues(rnd);
+
+        CalculateScore();
+    }
+    private static string RandomShortString(Random rnd)
+    {
+        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+        int len = rnd.Next(5, 15); // short text
+        return new string(Enumerable.Range(0, len)
+            .Select(_ => chars[rnd.Next(chars.Length)]).ToArray());
+    }
+
     public EvaluationInstance Clone()
     {
-        EvaluationInstance temp;
-        if (Evaluators.Count > 1)
-            temp = new([this], filename ?? "");
-        else if (IsSystemEvaluationInstance)
-            temp = new(FirstEvaluator);
-        else
-            temp = new(FirstEvaluator, BeingEvaluated);
-
-        temp.entities = [..entities.Select(e => e.Clone())];
+        EvaluationInstance temp = new(Evaluator, BeingEvaluated)
+        {
+            FinalNote = FinalNote,
+            RecommendAsTeamLead = RecommendAsTeamLead,
+            ReadyToBeAssistantTeamLeader = ReadyToBeAssistantTeamLeader,
+            TotalScore = TotalScore
+        };
+        temp.entities = [.. entities.Select(e => e.Clone())];
+        temp.entitiesDict = temp.entities.ToDictionary(e => e.ConfigEntityId, e => e); 
         return temp;
     }
     #endregion
 
     #region Private Methods
-    private void AppendEntities(Dictionary<string, EntityBase> dict, List<EntityBase> newList)
-    {
-        foreach (var entity in newList)
-        {
-            var temp = entity.Clone();
-            if (dict.TryGetValue(temp.BaseConfig.ID, out var old))
-            {
-                old.AddAdjoining(temp);
-
-                if (old.RootConfig.HasValue && temp.RootConfig.HasValue)
-                {
-                    var newRoot = temp.RootConfig.Value.Clone();
-                    AppendEntities(old.RootConfig.Value.ChildsDict, newRoot.Childs);
-                }
-            }
-            else
-            {
-                temp.SetEvaluationInstance(this);
-                dict.Add(temp.BaseConfig.ID, temp);
-            }
-        }
-    }
     private Dictionary<string, FormulaEngine.Value> Variables()
     {
         return new Dictionary<string, FormulaEngine.Value>
@@ -190,20 +178,7 @@ internal class EvaluationInstance
             {"EntityWeight", new FormulaEngine.Value(EntityWeights) },
         };
     }
-    private List<EntityBase> GetAllRootEntities(List<EntityBase> entities)
-    {
-        var list = new List<EntityBase>();
-        foreach (var entity in entities)
-        {
-            if(entity.RootConfig.HasValue)
-            {
-                list.Add(entity.Clone());
-                list.AddRange(GetAllRootEntities(entity.RootConfig.Value.Childs));
-            }
-        }
-        return list;
-    }
-    private EntityBase? SearchFor(List<EntityBase> entities, Func<EntityBase, bool> predicate)
+    private static EntityNode? SearchFor(IReadOnlyList<EntityNode> entities, Predicate<EntityNode> predicate)
     {
         foreach (var entity in entities)
         {
@@ -212,13 +187,24 @@ internal class EvaluationInstance
 
             if (entity.RootConfig.HasValue)
             {
-                var found = SearchFor(entity.RootConfig.Value.Childs, predicate);
+                var found = SearchFor(entity.Childs ?? [], predicate);
                 if (found != null)
                     return found;
             }
         }
 
         return null;
+    }
+
+    public override bool Equals(object? obj)
+    {
+        return obj is EvaluationInstance instance &&
+               FileName == instance.FileName;
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(FileName);
     }
     #endregion
 }

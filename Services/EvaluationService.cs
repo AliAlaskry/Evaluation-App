@@ -17,14 +17,19 @@ internal static class EvaluationService
         File.WriteAllText(file, JsonConvert.SerializeObject(evaluation, Formatting.Indented));
     }
 
-    public static EvaluationInstance? LoadEvaluation(string filename)
+    public static bool TryLoadEvaluation(Employee evaluator, out EvaluationInstance eval,
+        Employee? beingEvaluated = null)
     {
-        string file = Path.Combine(EvaluationPath, $"{filename}.json");
-        if (!File.Exists(file)) return null;
+        eval = null;
 
-        var temp = JsonConvert.DeserializeObject<EvaluationInstance>(File.ReadAllText(file));
-        temp?.PostJsonParsing();
-        return temp;
+        string filename = ExcelExportService.GetFileName(evaluator, beingEvaluated);
+
+        string file = Path.Combine(EvaluationPath, $"{filename}.json");
+        if (!File.Exists(file)) return false;
+
+        eval = JsonConvert.DeserializeObject<EvaluationInstance>(File.ReadAllText(file));
+        eval?.PostJsonParsing();
+        return true;
     }
 
     public static void Reset(EvaluationInstance destination)

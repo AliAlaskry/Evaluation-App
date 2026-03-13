@@ -17,9 +17,8 @@ namespace Evaluation_App.Forms
             Text = $"تقييم الموظف - {AuthService.CurrentUser.Name} [{AuthService.CurrentUser.Code}]";
             lblTitle.Text = $"تقييم: {employee.Name} [{employee.Code}]";
 
-            _evaluationInstance = EvaluationService.LoadEvaluation
-                (ExcelExportService.GetFileName(AuthService.CurrentUser, employee))
-                ?? new EvaluationInstance(AuthService.CurrentUser, employee);
+            if(!EvaluationService.TryLoadEvaluation(AuthService.CurrentUser, out _evaluationInstance, employee))
+                _evaluationInstance = new EvaluationInstance(AuthService.CurrentUser, employee);
 
             Initialize(flowLayoutPanel1, _inputControls, _valueLabels, chkTeamLead, txtFinalNote,
                 _evaluationInstance);

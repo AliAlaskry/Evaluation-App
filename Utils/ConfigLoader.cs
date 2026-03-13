@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System.Windows.Forms.VisualStyles;
 
 internal static class ConfigLoader
 {
@@ -6,61 +7,22 @@ internal static class ConfigLoader
     private static readonly string EmployeeEvaluationPath = Path.Combine(BasePath, "employee_evaluation_config.json");
     private static readonly string SystemConfigPath = Path.Combine(BasePath, "system_evaluation_config.json");
 
-    private static EvaluationConfig<SystemEvaluationOptions>? systemEvaluationConfig;
-    private static EvaluationConfig<EmployeeEvaluationOptions>? employeeEvaluationConfig;
+    private static EvaluationConfig<SystemEvaluationOptions> systemEvaluationConfig;
+    private static EvaluationConfig<EmployeeEvaluationOptions> employeeEvaluationConfig;
 
-    public static List<EntityBase> SystemEvaluationEntites
-    {
-        get
-        {
-            systemEvaluationConfig ??= new();
-            if (systemEvaluationConfig == null || systemEvaluationConfig.Entities.Count == 0)
-                Initialize();
+    public static List<ConfigEntity> SystemEvaluationEntites=> 
+        [.. systemEvaluationConfig.Entities.Select(e => e.Clone())];
+    public static List<ConfigEntity> EmployeeEvaluationEntites =>
+        [.. employeeEvaluationConfig.Entities.Select(e => e.Clone())];
 
-            return [.. systemEvaluationConfig.Entities.Select(e => e.Clone())];
-        }
-    }
-    public static List<EntityBase> EmployeeEvaluationEntites
-    {
-        get
-        {
-            employeeEvaluationConfig ??= new();
-            if (employeeEvaluationConfig == null || employeeEvaluationConfig.Entities.Count == 0)
-                Initialize();
+    public static SystemEvaluationOptions SystemEvaluationOptions => systemEvaluationConfig.Options;
+    public static EmployeeEvaluationOptions EmployeeEvaluationOptions => employeeEvaluationConfig.Options;
 
-            return [.. employeeEvaluationConfig.Entities.Select(e => e.Clone())];
-        }
-    }
-
-    public static SystemEvaluationOptions SystemEvaluationOptions
-    {
-        get
-        {
-            systemEvaluationConfig ??= new();
-            if (systemEvaluationConfig == null || systemEvaluationConfig.Entities.Count == 0)
-                Initialize();
-
-            return systemEvaluationConfig.Options;
-        }
-    }
-    public static EmployeeEvaluationOptions EmployeeEvaluationOptions
-    {
-        get
-        {
-            employeeEvaluationConfig ??= new();
-            if (employeeEvaluationConfig == null || employeeEvaluationConfig.Entities.Count == 0)
-                Initialize();
-
-            return employeeEvaluationConfig.Options;
-        }
-    }
-
-    private static void Initialize()
+    public static void Initialize()
     {
         systemEvaluationConfig = LoadEvaluationConfig<SystemEvaluationOptions>(SystemConfigPath);
         employeeEvaluationConfig = LoadEvaluationConfig<EmployeeEvaluationOptions>(EmployeeEvaluationPath);
     }
-
     private static EvaluationConfig<T> LoadEvaluationConfig<T>(string path) where T : EvaluationOptionsBase
     {
         try
@@ -75,9 +37,9 @@ internal static class ConfigLoader
             var config = JsonConvert.DeserializeObject<EvaluationConfig<T>>(json) ?? new();
 
             foreach (var entity in config.Entities)
-                entity.Normalize();
+                entity.NormalizeAll();
 
-            return config;
+            return new EvaluationConfig<T>(config.Options, config.Entities);
         }
         catch (Exception ex)
         {
@@ -88,28 +50,77 @@ internal static class ConfigLoader
 }
 
 
-internal class EvaluationConfig<T> where T : EvaluationOptionsBase
+public class EvaluationConfig<T> where T : EvaluationOptionsBase
 {
-    public T Options { get; set; } = default;
-    public List<EntityBase> Entities { get; set; } = new();
+    public EvaluationConfig() { }
+    public EvaluationConfig(T options, List<ConfigEntity> entities)
+    {
+        this.Options = options;
+        this.Entities = entities;
+        this.EntitiesDict = FlattenAll(entities).ToDictionary(o => o.BaseConfig.ID, o => o);
+    }
+
+    [JsonProperty("Options")]
+    public T Options { get; private set; }
+
+    [JsonProperty("Entities")]
+    public List<ConfigEntity> Entities { get; private set; }
+
+    public Dictionary<string, ConfigEntity> EntitiesDict { get; private set; }
+
+    private static List<ConfigEntity> FlattenAll(List<ConfigEntity>? roots)
+    {
+        var result = new List<ConfigEntity>();
+
+        if (roots == null)
+            return result;
+
+        foreach (var root in roots)
+            AddRecursive(root, result);
+
+        return result;
+    }
+    private static void AddRecursive(ConfigEntity entity, List<ConfigEntity> list)
+    {
+        list.Add(entity);
+
+        if (entity.RootConfig.HasValue && entity.RootConfig.Value.HasChilds)
+        {
+            foreach (var child in entity.RootConfig.Value.Childs)
+                AddRecursive(child, list);
+        }
+    }
 }
 
-internal abstract class EvaluationOptionsBase { }
-internal class SystemEvaluationOptions : EvaluationOptionsBase
+public abstract class EvaluationOptionsBase { }
+public class SystemEvaluationOptions : EvaluationOptionsBase
 {
-    public List<string> IssuesToResolve { get; set; } = new();
-    public ScoringOptions Scoring { get; set; } = new();
+    [JsonProperty("IssuesToResolve")]
+    public List<string> IssuesToResolve { get; private set; } = new();
+
+    [JsonProperty("Scoring")]
+    public ScoringOptions Scoring { get; private set; } = new();
 }
-internal class EmployeeEvaluationOptions : EvaluationOptionsBase
+public class EmployeeEvaluationOptions : EvaluationOptionsBase
 {
-    public bool AskPreferTeamLeaderAssistant { get; set; } = false;
-    public ScoringOptions Scoring { get; set; } = new();
+    [JsonProperty("AskPreferTeamLeaderAssistant")]
+    public bool AskPreferTeamLeaderAssistant { get; private set; } = false;
+
+    [JsonProperty("Scoring")]
+    public ScoringOptions Scoring { get; private set; } = new();
 }
 
-internal struct ScoringOptions
+public struct ScoringOptions
 {
-    public string DefaultQuestionScoreFormula { get; set; }
-    public string DefaultCombinedQuestionScoreFormula { get; set; }
-    public string SectionFormula { get; set; }
-    public string TotalFormula { get; set; }
+    [JsonProperty("DefaultQuestionScoreFormula")]
+    public string DefaultQuestionScoreFormula { get; private set; }
+
+    [JsonProperty("DefaultCombinedQuestionScoreFormula")]
+    public string DefaultCombinedQuestionScoreFormula { get; private set; }
+
+    [JsonProperty("SectionFormula")]
+    public string SectionFormula { get; private set; }
+
+    [JsonProperty("TotalFormula")]
+    public string TotalFormula { get; private set; }
 }

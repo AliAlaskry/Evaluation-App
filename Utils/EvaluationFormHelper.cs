@@ -35,16 +35,16 @@ internal static class EvaluationFormHelper
         foreach (var entity in EvaluationInstance.Entities)
             LoadEntity(entity);
     }
-    private static void LoadEntity(EntityBase entity)
+    private static void LoadEntity(EntityNode entity)
     {
         LoadRootEntity(entity);
         LoadValueEntity(entity);
 
         if (entity.RootConfig.HasValue)
-            foreach (var child in entity.RootConfig.Value.Childs)
+            foreach (var child in entity.Childs ?? [])
                 LoadEntity(child);
     }
-    private static void LoadRootEntity(EntityBase entity)
+    private static void LoadRootEntity(EntityNode entity)
     {
         if (!entity.RootConfig.HasValue)
             return;
@@ -60,7 +60,7 @@ internal static class EvaluationFormHelper
         };
         FlowLayout.Controls.Add(lblSection);
     }
-    private static void LoadValueEntity(EntityBase entity)
+    private static void LoadValueEntity(EntityNode entity)
     {
         if (!entity.ValueConfig.HasValue)
             return;
@@ -187,7 +187,7 @@ internal static class EvaluationFormHelper
         TxtFinalNote.Text = evaluationInstance.FinalNote;
         ChkTeamLead.Checked = evaluationInstance.RecommendAsTeamLead;
     }
-    private static bool TryGetEntity(this EvaluationInstance instance, string key, out EntityBase entity)
+    private static bool TryGetEntity(this EvaluationInstance instance, string key, out IEntityNode entity)
     {
         entity = instance.SearchFor(e => e.BaseConfig.ID.Equals(key));
         return entity != null;
@@ -302,7 +302,7 @@ internal static class EvaluationFormHelper
         else
         {
             var confirm = MessageBox.Show(
-                "هناك عناصر ما زالت على القيم الافتراضية. هل تريد المتابعة بالحفظ؟",
+                "هل انت متأكد انك تريد الحفظ؟",
                 "تنبيه قبل الحفظ",
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Question);
@@ -335,7 +335,7 @@ internal static class EvaluationFormHelper
         EvaluationInstance.CalculateScore();
         EvaluationService.Save(EvaluationInstance);
 
-        if (ExcelExportService.TryExportEmployeeEvaluation(EvaluationInstance))
+        if (ExcelExportService.TryExportSingleEvaluation(EvaluationInstance))
             MessageBox.Show("تم إنشاء تقرير Excel على سطح المكتب.");
     }
 }

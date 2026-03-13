@@ -65,7 +65,14 @@
 
         private void exportExcel_Click(object sender, EventArgs e)
         {
-            if (ExcelExportService.TryExportTeamMembers())
+            List<EvaluationInstance> evals = new();
+            foreach (var beingEvaluted in EmployeeService.OtherEmployees)
+                if (EvaluationService.TryLoadEvaluation(AuthService.CurrentUser, out var temp,
+                    beingEvaluted))
+                    evals.Add(temp);
+
+            if (ExcelExportService.TryExportMultiEvaluations(Constants.TEAM_MEMBERS_REPORT_FILE_NAME,
+                evals))
                 MessageBox.Show("تم إنشاء تقرير Excel على سطح المكتب.");
         }
     }

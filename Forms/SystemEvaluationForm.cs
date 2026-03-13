@@ -17,9 +17,8 @@ namespace Evaluation_App.Forms
             FormClosing += SystemEvaluationForm_FormClosing;
             Text = $"تقييم النظام - {AuthService.CurrentUser.Name} ({AuthService.CurrentUser.Code})";
 
-            _evaluationInstance = EvaluationService.LoadEvaluation
-                (ExcelExportService.GetFileName(AuthService.CurrentUser))
-                ?? new EvaluationInstance(AuthService.CurrentUser);
+            if (!EvaluationService.TryLoadEvaluation(AuthService.CurrentUser, out _evaluationInstance))
+                _evaluationInstance = new EvaluationInstance(AuthService.CurrentUser);
 
             chkTeamLeadAssistant.Visible =_evaluationInstance.AssistantSectionEnabled();
             chkTeamLeadAssistant.Checked = _evaluationInstance.ReadyToBeAssistantTeamLeader;

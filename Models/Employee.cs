@@ -1,4 +1,6 @@
-﻿internal class Employee
+﻿using Newtonsoft.Json;
+
+public class Employee
 {
     public string Code { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
@@ -6,5 +8,6 @@
 
     public bool Include { get; set; } = true;
 
+    [JsonIgnore]
     public string Title => $"{Name} ({Code})";
 }

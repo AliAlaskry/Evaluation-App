@@ -21,6 +21,7 @@ internal static class AuthService
         KeepLoggedIn = keepLoggedIn;
 
         SaveRememberedLogin();
+        EmployeeService.SetOtherEmployees();
         EvaluationService.ResetAll();
     }
 
@@ -64,15 +65,18 @@ internal static class AuthService
     private static void SaveRememberedLogin()
     {
         string dataDirectory = Path.GetDirectoryName(RememberedLoginPath)!;
+        if (!KeepLoggedIn)
+        {
+            if (Directory.Exists(dataDirectory))
+                Directory.Delete(dataDirectory, true);
+            return;
+        }
+
         if (!Directory.Exists(dataDirectory))
             Directory.CreateDirectory(dataDirectory);
 
-        if (!KeepLoggedIn)
-        {
-            if (File.Exists(RememberedLoginPath))
-                File.Delete(RememberedLoginPath);
-            return;
-        }
+        if (File.Exists(RememberedLoginPath))
+            File.Delete(RememberedLoginPath);
 
         var json = JsonConvert.SerializeObject(currentUser?.Code ?? string.Empty);
         File.WriteAllText(RememberedLoginPath, json);
